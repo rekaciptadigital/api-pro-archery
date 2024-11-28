@@ -1,7 +1,10 @@
 import { DataSource, DataSourceOptions } from "typeorm";
 import { config } from "dotenv";
 import { User } from "../modules/users/domain/entities/user.entity";
-import { CreateUsersTable1700000000000 } from "../migrations/1700000000000-CreateUsersTable";
+import { Role } from "../modules/roles/domain/entities/role.entity";
+import { Feature } from "../modules/features/domain/entities/feature.entity";
+import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
+import { CreateInitialSchema1701234567890 } from "../migrations/1701234567890-CreateInitialSchema";
 
 config();
 
@@ -12,8 +15,8 @@ const options: DataSourceOptions = {
   username: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
-  entities: [User],
-  migrations: [CreateUsersTable1700000000000],
+  entities: [User, Role, Feature, RoleFeaturePermission],
+  migrations: [CreateInitialSchema1701234567890],
   synchronize: false,
 };
 
