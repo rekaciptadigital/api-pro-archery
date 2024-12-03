@@ -4,7 +4,10 @@ import { User } from "../modules/users/domain/entities/user.entity";
 import { Role } from "../modules/roles/domain/entities/role.entity";
 import { Feature } from "../modules/features/domain/entities/feature.entity";
 import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
+import { UserRole } from "../modules/user-roles/domain/entities/user-role.entity";
 import { CreateInitialSchema1701234567890 } from "../migrations/1701234567890-CreateInitialSchema";
+import { CreateUserRolesTable1701234567891 } from "../migrations/1701234567891-CreateUserRolesTable";
+import { AddStatusToRolesAndFeatures1701234567892 } from "../migrations/1701234567892-AddStatusToRolesAndFeatures";
 
 config();
 
@@ -15,8 +18,12 @@ const options: DataSourceOptions = {
   username: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
-  entities: [User, Role, Feature, RoleFeaturePermission],
-  migrations: [CreateInitialSchema1701234567890],
+  entities: [User, Role, Feature, RoleFeaturePermission, UserRole],
+  migrations: [
+    CreateInitialSchema1701234567890,
+    CreateUserRolesTable1701234567891,
+    AddStatusToRolesAndFeatures1701234567892
+  ],
   synchronize: false,
 };
 

@@ -1,4 +1,4 @@
-import { Repository, FindOptionsWhere, DeleteResult, ObjectLiteral, DeepPartial } from 'typeorm';
+import { Repository, FindOptionsWhere, DeleteResult, ObjectLiteral, DeepPartial, FindOneOptions, FindManyOptions } from 'typeorm';
 import { IBaseRepository } from '../interfaces/repository.interface';
 
 export abstract class BaseRepository<T extends ObjectLiteral> implements IBaseRepository<T> {
@@ -14,8 +14,16 @@ export abstract class BaseRepository<T extends ObjectLiteral> implements IBaseRe
     return this.repository.findOne({ where });
   }
 
+  async findOneWithOptions(options: FindOneOptions<T>): Promise<T | null> {
+    return this.repository.findOne(options);
+  }
+
   async findAll(): Promise<T[]> {
     return this.repository.find();
+  }
+
+  async findWithOptions(options: FindManyOptions<T>): Promise<T[]> {
+    return this.repository.find(options);
   }
 
   async create(data: DeepPartial<T>): Promise<T> {

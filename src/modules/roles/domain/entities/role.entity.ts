@@ -8,4 +8,7 @@ export class Role extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   description: string;
+
+  @Column({ type: 'boolean', default: true })
+  status: boolean;
 }
