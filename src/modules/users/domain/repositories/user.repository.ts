@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions } from 'typeorm';
+import { Repository, FindOptionsWhere } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -18,10 +18,20 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.findOne({ email } as any);
+    return this.userRepository.findOne({
+      where: { email } as FindOptionsWhere<User>,
+    });
   }
 
-  async findAndCount(options: FindManyOptions<User>): Promise<[User[], number]> {
-    return this.userRepository.findAndCount(options);
+  async findByNip(nip: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { nip } as FindOptionsWhere<User>,
+    });
+  }
+
+  async findByNik(nik: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { nik } as FindOptionsWhere<User>,
+    });
   }
 }

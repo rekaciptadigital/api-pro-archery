@@ -2,16 +2,14 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UsersModule } from "./modules/users/users.module";
-import { RolesModule } from "./modules/roles/roles.module";
-import { FeaturesModule } from "./modules/features/features.module";
-import { PermissionsModule } from "./modules/permissions/permissions.module";
-import { UserRolesModule } from "./modules/user-roles/user-roles.module";
 import { CommonModule } from "./common/common.module";
+import { validate } from "./config/env.validation";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -31,10 +29,6 @@ import { CommonModule } from "./common/common.module";
       inject: [ConfigService],
     }),
     UsersModule,
-    RolesModule,
-    FeaturesModule,
-    PermissionsModule,
-    UserRolesModule,
     CommonModule,
   ],
 })

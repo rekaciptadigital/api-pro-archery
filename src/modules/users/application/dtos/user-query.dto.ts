@@ -1,18 +1,6 @@
-import { IsOptional, IsInt, IsString, Min, Max, IsEnum } from 'class-validator';
+import { IsOptional, IsInt, IsString, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-
-enum SortField {
-  ID = 'id',
-  USERNAME = 'username',
-  EMAIL = 'email',
-  CREATED_AT = 'created_at'
-}
-
-enum SortOrder {
-  ASC = 'asc',
-  DESC = 'desc'
-}
 
 export class UserQueryDto {
   @ApiPropertyOptional({ description: 'Page number', minimum: 1, default: 1 })
@@ -30,22 +18,17 @@ export class UserQueryDto {
   @IsOptional()
   limit?: number = 10;
 
-  @ApiPropertyOptional({ enum: SortField, description: 'Field to sort by' })
-  @IsEnum(SortField)
-  @IsOptional()
-  sort?: SortField;
-
-  @ApiPropertyOptional({ enum: SortOrder, description: 'Sort order' })
-  @IsEnum(SortOrder)
-  @IsOptional()
-  order?: SortOrder = SortOrder.ASC;
-
-  @ApiPropertyOptional({ description: 'Filter by role name' })
+  @ApiPropertyOptional({ description: 'Field to sort by' })
   @IsString()
   @IsOptional()
-  role?: string;
+  sort?: string;
 
-  @ApiPropertyOptional({ description: 'Search term for username or email' })
+  @ApiPropertyOptional({ description: 'Sort order (asc/desc)', default: 'asc' })
+  @IsString()
+  @IsOptional()
+  order?: 'asc' | 'desc' = 'asc';
+
+  @ApiPropertyOptional({ description: 'Search term for name or email' })
   @IsString()
   @IsOptional()
   search?: string;
