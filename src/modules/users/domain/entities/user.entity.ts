@@ -1,5 +1,6 @@
-import { Entity, Column } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import { BaseEntity } from "../../../common/entities/base.entity";
+import { UserRole } from "../../../user-roles/domain/entities/user-role.entity";
 
 @Entity("users")
 export class User extends BaseEntity {
@@ -38,4 +39,7 @@ export class User extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   last_login: Date;
+
+  @OneToMany(() => UserRole, userRole => userRole.user)
+  userRoles: UserRole[];
 }
