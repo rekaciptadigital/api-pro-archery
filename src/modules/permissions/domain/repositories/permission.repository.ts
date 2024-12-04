@@ -13,7 +13,7 @@ export class PermissionRepository extends BaseRepository<RoleFeaturePermission> 
     super(permissionRepository);
   }
 
-  async findWithRelationsAndCount(options: FindManyOptions<RoleFeaturePermission>) {
+  async findAndCount(options?: FindManyOptions<RoleFeaturePermission>): Promise<[RoleFeaturePermission[], number]> {
     return this.permissionRepository.findAndCount(options);
   }
 

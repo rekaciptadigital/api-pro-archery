@@ -17,7 +17,7 @@ import {
   UpdatePermissionDto,
   UpdatePermissionStatusDto,
 } from '../../application/dtos/permission.dto';
-import { PermissionQueryDto } from '../../application/dtos/permission-query.dto';
+import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 
 @ApiTags('role-feature-permissions')
 @Controller('role-feature-permissions')
@@ -27,8 +27,8 @@ export class PermissionController {
   @Get()
   @ApiOperation({ summary: 'Get all role feature permissions' })
   @ApiResponse({ status: 200, description: 'Return all role feature permissions.' })
-  @ApiQuery({ type: PermissionQueryDto })
-  findAll(@Query() query: PermissionQueryDto) {
+  @ApiQuery({ type: PaginationQueryDto })
+  findAll(@Query() query: PaginationQueryDto) {
     return this.permissionService.findAll(query);
   }
 
@@ -42,10 +42,7 @@ export class PermissionController {
 
   @Post()
   @ApiOperation({ summary: 'Create role feature permission' })
-  @ApiResponse({
-    status: 201,
-    description: 'Role feature permission assigned successfully.',
-  })
+  @ApiResponse({ status: 201, description: 'Role feature permission created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   create(@Body() createPermissionDto: CreatePermissionDto) {
     return this.permissionService.create(createPermissionDto);
@@ -53,10 +50,7 @@ export class PermissionController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Update role feature permission' })
-  @ApiResponse({
-    status: 200,
-    description: 'Role feature permission updated successfully.',
-  })
+  @ApiResponse({ status: 200, description: 'Role feature permission updated successfully.' })
   @ApiResponse({ status: 404, description: 'Permission not found.' })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -67,10 +61,7 @@ export class PermissionController {
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update role feature permission status' })
-  @ApiResponse({
-    status: 200,
-    description: 'Role feature permission status updated successfully.',
-  })
+  @ApiResponse({ status: 200, description: 'Role feature permission status updated successfully.' })
   @ApiResponse({ status: 404, description: 'Permission not found.' })
   updateStatus(
     @Param('id', ParseIntPipe) id: number,
@@ -81,10 +72,7 @@ export class PermissionController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete role feature permission' })
-  @ApiResponse({
-    status: 200,
-    description: 'Role feature permission deleted successfully.',
-  })
+  @ApiResponse({ status: 200, description: 'Role feature permission deleted successfully.' })
   @ApiResponse({ status: 404, description: 'Permission not found.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.permissionService.remove(id);

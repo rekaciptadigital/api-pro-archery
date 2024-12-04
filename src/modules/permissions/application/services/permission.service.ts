@@ -2,12 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PermissionRepository } from '../../domain/repositories/permission.repository';
 import { RoleRepository } from '../../../roles/domain/repositories/role.repository';
 import { FeatureRepository } from '../../../features/domain/repositories/feature.repository';
-import {
-  CreatePermissionDto,
-  UpdatePermissionDto,
-  UpdatePermissionStatusDto,
-} from '../dtos/permission.dto';
-import { PermissionQueryDto } from '../dtos/permission-query.dto';
+import { CreatePermissionDto, UpdatePermissionDto, UpdatePermissionStatusDto } from '../dtos/permission.dto';
+import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
+import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
+import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class PermissionService {
@@ -15,59 +14,22 @@ export class PermissionService {
     private readonly permissionRepository: PermissionRepository,
     private readonly roleRepository: RoleRepository,
     private readonly featureRepository: FeatureRepository,
+    private readonly paginationHelper: PaginationHelper,
+    private readonly responseTransformer: ResponseTransformer,
   ) {}
 
-  async findAll(query: PermissionQueryDto) {
-    const { page = 1, limit = 10, roleName, featureName } = query;
-    const skip = (page - 1) * limit;
+  async findAll(query: PaginationQueryDto) {
+    const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
 
-    const [permissions, total] = await this.permissionRepository.findWithRelationsAndCount({
+    const [permissions, total] = await this.permissionRepository.findAndCount({
       relations: ['role', 'feature'],
-      where: {
-        ...(roleName && { role: { name: roleName } }),
-        ...(featureName && { feature: { name: featureName } }),
-      },
-      order: { role: { name: 'ASC' } },
+      where: { deleted_at: IsNull() },
+      order: { created_at: 'DESC' },
       skip,
-      take: limit,
+      take,
     });
 
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data: permissions.map(permission => ({
-        id: permission.id,
-        role: {
-          id: permission.role.id,
-          name: permission.role.name,
-          description: permission.role.description,
-        },
-        feature: {
-          id: permission.feature.id,
-          name: permission.feature.name,
-          description: permission.feature.description,
-        },
-        permissions: permission.methods,
-        status: permission.status,
-        created_at: permission.created_at,
-        updated_at: permission.updated_at,
-      })),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages,
-      },
-    };
-  }
-
-  async findOne(id: number) {
-    const permission = await this.permissionRepository.findOneWithRelations(id);
-    if (!permission) {
-      throw new NotFoundException('Permission not found');
-    }
-
-    return {
+    const mappedPermissions = permissions.map(permission => ({
       id: permission.id,
       role: {
         id: permission.role.id,
@@ -79,11 +41,47 @@ export class PermissionService {
         name: permission.feature.name,
         description: permission.feature.description,
       },
-      permissions: permission.methods,
+      methods: permission.methods,
       status: permission.status,
-      created_at: permission.created_at,
-      updated_at: permission.updated_at,
-    };
+    }));
+
+    const { links } = this.paginationHelper.generatePaginationData({
+      serviceName: 'role-feature-permissions',
+      totalItems: total,
+      page: query.page || 1,
+      limit: query.limit || 10
+    });
+
+    return this.responseTransformer.transformPaginated(
+      mappedPermissions,
+      total,
+      query.page || 1,
+      query.limit || 10,
+      links
+    );
+  }
+
+  async findOne(id: number) {
+    const permission = await this.permissionRepository.findOneWithRelations(id);
+    if (!permission) {
+      throw new NotFoundException('Permission not found');
+    }
+
+    return this.responseTransformer.transform({
+      id: permission.id,
+      role: {
+        id: permission.role.id,
+        name: permission.role.name,
+        description: permission.role.description,
+      },
+      feature: {
+        id: permission.feature.id,
+        name: permission.feature.name,
+        description: permission.feature.description,
+      },
+      methods: permission.methods,
+      status: permission.status,
+    });
   }
 
   async create(createPermissionDto: CreatePermissionDto) {
@@ -92,9 +90,7 @@ export class PermissionService {
       throw new NotFoundException('Role not found');
     }
 
-    const feature = await this.featureRepository.findById(
-      createPermissionDto.feature_id,
-    );
+    const feature = await this.featureRepository.findById(createPermissionDto.feature_id);
     if (!feature) {
       throw new NotFoundException('Feature not found');
     }
@@ -106,13 +102,13 @@ export class PermissionService {
       status: createPermissionDto.status ?? true,
     });
 
-    return {
+    return this.responseTransformer.transform({
       id: permission.id,
       role_id: permission.role_id,
       feature_id: permission.feature_id,
-      permissions: permission.methods,
+      methods: permission.methods,
       status: permission.status,
-    };
+    });
   }
 
   async update(id: number, updatePermissionDto: UpdatePermissionDto) {
@@ -122,10 +118,11 @@ export class PermissionService {
     }
 
     await this.permissionRepository.update(id, {
-      methods: {
-        ...permission.methods,
-        ...updatePermissionDto.permissions,
-      },
+      methods: updatePermissionDto.permissions,
+    });
+
+    return this.responseTransformer.transform({
+      message: 'Permission updated successfully'
     });
   }
 
@@ -138,6 +135,10 @@ export class PermissionService {
     await this.permissionRepository.update(id, {
       status: updateStatusDto.status,
     });
+
+    return this.responseTransformer.transform({
+      message: 'Permission status updated successfully'
+    });
   }
 
   async remove(id: number) {
@@ -147,5 +148,8 @@ export class PermissionService {
     }
 
     await this.permissionRepository.softDelete(id);
+    return this.responseTransformer.transform({
+      message: 'Permission deleted successfully'
+    });
   }
 }
