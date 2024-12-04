@@ -22,6 +22,25 @@ export class ResponseTransformer {
   ): ApiResponse<T> {
     const totalPages = Math.ceil(totalItems / pageSize);
 
+    // Return empty data array if page number exceeds total pages
+    if (currentPage > totalPages && totalItems > 0) {
+      return {
+        status: {
+          code: 200,
+          message: 'Success'
+        },
+        data: [],
+        pagination: {
+          currentPage,
+          totalPages,
+          pageSize,
+          totalItems,
+          hasNext: false,
+          hasPrevious: currentPage > 1
+        }
+      };
+    }
+
     return {
       status: {
         code: 200,

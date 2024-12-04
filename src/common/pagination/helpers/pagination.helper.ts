@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PaginationException } from '../exceptions/pagination.exception';
 import {
   PaginationOptions,
   PaginationLinks,
@@ -13,19 +12,19 @@ export class PaginationHelper {
 
   private validateInput(options: PaginationOptions): void {
     if (!options.serviceName) {
-      throw new PaginationException('Service name is required');
+      throw new Error('Service name is required');
     }
 
     if (options.totalItems < 0) {
-      throw new PaginationException('Total items cannot be negative');
+      throw new Error('Total items cannot be negative');
     }
 
     if (options.page && options.page < 1) {
-      throw new PaginationException('Page number must be greater than 0');
+      throw new Error('Page number must be greater than 0');
     }
 
     if (options.limit && (options.limit < 1 || options.limit > 100)) {
-      throw new PaginationException('Items per page must be between 1 and 100');
+      throw new Error('Items per page must be between 1 and 100');
     }
   }
 
@@ -102,10 +101,6 @@ export class PaginationHelper {
     const page = options.page || 1;
     const limit = options.limit || 10;
     const totalPages = Math.ceil(options.totalItems / limit);
-
-    if (page > totalPages && options.totalItems > 0) {
-      throw new PaginationException('Page number exceeds available pages');
-    }
 
     const links = this.generateLinks(
       options.serviceName,
