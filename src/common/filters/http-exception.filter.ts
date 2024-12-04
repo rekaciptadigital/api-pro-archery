@@ -3,8 +3,10 @@ import {
   Catch,
   ArgumentsHost,
   HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { ApiErrorResponse } from '../interfaces/api-response.interface';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -14,14 +16,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
 
-    response
-      .status(status)
-      .json({
-        status: 'error',
+    const errorResponse: ApiErrorResponse = {
+      status: {
+        code: status,
+        message: HttpStatus[status],
+      },
+      error: {
+        code: `ERR_${status}`,
         message: typeof exceptionResponse === 'string' 
           ? exceptionResponse 
           : (exceptionResponse as any).message || 'An error occurred',
-        errorCode: `ERR_${status}`,
-      });
+        details: typeof exceptionResponse === 'object' 
+          ? (exceptionResponse as any) 
+          : undefined,
+      },
+    };
+
+    response.status(status).json(errorResponse);
   }
 }

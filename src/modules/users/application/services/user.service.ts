@@ -1,51 +1,38 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
-import { UserQueryDto } from '../dtos/user-query.dto';
+import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
+import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
 import { UserMapper } from '../mappers/user.mapper';
-import { UserSearchCriteria } from '../../domain/value-objects/user-search.value-object';
-import { IUserWithRole, IPaginatedUsers } from '../../domain/interfaces/user.interface';
+import { IUserWithRole } from '../../domain/interfaces/user.interface';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly paginationHelper: PaginationHelper,
   ) {}
 
-  async findAll(query: UserQueryDto): Promise<IPaginatedUsers> {
-    const searchCriteria = UserSearchCriteria.create(query);
-    const skip = (searchCriteria.page - 1) * searchCriteria.limit;
+  async findAll(query: PaginationQueryDto) {
+    const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
 
     const queryBuilder = this.userRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.user_roles', 'user_roles')
       .leftJoinAndSelect('user_roles.role', 'role')
       .where('user.deleted_at IS NULL')
       .skip(skip)
-      .take(searchCriteria.limit);
-
-    if (searchCriteria.sort) {
-      queryBuilder.orderBy(`user.${searchCriteria.sort}`, searchCriteria.order.toUpperCase() as 'ASC' | 'DESC');
-    }
-
-    if (searchCriteria.search) {
-      queryBuilder.andWhere(
-        '(user.first_name ILIKE :search OR user.email ILIKE :search OR user.nip ILIKE :search OR user.nik ILIKE :search)',
-        { search: `%${searchCriteria.search}%` },
-      );
-    }
+      .take(take);
 
     const [users, total] = await queryBuilder.getManyAndCount();
+    const mappedUsers = users.map(user => UserMapper.toResponse(user));
 
-    return {
-      data: users.map(user => UserMapper.toResponse(user)),
-      metadata: {
-        current_page: searchCriteria.page,
-        total_pages: Math.ceil(total / searchCriteria.limit),
-        total_items: total,
-        items_per_page: searchCriteria.limit,
-      },
-    };
+    return this.paginationHelper.paginate(mappedUsers, {
+      serviceName: 'users',
+      totalItems: total,
+      page: query.page,
+      limit: query.limit,
+    });
   }
 
   async findOne(id: number): Promise<IUserWithRole> {
