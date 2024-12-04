@@ -31,6 +31,7 @@ export class ResponseTransformer {
         },
         data: [],
         pagination: {
+          links,
           currentPage,
           totalPages,
           pageSize,
@@ -48,6 +49,7 @@ export class ResponseTransformer {
       },
       data,
       pagination: {
+        links,
         currentPage,
         totalPages,
         pageSize,

@@ -12,6 +12,7 @@ export interface PaginationLinks {
 }
 
 export interface ApiPagination {
+  links: PaginationLinks;
   currentPage: number;
   totalPages: number;
   pageSize: number;
