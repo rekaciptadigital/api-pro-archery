@@ -23,15 +23,12 @@ export interface ApiPagination {
 
 export interface ApiResponse<T> {
   status: ApiStatus;
-  data: T[];
+  data?: T[];
+  info?: string;
   pagination?: ApiPagination;
 }
 
 export interface ApiErrorResponse {
   status: ApiStatus;
-  error: {
-    code: string;
-    message: string;
-    details?: Record<string, any>;
-  };
+  error: string[];
 }

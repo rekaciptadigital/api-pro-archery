@@ -4,6 +4,18 @@ import { ApiResponse, ApiStatus, PaginationLinks } from '../interfaces/api-respo
 @Injectable()
 export class ResponseTransformer {
   transform<T>(data: T): ApiResponse<T> {
+    // If data contains a message field, transform to info format
+    if (typeof data === 'object' && data !== null && 'message' in data) {
+      return {
+        status: {
+          code: 200,
+          message: 'Success'
+        },
+        info: (data as any).message
+      };
+    }
+
+    // Otherwise return standard data format
     return {
       status: {
         code: 200,
