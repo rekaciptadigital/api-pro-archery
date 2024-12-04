@@ -1,11 +1,3 @@
-import { Type } from '@nestjs/common';
-
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  customParams?: Record<string, string | number>;
-}
-
 export interface PaginationLinks {
   first: string;
   previous: string | null;
@@ -23,13 +15,17 @@ export interface PaginationMeta {
   hasPreviousPage: boolean;
 }
 
-export interface PaginatedResponse<T> {
-  status: 'success';
-  data: T[];
+export interface PaginationData<T> {
+  items: T[];
   pagination: {
     links: PaginationLinks;
     meta: PaginationMeta;
   };
+}
+
+export interface PaginatedResponse<T> {
+  status: string;
+  data: PaginationData<T>;
 }
 
 export interface PaginationOptions {
@@ -38,5 +34,4 @@ export interface PaginationOptions {
   page?: number;
   limit?: number;
   customParams?: Record<string, string | number>;
-  route?: string;
 }

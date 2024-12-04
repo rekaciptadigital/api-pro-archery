@@ -6,6 +6,7 @@ import {
   PaginationLinks,
   PaginationMeta,
   PaginatedResponse,
+  PaginationData,
 } from '../interfaces/pagination.interface';
 
 @Injectable()
@@ -98,8 +99,26 @@ export class PaginationHelper {
     const totalItems = options.totalItems;
     const totalPages = Math.ceil(totalItems / limit);
 
+    // Return empty data array with pagination metadata if page exceeds total pages
     if (page > totalPages && totalItems > 0) {
-      throw new PaginationException('Page number exceeds available pages');
+      const paginationData: PaginationData<T> = {
+        items: [],
+        pagination: {
+          links: this.generateLinks(
+            options.serviceName,
+            totalPages,
+            totalPages,
+            limit,
+            options.customParams,
+          ),
+          meta: this.generateMeta(page, limit, totalItems),
+        },
+      };
+
+      return {
+        status: 'success',
+        data: paginationData,
+      };
     }
 
     const links = this.generateLinks(
@@ -112,13 +131,17 @@ export class PaginationHelper {
 
     const meta = this.generateMeta(page, limit, totalItems);
 
-    return {
-      status: 'success',
-      data,
+    const paginationData: PaginationData<T> = {
+      items: data,
       pagination: {
         links,
         meta,
       },
+    };
+
+    return {
+      status: 'success',
+      data: paginationData,
     };
   }
 
