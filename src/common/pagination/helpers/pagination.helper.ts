@@ -89,12 +89,23 @@ export class PaginationHelper {
     };
   }
 
+  getSkipTake(page: number = 1, limit: number = 10): { skip: number; take: number } {
+    return {
+      skip: (page - 1) * limit,
+      take: limit,
+    };
+  }
+
   generatePaginationData(options: PaginationOptions) {
     this.validateInput(options);
 
     const page = options.page || 1;
     const limit = options.limit || 10;
     const totalPages = Math.ceil(options.totalItems / limit);
+
+    if (page > totalPages && options.totalItems > 0) {
+      throw new PaginationException('Page number exceeds available pages');
+    }
 
     const links = this.generateLinks(
       options.serviceName,
@@ -107,12 +118,5 @@ export class PaginationHelper {
     const meta = this.generateMeta(page, limit, options.totalItems);
 
     return { links, meta };
-  }
-
-  getSkipTake(page: number = 1, limit: number = 10): { skip: number; take: number } {
-    return {
-      skip: (page - 1) * limit,
-      take: limit,
-    };
   }
 }

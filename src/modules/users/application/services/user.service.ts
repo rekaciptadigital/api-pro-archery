@@ -24,13 +24,33 @@ export class UserService {
       .leftJoinAndSelect('user.user_roles', 'user_roles')
       .leftJoinAndSelect('user_roles.role', 'role')
       .where('user.deleted_at IS NULL')
+      .orderBy('user.created_at', 'DESC')
       .skip(skip)
       .take(take);
 
     const [users, total] = await queryBuilder.getManyAndCount();
-    const mappedUsers = users.map(user => UserMapper.toResponse(user));
+    const mappedUsers = users.map(user => ({
+      id: user.id.toString(),
+      nip: user.nip,
+      nik: user.nik,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      photo_profile: user.photo_profile,
+      email: user.email,
+      phone_number: user.phone_number,
+      address: user.address,
+      status: user.status,
+      role: user.user_roles?.[0]?.role ? {
+        id: user.user_roles[0].role.id,
+        name: user.user_roles[0].role.name,
+        description: user.user_roles[0].role.description,
+        status: user.user_roles[0].role.status,
+      } : null,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+    }));
 
-    const { links, meta } = this.paginationHelper.generatePaginationData({
+    const { links } = this.paginationHelper.generatePaginationData({
       serviceName: 'users',
       totalItems: total,
       page: query.page || 1,

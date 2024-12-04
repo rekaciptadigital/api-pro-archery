@@ -3,7 +3,15 @@ export interface ApiStatus {
   message: string;
 }
 
-export interface PaginationMetadata {
+export interface PaginationLinks {
+  first: string;
+  previous: string | null;
+  current: string;
+  next: string | null;
+  last: string;
+}
+
+export interface ApiPagination {
   currentPage: number;
   totalPages: number;
   pageSize: number;
@@ -14,10 +22,8 @@ export interface PaginationMetadata {
 
 export interface ApiResponse<T> {
   status: ApiStatus;
-  data: {
-    items: T[];
-    pagination?: PaginationMetadata;
-  };
+  data: T[];
+  pagination?: ApiPagination;
 }
 
 export interface ApiErrorResponse {
@@ -25,6 +31,6 @@ export interface ApiErrorResponse {
   error: {
     code: string;
     message: string;
-    details?: Record<string, unknown>;
+    details?: Record<string, any>;
   };
 }

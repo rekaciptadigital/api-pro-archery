@@ -15,18 +15,6 @@ export interface PaginationMeta {
   hasPreviousPage: boolean;
 }
 
-export interface PaginatedResponse<T> {
-  status: {
-    code: number;
-    message: string;
-  };
-  data: T[];
-  pagination: {
-    links: PaginationLinks;
-    meta: PaginationMeta;
-  };
-}
-
 export interface PaginationOptions {
   serviceName: string;
   totalItems: number;

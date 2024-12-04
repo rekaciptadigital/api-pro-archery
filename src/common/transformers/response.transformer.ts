@@ -1,35 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { PaginatedResponse } from '../pagination/interfaces/pagination.interface';
+import { ApiResponse, ApiStatus, PaginationLinks } from '../interfaces/api-response.interface';
 
 @Injectable()
 export class ResponseTransformer {
-  transform<T>(data: T) {
+  transform<T>(data: T): ApiResponse<T> {
     return {
       status: {
         code: 200,
         message: 'Success'
       },
-      data
+      data: Array.isArray(data) ? data : [data]
     };
   }
 
-  transformError(code: number, message: string, details?: Record<string, any>) {
-    return {
-      status: {
-        code,
-        message
-      },
-      error: {
-        code: `ERR_${code}`,
-        message,
-        details
-      }
-    };
-  }
+  transformPaginated<T>(
+    data: T[],
+    totalItems: number,
+    currentPage: number,
+    pageSize: number,
+    links: PaginationLinks
+  ): ApiResponse<T> {
+    const totalPages = Math.ceil(totalItems / pageSize);
 
-  transformPaginated<T>(data: T[], totalItems: number, page: number, limit: number, links: any): PaginatedResponse<T> {
-    const totalPages = Math.ceil(totalItems / limit);
-    
     return {
       status: {
         code: 200,
@@ -37,21 +29,12 @@ export class ResponseTransformer {
       },
       data,
       pagination: {
-        links: {
-          first: links.first,
-          previous: links.previous,
-          current: links.current,
-          next: links.next,
-          last: links.last
-        },
-        meta: {
-          currentPage: page,
-          itemsPerPage: limit,
-          totalItems,
-          totalPages,
-          hasNextPage: page < totalPages,
-          hasPreviousPage: page > 1
-        }
+        currentPage,
+        totalPages,
+        pageSize,
+        totalItems,
+        hasNext: currentPage < totalPages,
+        hasPrevious: currentPage > 1
       }
     };
   }

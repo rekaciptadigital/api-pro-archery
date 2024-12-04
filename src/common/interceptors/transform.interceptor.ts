@@ -16,41 +16,19 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T
     next: CallHandler
   ): Observable<ApiResponse<T>> {
     return next.handle().pipe(
-      map((data) => {
-        const response = context.switchToHttp().getResponse();
-        const statusCode = response.statusCode || HttpStatus.OK;
-
-        // Handle paginated responses
-        if (data?.pagination) {
-          const { data: items, pagination } = data;
-          return {
-            status: {
-              code: statusCode,
-              message: "Success",
-            },
-            data: {
-              items,
-              pagination: {
-                currentPage: pagination.meta.currentPage,
-                totalPages: pagination.meta.totalPages,
-                pageSize: pagination.meta.itemsPerPage,
-                totalItems: pagination.meta.totalItems,
-                hasNext: pagination.meta.hasNextPage,
-                hasPrevious: pagination.meta.hasPreviousPage,
-              },
-            },
-          };
+      map((response) => {
+        // If response is already in the correct format, return it
+        if (response?.status?.code) {
+          return response;
         }
 
-        // Handle non-paginated responses
+        // Transform to standard format
         return {
           status: {
-            code: statusCode,
+            code: context.switchToHttp().getResponse().statusCode || HttpStatus.OK,
             message: "Success",
           },
-          data: {
-            items: Array.isArray(data) ? data : [data],
-          },
+          data: Array.isArray(response) ? response : [response],
         };
       })
     );
