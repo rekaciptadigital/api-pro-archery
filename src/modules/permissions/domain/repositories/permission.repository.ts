@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions } from 'typeorm';
+import { Repository, FindManyOptions, FindOptionsWhere } from 'typeorm';
 import { RoleFeaturePermission } from '../entities/role-feature-permission.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -19,7 +19,7 @@ export class PermissionRepository extends BaseRepository<RoleFeaturePermission> 
 
   async findOneWithRelations(id: number): Promise<RoleFeaturePermission | null> {
     return this.permissionRepository.findOne({
-      where: { id },
+      where: { id } as FindOptionsWhere<RoleFeaturePermission>,
       relations: ['role', 'feature'],
     });
   }
