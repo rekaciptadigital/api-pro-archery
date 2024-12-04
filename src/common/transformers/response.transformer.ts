@@ -25,6 +25,16 @@ export class ResponseTransformer {
     };
   }
 
+  transformDelete(entityName: string): ApiResponse<any> {
+    return {
+      status: {
+        code: 200,
+        message: 'Success'
+      },
+      info: `${entityName} deleted successfully`
+    };
+  }
+
   transformPaginated<T>(
     data: T[],
     totalItems: number,
