@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   Put,
@@ -7,19 +8,37 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { PermissionService } from '../../application/services/permission.service';
 import {
   CreatePermissionDto,
   UpdatePermissionDto,
   UpdatePermissionStatusDto,
 } from '../../application/dtos/permission.dto';
+import { PermissionQueryDto } from '../../application/dtos/permission-query.dto';
 
 @ApiTags('role-feature-permissions')
 @Controller('role-feature-permissions')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Get all role feature permissions' })
+  @ApiResponse({ status: 200, description: 'Return all role feature permissions.' })
+  @ApiQuery({ type: PermissionQueryDto })
+  findAll(@Query() query: PermissionQueryDto) {
+    return this.permissionService.findAll(query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get role feature permission by id' })
+  @ApiResponse({ status: 200, description: 'Return role feature permission by id.' })
+  @ApiResponse({ status: 404, description: 'Permission not found.' })
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.permissionService.findOne(id);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create role feature permission' })

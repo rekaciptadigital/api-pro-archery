@@ -8,9 +8,13 @@ import { BaseRepository } from '../../../common/repositories/base.repository';
 export class UserRepository extends BaseRepository<User> {
   constructor(
     @InjectRepository(User)
-    repository: Repository<User>,
+    private readonly userRepository: Repository<User>,
   ) {
-    super(repository);
+    super(userRepository);
+  }
+
+  createQueryBuilder(alias: string) {
+    return this.userRepository.createQueryBuilder(alias);
   }
 
   async findByEmail(email: string): Promise<User | null> {

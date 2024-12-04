@@ -7,6 +7,7 @@ import {
   UpdatePermissionDto,
   UpdatePermissionStatusDto,
 } from '../dtos/permission.dto';
+import { PermissionQueryDto } from '../dtos/permission-query.dto';
 
 @Injectable()
 export class PermissionService {
@@ -15,6 +16,75 @@ export class PermissionService {
     private readonly roleRepository: RoleRepository,
     private readonly featureRepository: FeatureRepository,
   ) {}
+
+  async findAll(query: PermissionQueryDto) {
+    const { page = 1, limit = 10, roleName, featureName } = query;
+    const skip = (page - 1) * limit;
+
+    const [permissions, total] = await this.permissionRepository.findWithRelationsAndCount({
+      relations: ['role', 'feature'],
+      where: {
+        ...(roleName && { role: { name: roleName } }),
+        ...(featureName && { feature: { name: featureName } }),
+      },
+      order: { role: { name: 'ASC' } },
+      skip,
+      take: limit,
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: permissions.map(permission => ({
+        id: permission.id,
+        role: {
+          id: permission.role.id,
+          name: permission.role.name,
+          description: permission.role.description,
+        },
+        feature: {
+          id: permission.feature.id,
+          name: permission.feature.name,
+          description: permission.feature.description,
+        },
+        permissions: permission.methods,
+        status: permission.status,
+        created_at: permission.created_at,
+        updated_at: permission.updated_at,
+      })),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
+  }
+
+  async findOne(id: number) {
+    const permission = await this.permissionRepository.findOneWithRelations(id);
+    if (!permission) {
+      throw new NotFoundException('Permission not found');
+    }
+
+    return {
+      id: permission.id,
+      role: {
+        id: permission.role.id,
+        name: permission.role.name,
+        description: permission.role.description,
+      },
+      feature: {
+        id: permission.feature.id,
+        name: permission.feature.name,
+        description: permission.feature.description,
+      },
+      permissions: permission.methods,
+      status: permission.status,
+      created_at: permission.created_at,
+      updated_at: permission.updated_at,
+    };
+  }
 
   async create(createPermissionDto: CreatePermissionDto) {
     const role = await this.roleRepository.findById(createPermissionDto.role_id);

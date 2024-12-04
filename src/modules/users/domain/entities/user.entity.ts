@@ -30,9 +30,12 @@ export class User extends BaseEntity {
   @Column({ type: "text", nullable: true })
   address: string;
 
-  @Column({
-    type: "boolean",
-    default: true,
-  })
+  @Column({ type: "boolean", default: true })
   status: boolean;
+
+  @Column({ nullable: true })
+  username: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  last_login: Date;
 }
