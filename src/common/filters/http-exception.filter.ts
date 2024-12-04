@@ -17,18 +17,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     let errorMessages: string | string[];
     if (typeof exceptionResponse === 'string') {
-      errorMessages = exceptionResponse;
+      errorMessages = [exceptionResponse];
     } else if (typeof exceptionResponse === 'object') {
       const resp = exceptionResponse as any;
-      errorMessages = resp.message || resp.error || 'An error occurred';
+      errorMessages = Array.isArray(resp.message) ? resp.message : 
+                     Array.isArray(resp.error) ? resp.error :
+                     [resp.message || resp.error || 'An error occurred'];
     } else {
-      errorMessages = 'An error occurred';
+      errorMessages = ['An error occurred'];
     }
 
     response.status(status).json({
-      code: status,
-      message: HttpStatus[status],
-      error: Array.isArray(errorMessages) ? errorMessages : [errorMessages],
+      status: {
+        code: status,
+        message: HttpStatus[status]
+      },
+      error: errorMessages
     });
   }
 }
