@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { Role } from '../entities/role.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -8,8 +8,12 @@ import { BaseRepository } from '../../../common/repositories/base.repository';
 export class RoleRepository extends BaseRepository<Role> {
   constructor(
     @InjectRepository(Role)
-    repository: Repository<Role>,
+    private readonly roleRepository: Repository<Role>,
   ) {
-    super(repository);
+    super(roleRepository);
+  }
+
+  async findAndCount(options?: FindManyOptions<Role>): Promise<[Role[], number]> {
+    return this.roleRepository.findAndCount(options);
   }
 }

@@ -1,10 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { RoleRepository } from '../../domain/repositories/role.repository';
 import { CreateRoleDto, UpdateRoleDto, UpdateRoleStatusDto } from '../dtos/role.dto';
+import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
+import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 
 @Injectable()
 export class RoleService {
-  constructor(private readonly roleRepository: RoleRepository) {}
+  constructor(
+    private readonly roleRepository: RoleRepository,
+    private readonly paginationHelper: PaginationHelper,
+  ) {}
 
   async create(createRoleDto: CreateRoleDto) {
     const role = await this.roleRepository.create(createRoleDto);
@@ -16,14 +21,26 @@ export class RoleService {
     };
   }
 
-  async findAll() {
-    const roles = await this.roleRepository.findAll();
-    return roles.map(role => ({
+  async findAll(query: PaginationQueryDto) {
+    const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
+    
+    const [roles, total] = await this.roleRepository.findAndCount({
+      skip,
+      take,
+      order: { created_at: 'DESC' },
+    });
+
+    return this.paginationHelper.paginate(roles.map(role => ({
       id: role.id,
       name: role.name,
       description: role.description,
       status: role.status,
-    }));
+    })), {
+      serviceName: 'roles',
+      totalItems: total,
+      page: query.page,
+      limit: query.limit,
+    });
   }
 
   async findOne(id: number) {
