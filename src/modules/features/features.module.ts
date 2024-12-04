@@ -5,11 +5,13 @@ import { FeatureRepository } from './domain/repositories/feature.repository';
 import { FeatureService } from './application/services/feature.service';
 import { FeatureController } from './presentation/controllers/feature.controller';
 import { PaginationModule } from '../../common/pagination/pagination.module';
+import { TransformersModule } from '../../common/transformers/transformers.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Feature]),
-    PaginationModule
+    PaginationModule,
+    TransformersModule
   ],
   providers: [FeatureRepository, FeatureService],
   controllers: [FeatureController],

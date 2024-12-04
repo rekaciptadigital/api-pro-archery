@@ -5,8 +5,6 @@ import {
   PaginationOptions,
   PaginationLinks,
   PaginationMeta,
-  PaginatedResponse,
-  PaginationData,
 } from '../interfaces/pagination.interface';
 
 @Injectable()
@@ -91,35 +89,12 @@ export class PaginationHelper {
     };
   }
 
-  paginate<T>(data: T[], options: PaginationOptions): PaginatedResponse<T> {
+  generatePaginationData(options: PaginationOptions) {
     this.validateInput(options);
 
     const page = options.page || 1;
     const limit = options.limit || 10;
-    const totalItems = options.totalItems;
-    const totalPages = Math.ceil(totalItems / limit);
-
-    // Return empty data array with pagination metadata if page exceeds total pages
-    if (page > totalPages && totalItems > 0) {
-      const paginationData: PaginationData<T> = {
-        items: [],
-        pagination: {
-          links: this.generateLinks(
-            options.serviceName,
-            totalPages,
-            totalPages,
-            limit,
-            options.customParams,
-          ),
-          meta: this.generateMeta(page, limit, totalItems),
-        },
-      };
-
-      return {
-        status: 'success',
-        data: paginationData,
-      };
-    }
+    const totalPages = Math.ceil(options.totalItems / limit);
 
     const links = this.generateLinks(
       options.serviceName,
@@ -129,20 +104,9 @@ export class PaginationHelper {
       options.customParams,
     );
 
-    const meta = this.generateMeta(page, limit, totalItems);
+    const meta = this.generateMeta(page, limit, options.totalItems);
 
-    const paginationData: PaginationData<T> = {
-      items: data,
-      pagination: {
-        links,
-        meta,
-      },
-    };
-
-    return {
-      status: 'success',
-      data: paginationData,
-    };
+    return { links, meta };
   }
 
   getSkipTake(page: number = 1, limit: number = 10): { skip: number; take: number } {

@@ -7,11 +7,13 @@ import { UserRepository } from './domain/repositories/user.repository';
 import { UserService } from './application/services/user.service';
 import { UserController } from './presentation/controllers/user.controller';
 import { PaginationModule } from '../../common/pagination/pagination.module';
+import { TransformersModule } from '../../common/transformers/transformers.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Role, UserRole]),
     PaginationModule,
+    TransformersModule
   ],
   providers: [UserRepository, UserService],
   controllers: [UserController],

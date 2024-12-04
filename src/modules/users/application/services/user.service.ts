@@ -3,15 +3,18 @@ import { UserRepository } from '../../domain/repositories/user.repository';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
+import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
 import { UserMapper } from '../mappers/user.mapper';
 import { IUserWithRole } from '../../domain/interfaces/user.interface';
 import * as bcrypt from 'bcryptjs';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly paginationHelper: PaginationHelper,
+    private readonly responseTransformer: ResponseTransformer,
   ) {}
 
   async findAll(query: PaginationQueryDto) {
@@ -27,12 +30,20 @@ export class UserService {
     const [users, total] = await queryBuilder.getManyAndCount();
     const mappedUsers = users.map(user => UserMapper.toResponse(user));
 
-    return this.paginationHelper.paginate(mappedUsers, {
+    const { links, meta } = this.paginationHelper.generatePaginationData({
       serviceName: 'users',
       totalItems: total,
-      page: query.page,
-      limit: query.limit,
+      page: query.page || 1,
+      limit: query.limit || 10
     });
+
+    return this.responseTransformer.transformPaginated(
+      mappedUsers,
+      total,
+      query.page || 1,
+      query.limit || 10,
+      links
+    );
   }
 
   async findOne(id: number): Promise<IUserWithRole> {

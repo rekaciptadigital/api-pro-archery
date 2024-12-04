@@ -7,6 +7,7 @@ import { FeaturesModule } from "./modules/features/features.module";
 import { PermissionsModule } from "./modules/permissions/permissions.module";
 import { UserRolesModule } from "./modules/user-roles/user-roles.module";
 import { CommonModule } from "./common/common.module";
+import { TransformersModule } from "./common/transformers/transformers.module";
 import configuration from "./config/configuration";
 import { validate } from "./config/env.validation";
 
@@ -40,6 +41,7 @@ import { validate } from "./config/env.validation";
     PermissionsModule,
     UserRolesModule,
     CommonModule,
+    TransformersModule,
   ],
 })
 export class AppModule {}

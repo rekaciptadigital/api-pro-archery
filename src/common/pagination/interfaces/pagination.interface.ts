@@ -15,17 +15,16 @@ export interface PaginationMeta {
   hasPreviousPage: boolean;
 }
 
-export interface PaginationData<T> {
-  items: T[];
+export interface PaginatedResponse<T> {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: T[];
   pagination: {
     links: PaginationLinks;
     meta: PaginationMeta;
   };
-}
-
-export interface PaginatedResponse<T> {
-  status: string;
-  data: PaginationData<T>;
 }
 
 export interface PaginationOptions {
