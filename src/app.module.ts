@@ -3,13 +3,11 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UsersModule } from "./modules/users/users.module";
 import { CommonModule } from "./common/common.module";
-import { validate } from "./config/env.validation";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validate,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
