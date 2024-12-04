@@ -4,9 +4,13 @@ import { Feature } from './domain/entities/feature.entity';
 import { FeatureRepository } from './domain/repositories/feature.repository';
 import { FeatureService } from './application/services/feature.service';
 import { FeatureController } from './presentation/controllers/feature.controller';
+import { PaginationModule } from '../../common/pagination/pagination.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Feature])],
+  imports: [
+    TypeOrmModule.forFeature([Feature]),
+    PaginationModule
+  ],
   providers: [FeatureRepository, FeatureService],
   controllers: [FeatureController],
   exports: [FeatureRepository],

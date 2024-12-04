@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FeatureService } from '../../application/services/feature.service';
@@ -15,6 +16,7 @@ import {
   UpdateFeatureDto,
   UpdateFeatureStatusDto,
 } from '../../application/dtos/feature.dto';
+import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 
 @ApiTags('features')
 @Controller('features')
@@ -32,8 +34,8 @@ export class FeatureController {
   @Get()
   @ApiOperation({ summary: 'Get all features' })
   @ApiResponse({ status: 200, description: 'Return all features.' })
-  findAll() {
-    return this.featureService.findAll();
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.featureService.findAll(query);
   }
 
   @Get(':id')

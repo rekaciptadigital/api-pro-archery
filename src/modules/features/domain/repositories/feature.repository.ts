@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { Feature } from '../entities/feature.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -8,8 +8,12 @@ import { BaseRepository } from '../../../common/repositories/base.repository';
 export class FeatureRepository extends BaseRepository<Feature> {
   constructor(
     @InjectRepository(Feature)
-    repository: Repository<Feature>,
+    private readonly featureRepository: Repository<Feature>,
   ) {
-    super(repository);
+    super(featureRepository);
+  }
+
+  async findAndCount(options?: FindManyOptions<Feature>): Promise<[Feature[], number]> {
+    return this.featureRepository.findAndCount(options);
   }
 }
