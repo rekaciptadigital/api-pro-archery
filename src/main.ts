@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, NotFoundException } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
@@ -11,7 +12,7 @@ async function bootstrap() {
   app.use(helmet());
   
   app.enableCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:4000',
+    origin: ['http://localhost:3000', 'http://localhost:4000', 'https://inventory.proarchery.id'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   });
@@ -31,6 +32,14 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+
+  // Handle root endpoint
+  app.use('/', (req: Request, res: Response, next: NextFunction) => {
+    if (req.url === '/') {
+      throw new NotFoundException('Page not found');
+    }
+    next();
+  });
 
   await app.listen(process.env.PORT || 4000);
 }
