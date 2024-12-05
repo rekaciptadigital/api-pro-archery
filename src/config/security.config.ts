@@ -13,7 +13,7 @@ export const securityConfig: HelmetOptions = {
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://inventory.proarchery.id"],
+      connectSrc: ["'self'", "https://inventory.proarchery.id", "https://bolt.new"],
       fontSrc: ["'self'", "https:", "data:"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
