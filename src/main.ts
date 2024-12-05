@@ -4,7 +4,6 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { corsConfig } from './config/cors.config';
 import { securityConfig } from './config/security.config';
 
 async function bootstrap() {
@@ -14,7 +13,15 @@ async function bootstrap() {
   app.use(helmet(securityConfig));
   
   // Enable CORS with custom configuration
-  app.enableCors(corsConfig);
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type,Accept,Authorization,Origin,X-Requested-With',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    credentials: false,
+    maxAge: 86400
+  });
 
   // Global validation pipe
   app.useGlobalPipes(new ValidationPipe({
