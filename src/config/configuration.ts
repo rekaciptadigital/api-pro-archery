@@ -1,6 +1,6 @@
 export default () => ({
-  appUrl: process.env.APP_URL || 'http://localhost:3000',
-  port: parseInt(process.env.PORT || '3000', 10),
+  appUrl: process.env.APP_URL || 'http://localhost:4000',
+  port: parseInt(process.env.PORT || '4000', 10),
   database: {
     host: process.env.DATABASE_HOST,
     port: parseInt(process.env.DATABASE_PORT || '5432', 10),

@@ -11,7 +11,7 @@ async function bootstrap() {
   app.use(helmet());
   
   app.enableCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:3000',
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:4000',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   });
@@ -32,6 +32,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.PORT || 4000);
 }
 bootstrap();
