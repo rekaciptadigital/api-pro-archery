@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Put,
+  Patch,
   Param,
   Delete,
   ParseIntPipe,
@@ -55,7 +56,7 @@ export class UserRoleController {
     return this.userRoleService.update(id, updateUserRoleDto);
   }
 
-  @Put(":id/status")
+  @Patch(":id/status")
   @ApiOperation({ summary: "Update user role status" })
   @ApiResponse({ status: 200, description: "User role status updated successfully." })
   @ApiResponse({ status: 404, description: "User role not found." })

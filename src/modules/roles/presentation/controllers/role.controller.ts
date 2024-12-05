@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Put,
+  Patch,
   Param,
   Delete,
   ParseIntPipe,
@@ -53,7 +54,7 @@ export class RoleController {
     return this.roleService.update(id, updateRoleDto);
   }
 
-  @Put(':id/status')
+  @Patch(':id/status')
   @ApiOperation({ summary: 'Update role status' })
   @ApiResponse({ status: 200, description: 'Role status updated successfully.' })
   @ApiResponse({ status: 404, description: 'Role not found.' })

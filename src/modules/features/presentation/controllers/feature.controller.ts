@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Put,
+  Patch,
   Param,
   Delete,
   ParseIntPipe,
@@ -57,7 +58,7 @@ export class FeatureController {
     return this.featureService.update(id, updateFeatureDto);
   }
 
-  @Put(':id/status')
+  @Patch(':id/status')
   @ApiOperation({ summary: 'Update feature status' })
   @ApiResponse({ status: 200, description: 'Feature status updated successfully.' })
   @ApiResponse({ status: 404, description: 'Feature not found.' })
