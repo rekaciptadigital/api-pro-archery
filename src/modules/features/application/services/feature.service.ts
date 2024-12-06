@@ -5,20 +5,25 @@ import { PaginationHelper } from '../../../../common/pagination/helpers/paginati
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
 import { IsNull } from 'typeorm';
+import { FeatureValidator } from '../../domain/validators/feature.validator';
 
 @Injectable()
 export class FeatureService {
   constructor(
     private readonly featureRepository: FeatureRepository,
+    private readonly featureValidator: FeatureValidator,
     private readonly paginationHelper: PaginationHelper,
     private readonly responseTransformer: ResponseTransformer,
   ) {}
 
   async create(createFeatureDto: CreateFeatureDto) {
+    await this.featureValidator.validateName(createFeatureDto.name);
+
     const feature = await this.featureRepository.create({
       ...createFeatureDto,
       status: createFeatureDto.status ?? true,
     });
+
     return this.responseTransformer.transform(feature);
   }
 
@@ -60,8 +65,16 @@ export class FeatureService {
     if (!feature) {
       throw new NotFoundException('Feature not found');
     }
-    await this.featureRepository.update(id, updateFeatureDto);
-    return this.responseTransformer.transform({ message: 'Feature updated successfully' });
+
+    if (updateFeatureDto.name) {
+      await this.featureValidator.validateForOperation(updateFeatureDto.name, id);
+    }
+
+    const updated = await this.featureRepository.update(id, updateFeatureDto);
+    return this.responseTransformer.transform({
+      message: 'Feature updated successfully',
+      data: updated
+    });
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateFeatureStatusDto) {

@@ -4,6 +4,7 @@ import { Feature } from './domain/entities/feature.entity';
 import { FeatureRepository } from './domain/repositories/feature.repository';
 import { FeatureService } from './application/services/feature.service';
 import { FeatureController } from './presentation/controllers/feature.controller';
+import { FeatureValidator } from './domain/validators/feature.validator';
 import { PaginationModule } from '../../common/pagination/pagination.module';
 import { TransformersModule } from '../../common/transformers/transformers.module';
 
@@ -13,7 +14,11 @@ import { TransformersModule } from '../../common/transformers/transformers.modul
     PaginationModule,
     TransformersModule
   ],
-  providers: [FeatureRepository, FeatureService],
+  providers: [
+    FeatureRepository, 
+    FeatureService,
+    FeatureValidator
+  ],
   controllers: [FeatureController],
   exports: [FeatureRepository],
 })
