@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiResponse, ApiStatus, PaginationLinks } from '../interfaces/api-response.interface';
+import { DateUtil } from '../utils/date.util';
 
 @Injectable()
 export class ResponseTransformer {
-  transform<T>(data: T): ApiResponse<T> {
-    // If data contains a message field, transform to info format
+  constructor(private configService: ConfigService) {
+    DateUtil.setConfigService(this.configService);
+  }
+
+  transform<T extends Record<string, any>>(data: T): ApiResponse<T> {
     if (typeof data === 'object' && data !== null && 'message' in data) {
       return {
         status: {
@@ -15,13 +20,16 @@ export class ResponseTransformer {
       };
     }
 
-    // Otherwise return standard data format
+    const formattedData = Array.isArray(data)
+      ? data.map(item => DateUtil.formatTimestamps(item))
+      : DateUtil.formatTimestamps(data);
+
     return {
       status: {
         code: 200,
         message: 'Success'
       },
-      data: Array.isArray(data) ? data : [data]
+      data: Array.isArray(formattedData) ? formattedData : [formattedData]
     };
   }
 
@@ -35,7 +43,7 @@ export class ResponseTransformer {
     };
   }
 
-  transformPaginated<T>(
+  transformPaginated<T extends Record<string, any>>(
     data: T[],
     totalItems: number,
     currentPage: number,
@@ -44,7 +52,6 @@ export class ResponseTransformer {
   ): ApiResponse<T> {
     const totalPages = Math.ceil(totalItems / pageSize);
 
-    // Return empty data array if page number exceeds total pages
     if (currentPage > totalPages && totalItems > 0) {
       return {
         status: {
@@ -64,12 +71,14 @@ export class ResponseTransformer {
       };
     }
 
+    const formattedData = data.map(item => DateUtil.formatTimestamps(item));
+
     return {
       status: {
         code: 200,
         message: 'Success'
       },
-      data,
+      data: formattedData,
       pagination: {
         links,
         currentPage,
