@@ -14,7 +14,11 @@ export default () => ({
     expiresIn: process.env.JWT_EXPIRATION || '1h',
   },
   cors: {
-    origins: (process.env.ALLOWED_ORIGINS || '').split(','),
+    origins: ['https://bolt.new'].concat((process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean)),
     credentials: true
+  },
+  swagger: {
+    user: process.env.SWAGGER_USER || 'admin',
+    password: process.env.SWAGGER_PASSWORD || 'admin123'
   }
 });

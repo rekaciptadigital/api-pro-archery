@@ -9,6 +9,7 @@ import { UserRolesModule } from "./modules/user-roles/user-roles.module";
 import { CommonModule } from "./common/common.module";
 import { TransformersModule } from "./common/transformers/transformers.module";
 import { CorsMiddleware } from "./middleware/cors.middleware";
+import { SwaggerAuthMiddleware } from "./common/middleware/swagger-auth.middleware";
 import configuration from "./config/configuration";
 import { validate } from "./config/env.validation";
 
@@ -50,5 +51,9 @@ export class AppModule implements NestModule {
     consumer
       .apply(CorsMiddleware)
       .forRoutes('*');
+    
+    consumer
+      .apply(SwaggerAuthMiddleware)
+      .forRoutes('api/docs', 'api/docs-json');
   }
 }

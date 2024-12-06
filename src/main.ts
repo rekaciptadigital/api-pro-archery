@@ -1,26 +1,34 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, NotFoundException } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { Request, Response, NextFunction } from 'express';
-import helmet from 'helmet';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import fastifyHelmet from '@fastify/helmet';
+import fastifyCors from '@fastify/cors';
 import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
 import { securityConfig } from './config/security.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({ logger: true })
+  );
+
+  const configService = app.get(ConfigService);
 
   // Apply security headers
-  app.use(helmet(securityConfig));
-  
-  // Enable CORS with custom configuration
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Accept,Authorization,Origin,X-Requested-With',
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-    credentials: false,
-    maxAge: 86400
+  await app.register(fastifyHelmet, securityConfig);
+
+  // Enable CORS
+  await app.register(fastifyCors, {
+    origin: configService.get<string[]>('cors.origins'),
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Origin', 'X-Requested-With'],
+    credentials: configService.get<boolean>('cors.credentials'),
+    maxAge: 86400,
   });
 
   // Global validation pipe
@@ -41,14 +49,13 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   // Handle root endpoint
-  app.use('/', (req: Request, res: Response, next: NextFunction) => {
-    if (req.url === '/') {
-      throw new NotFoundException('Page not found');
-    }
-    next();
+  app.getHttpAdapter().get('/', (req, reply) => {
+    throw new NotFoundException('Page not found');
   });
 
   // Start server
-  await app.listen(process.env.PORT || 4000);
+  const port = configService.get<number>('port') || 4000;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();

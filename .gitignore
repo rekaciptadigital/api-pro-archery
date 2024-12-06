@@ -1,14 +1,7 @@
-# compiled output
-/dist
-/node_modules
-yarn.lock
-dist
-
 # Logs
 logs
 *.log
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
@@ -28,6 +21,7 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+.vscode/*
 
 # IDE - VSCode
 .vscode/*
@@ -36,11 +30,16 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# ENV
+# Env files
 .env
-key
-# build from nestjs
-/dist
-dist
+.env.local
+.env.*.local
 
-*key*
+# Build output
+/dist
+
+# Temporary files
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

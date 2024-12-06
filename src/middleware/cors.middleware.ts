@@ -1,27 +1,28 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
 export class CorsMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
+  use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void) {
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
       // Set CORS headers
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-      res.header(
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+      res.setHeader(
         'Access-Control-Allow-Headers',
         'Content-Type,Accept,Authorization,Origin,X-Requested-With'
       );
-      res.header('Access-Control-Max-Age', '86400');
+      res.setHeader('Access-Control-Max-Age', '86400');
       
       // End preflight request
-      res.status(204).end();
+      res.statusCode = 204;
+      res.end();
       return;
     }
 
     // Set CORS headers for actual requests
-    res.header('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     
     next();
   }

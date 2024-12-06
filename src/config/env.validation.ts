@@ -1,5 +1,5 @@
 import { plainToClass } from 'class-transformer';
-import { IsString, IsNumber, validateSync } from 'class-validator';
+import { IsString, IsNumber, IsOptional, validateSync } from 'class-validator';
 
 class EnvironmentVariables {
   @IsString()
@@ -28,6 +28,14 @@ class EnvironmentVariables {
 
   @IsString()
   JWT_EXPIRATION: string;
+
+  @IsString()
+  @IsOptional()
+  SWAGGER_USERNAME: string;
+
+  @IsString()
+  @IsOptional()
+  SWAGGER_PASSWORD: string;
 }
 
 export function validate(config: Record<string, unknown>) {
