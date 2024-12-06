@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
+import { UpdateUserStatusDto } from '../dtos/user-status.dto';
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
@@ -86,6 +87,25 @@ export class UserService {
 
     await this.userRepository.update(id, updateUserDto);
     return this.responseTransformer.transform({ message: 'User updated successfully' });
+  }
+
+  async updateStatus(id: number, updateStatusDto: UpdateUserStatusDto) {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const updatedUser = await this.userRepository.update(id, {
+      status: updateStatusDto.status
+    });
+
+    return this.responseTransformer.transform({
+      message: 'User status updated successfully',
+      data: {
+        id: user.id,
+        status: updateStatusDto.status
+      }
+    });
   }
 
   async remove(id: number) {

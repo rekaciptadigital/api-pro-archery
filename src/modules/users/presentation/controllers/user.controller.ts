@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Put,
+  Patch,
   Param,
   Delete,
   ParseIntPipe,
@@ -14,6 +15,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UserService } from '../../application/services/user.service';
 import { CreateUserDto, UpdateUserDto } from '../../application/dtos/user.dto';
+import { UpdateUserStatusDto } from '../../application/dtos/user-status.dto';
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 
 @ApiTags('users')
@@ -53,6 +55,18 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.userService.update(id, updateUserDto);
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Update user status' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'User status updated successfully' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid status value' })
+  updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateStatusDto: UpdateUserStatusDto,
+  ) {
+    return this.userService.updateStatus(id, updateStatusDto);
   }
 
   @Delete(':id')
