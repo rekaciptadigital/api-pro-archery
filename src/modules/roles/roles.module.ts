@@ -6,11 +6,13 @@ import { RoleService } from './application/services/role.service';
 import { RoleController } from './presentation/controllers/role.controller';
 import { RoleValidator } from './domain/validators/role.validator';
 import { PaginationModule } from '../../common/pagination/pagination.module';
+import { TransformersModule } from '../../common/transformers/transformers.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Role]),
-    PaginationModule
+    PaginationModule,
+    TransformersModule
   ],
   providers: [
     RoleRepository, 

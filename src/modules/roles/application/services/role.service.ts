@@ -5,7 +5,8 @@ import { PaginationHelper } from '../../../../common/pagination/helpers/paginati
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
 import { RoleValidator } from '../../domain/validators/role.validator';
-import { IsNull } from 'typeorm';
+import { FindOptionsWhere, IsNull } from 'typeorm';
+import { Role } from '../../domain/entities/role.entity';
 
 @Injectable()
 export class RoleService {
@@ -28,8 +29,13 @@ export class RoleService {
 
   async findAll(query: PaginationQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
+    
+    const where: FindOptionsWhere<Role> = {
+      deleted_at: IsNull()
+    };
+
     const [roles, total] = await this.roleRepository.findAndCount({
-      where: { deleted_at: IsNull() },
+      where,
       skip,
       take,
       order: { created_at: 'DESC' },
