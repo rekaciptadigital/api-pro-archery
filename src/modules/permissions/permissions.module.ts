@@ -4,6 +4,7 @@ import { RoleFeaturePermission } from './domain/entities/role-feature-permission
 import { PermissionRepository } from './domain/repositories/permission.repository';
 import { PermissionService } from './application/services/permission.service';
 import { PermissionController } from './presentation/controllers/permission.controller';
+import { PermissionValidator } from './domain/validators/permission.validator';
 import { RolesModule } from '../roles/roles.module';
 import { FeaturesModule } from '../features/features.module';
 import { PaginationModule } from '../../common/pagination/pagination.module';
@@ -17,7 +18,11 @@ import { TransformersModule } from '../../common/transformers/transformers.modul
     PaginationModule,
     TransformersModule
   ],
-  providers: [PermissionRepository, PermissionService],
+  providers: [
+    PermissionRepository, 
+    PermissionService,
+    PermissionValidator
+  ],
   controllers: [PermissionController],
   exports: [PermissionRepository],
 })

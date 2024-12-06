@@ -9,6 +9,7 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { PermissionService } from '../../application/services/permission.service';
@@ -44,6 +45,7 @@ export class PermissionController {
   @ApiOperation({ summary: 'Create role feature permission' })
   @ApiResponse({ status: 201, description: 'Role feature permission created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiResponse({ status: 404, description: 'Role or Feature not found.' })
   create(@Body() createPermissionDto: CreatePermissionDto) {
     return this.permissionService.create(createPermissionDto);
   }
@@ -51,7 +53,8 @@ export class PermissionController {
   @Put(':id')
   @ApiOperation({ summary: 'Update role feature permission' })
   @ApiResponse({ status: 200, description: 'Role feature permission updated successfully.' })
-  @ApiResponse({ status: 404, description: 'Permission not found.' })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiResponse({ status: 404, description: 'Permission, Role, or Feature not found.' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePermissionDto: UpdatePermissionDto,

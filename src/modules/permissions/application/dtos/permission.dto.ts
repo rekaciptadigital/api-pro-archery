@@ -1,4 +1,4 @@
-import { IsNumber, IsObject, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsObject, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePermissionDto {
@@ -21,7 +21,7 @@ export class CreatePermissionDto {
     },
   })
   @IsObject()
-  permissions: Record<string, boolean>;
+  methods: Record<string, boolean>;
 
   @ApiPropertyOptional({ description: 'Permission status' })
   @IsOptional()
@@ -30,15 +30,31 @@ export class CreatePermissionDto {
 }
 
 export class UpdatePermissionDto {
+  @ApiProperty({ description: 'Role ID' })
+  @IsNumber()
+  role_id: number;
+
+  @ApiProperty({ description: 'Feature ID' })
+  @IsNumber()
+  feature_id: number;
+
   @ApiProperty({
     description: 'Permission methods',
     example: {
-      put: true,
-      delete: true,
+      get: true,
+      post: false,
+      put: false,
+      patch: false,
+      delete: false,
     },
   })
   @IsObject()
-  permissions: Record<string, boolean>;
+  methods: Record<string, boolean>;
+
+  @ApiPropertyOptional({ description: 'Permission status' })
+  @IsOptional()
+  @IsBoolean()
+  status?: boolean;
 }
 
 export class UpdatePermissionStatusDto {
