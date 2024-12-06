@@ -4,6 +4,7 @@ import { Role } from './domain/entities/role.entity';
 import { RoleRepository } from './domain/repositories/role.repository';
 import { RoleService } from './application/services/role.service';
 import { RoleController } from './presentation/controllers/role.controller';
+import { RoleValidator } from './domain/validators/role.validator';
 import { PaginationModule } from '../../common/pagination/pagination.module';
 
 @Module({
@@ -11,7 +12,11 @@ import { PaginationModule } from '../../common/pagination/pagination.module';
     TypeOrmModule.forFeature([Role]),
     PaginationModule
   ],
-  providers: [RoleRepository, RoleService],
+  providers: [
+    RoleRepository, 
+    RoleService,
+    RoleValidator
+  ],
   controllers: [RoleController],
   exports: [RoleRepository],
 })

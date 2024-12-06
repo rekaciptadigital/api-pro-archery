@@ -4,17 +4,21 @@ import { CreateRoleDto, UpdateRoleDto, UpdateRoleStatusDto } from '../dtos/role.
 import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
+import { RoleValidator } from '../../domain/validators/role.validator';
 import { IsNull } from 'typeorm';
 
 @Injectable()
 export class RoleService {
   constructor(
     private readonly roleRepository: RoleRepository,
+    private readonly roleValidator: RoleValidator,
     private readonly paginationHelper: PaginationHelper,
     private readonly responseTransformer: ResponseTransformer,
   ) {}
 
   async create(createRoleDto: CreateRoleDto) {
+    await this.roleValidator.validateName(createRoleDto.name);
+
     const role = await this.roleRepository.create({
       ...createRoleDto,
       status: createRoleDto.status ?? true,
@@ -60,8 +64,16 @@ export class RoleService {
     if (!role) {
       throw new NotFoundException('Role not found');
     }
+
+    if (updateRoleDto.name) {
+      await this.roleValidator.validateForOperation(updateRoleDto.name, id);
+    }
+
     const updated = await this.roleRepository.update(id, updateRoleDto);
-    return this.responseTransformer.transform({ message: 'Role updated successfully' });
+    return this.responseTransformer.transform({
+      message: 'Role updated successfully',
+      data: updated
+    });
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateRoleStatusDto) {
