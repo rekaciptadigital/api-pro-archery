@@ -1,114 +1,82 @@
-import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { UserRoleRepository } from "../../domain/repositories/user-role.repository";
 import { CreateUserRoleDto, UpdateUserRoleDto, UpdateUserRoleStatusDto } from "../dtos/user-role.dto";
-import { UserRepository } from "../../../users/domain/repositories/user.repository";
-import { RoleRepository } from "../../../roles/domain/repositories/role.repository";
+import { UserRoleValidator } from "../../domain/validators/user-role.validator";
+import { ResponseTransformer } from "../../../../common/transformers/response.transformer";
+import { DomainException } from "../../../common/exceptions/domain.exception";
+import { HttpStatus } from "@nestjs/common";
 
 @Injectable()
 export class UserRoleService {
   constructor(
     private readonly userRoleRepository: UserRoleRepository,
-    private readonly userRepository: UserRepository,
-    private readonly roleRepository: RoleRepository
+    private readonly userRoleValidator: UserRoleValidator,
+    private readonly responseTransformer: ResponseTransformer
   ) {}
 
   async create(createUserRoleDto: CreateUserRoleDto) {
-    const user = await this.userRepository.findById(createUserRoleDto.user_id);
-    if (!user) {
-      throw new NotFoundException("User not found");
-    }
-
-    const role = await this.roleRepository.findById(createUserRoleDto.role_id);
-    if (!role) {
-      throw new NotFoundException("Role not found");
-    }
-
-    const existingUserRole = await this.userRoleRepository.findByUserAndRole(
+    // Validate user role assignment
+    await this.userRoleValidator.validateForCreate(
       createUserRoleDto.user_id,
       createUserRoleDto.role_id
     );
 
-    if (existingUserRole) {
-      throw new ConflictException("User already has this role");
-    }
+    const userRole = await this.userRoleRepository.create({
+      ...createUserRoleDto,
+      status: createUserRoleDto.status ?? true,
+    });
 
-    const userRole = await this.userRoleRepository.create(createUserRoleDto);
-    return {
-      user_role_id: userRole.id,
-      user_id: userRole.user_id,
-      role_id: userRole.role_id,
-    };
+    return this.responseTransformer.transform(userRole);
   }
 
   async findAll() {
     const userRoles = await this.userRoleRepository.findAllWithRelations();
-    return userRoles.map((userRole) => ({
-      user_role_id: userRole.id,
-      user: {
-        id: userRole.user.id,
-        first_name: userRole.user.first_name,
-        last_name: userRole.user.last_name,
-        email: userRole.user.email,
-      },
-      role: {
-        id: userRole.role.id,
-        name: userRole.role.name,
-        description: userRole.role.description,
-      },
-    }));
+    return this.responseTransformer.transform(userRoles);
   }
 
   async findOne(id: number) {
     const userRole = await this.userRoleRepository.findOneWithRelations(id);
     if (!userRole) {
-      throw new NotFoundException("User role not found");
+      throw new DomainException('User role not found', HttpStatus.NOT_FOUND);
     }
 
-    return {
-      user_role_id: userRole.id,
-      user: {
-        id: userRole.user.id,
-        first_name: userRole.user.first_name,
-        last_name: userRole.user.last_name,
-        email: userRole.user.email,
-      },
-      role: {
-        id: userRole.role.id,
-        name: userRole.role.name,
-        description: userRole.role.description,
-      },
-    };
+    return this.responseTransformer.transform(userRole);
   }
 
   async update(id: number, updateUserRoleDto: UpdateUserRoleDto) {
     const userRole = await this.userRoleRepository.findById(id);
     if (!userRole) {
-      throw new NotFoundException("User role not found");
+      throw new DomainException('User role not found', HttpStatus.NOT_FOUND);
     }
 
-    const role = await this.roleRepository.findById(updateUserRoleDto.role_id);
-    if (!role) {
-      throw new NotFoundException("Role not found");
-    }
+    // Validate user role update
+    await this.userRoleValidator.validateForUpdate(
+      id,
+      userRole.user_id,
+      updateUserRoleDto.role_id
+    );
 
-    await this.userRoleRepository.update(id, updateUserRoleDto);
+    const updated = await this.userRoleRepository.update(id, updateUserRoleDto);
+    return this.responseTransformer.transform(updated);
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateUserRoleStatusDto) {
     const userRole = await this.userRoleRepository.findById(id);
     if (!userRole) {
-      throw new NotFoundException("User role not found");
+      throw new DomainException('User role not found', HttpStatus.NOT_FOUND);
     }
 
-    await this.userRoleRepository.update(id, updateStatusDto);
+    const updated = await this.userRoleRepository.update(id, updateStatusDto);
+    return this.responseTransformer.transform(updated);
   }
 
   async remove(id: number) {
     const userRole = await this.userRoleRepository.findById(id);
     if (!userRole) {
-      throw new NotFoundException("User role not found");
+      throw new DomainException('User role not found', HttpStatus.NOT_FOUND);
     }
 
     await this.userRoleRepository.softDelete(id);
+    return this.responseTransformer.transformDelete('User role');
   }
 }
