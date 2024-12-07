@@ -10,12 +10,6 @@ export class UserQueryBuilder {
       .createQueryBuilder(alias)
       .leftJoinAndSelect(`${alias}.user_roles`, 'user_roles', 'user_roles.deleted_at IS NULL')
       .leftJoinAndSelect('user_roles.role', 'role', 'role.deleted_at IS NULL')
-      .leftJoinAndSelect(
-        'role.role_feature_permissions',
-        'permissions',
-        'permissions.deleted_at IS NULL'
-      )
-      .leftJoinAndSelect('permissions.feature', 'feature', 'feature.deleted_at IS NULL')
       .where(`${alias}.deleted_at IS NULL`);
 
     return new UserQueryBuilder(queryBuilder);

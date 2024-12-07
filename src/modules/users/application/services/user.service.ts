@@ -7,6 +7,9 @@ import { UserValidator } from '../../domain/validators/user.validator';
 import { UserQueryBuilder } from '../../domain/builders/user-query.builder';
 import { UserSearchCriteria } from '../../domain/value-objects/user-search.value-object';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
+import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
+import { Repository, In } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -15,6 +18,8 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userValidator: UserValidator,
     private readonly responseTransformer: ResponseTransformer,
+    @InjectRepository(RoleFeaturePermission)
+    private readonly permissionRepository: Repository<RoleFeaturePermission>
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -52,8 +57,34 @@ export class UserService {
 
     const [users, total] = await queryBuilder.getManyAndCount();
 
+    // Fetch permissions for each user's roles
+    const enrichedUsers = await Promise.all(
+      users.map(async (user) => {
+        const userRoles = user.user_roles || [];
+        const roleIds = userRoles.map(ur => ur.role.id);
+
+        if (roleIds.length > 0) {
+          const permissions = await this.permissionRepository.find({
+            where: { role_id: In(roleIds) },
+            relations: ['feature'],
+          });
+
+          // Attach permissions to each role
+          user.user_roles = userRoles.map(ur => ({
+            ...ur,
+            role: {
+              ...ur.role,
+              permissions: permissions.filter(p => p.role_id === ur.role.id)
+            }
+          }));
+        }
+
+        return user;
+      })
+    );
+
     return this.responseTransformer.transformPaginated(
-      users,
+      enrichedUsers,
       total,
       searchCriteria.page,
       searchCriteria.limit,
@@ -78,6 +109,24 @@ export class UserService {
     const user = await queryBuilder.getOne();
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+
+    // Fetch permissions if user has roles
+    if (user.user_roles?.length > 0) {
+      const roleIds = user.user_roles.map(ur => ur.role.id);
+      const permissions = await this.permissionRepository.find({
+        where: { role_id: In(roleIds) },
+        relations: ['feature'],
+      });
+
+      // Attach permissions to each role
+      user.user_roles = user.user_roles.map(ur => ({
+        ...ur,
+        role: {
+          ...ur.role,
+          permissions: permissions.filter(p => p.role_id === ur.role.id)
+        }
+      }));
     }
 
     return this.responseTransformer.transform(user);
