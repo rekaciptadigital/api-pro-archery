@@ -8,7 +8,7 @@ import { UserQueryBuilder } from '../../domain/builders/user-query.builder';
 import { UserSearchCriteria } from '../../domain/value-objects/user-search.value-object';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
 import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
-import { Repository, In } from 'typeorm';
+import { Repository, In, IsNull } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Feature, Permission, UserWithPermissionsResponse } from '../../domain/interfaces/permission-response.interface';
 import * as bcrypt from 'bcryptjs';
@@ -45,8 +45,17 @@ export class UserService {
     }
 
     const permissions = await this.permissionRepository.find({
-      where: { role_id: In(roleIds), status: true },
-      relations: ['feature'],
+      where: {
+        role_id: In(roleIds),
+        status: true,
+        deleted_at: IsNull()
+      },
+      relations: ['feature', 'role'],
+      order: {
+        feature: {
+          name: 'ASC'
+        }
+      }
     });
 
     const uniqueFeatures = new Map<string, Feature>();
@@ -54,11 +63,13 @@ export class UserService {
 
     permissions.forEach(permission => {
       if (permission.feature && permission.feature.status) {
+        // Add feature
         uniqueFeatures.set(permission.feature.id.toString(), {
           id: permission.feature.id.toString(),
           name: permission.feature.name
         });
 
+        // Add permissions based on methods
         Object.entries(permission.methods).forEach(([method, enabled]) => {
           if (enabled) {
             const permissionCode = `${permission.feature.name.toLowerCase()}.${method}`;
@@ -123,8 +134,8 @@ export class UserService {
 
     const enrichedUsers = await Promise.all(
       users.map(async (user) => {
-        const userRoles = user.user_roles || [];
-        const roleIds = userRoles.map(ur => ur.role.id);
+        const roleIds = user.user_roles?.filter(ur => ur.role?.status)
+                                      .map(ur => ur.role.id) || [];
         const roleFeaturePermissions = await this.getUserPermissions(roleIds);
         return this.transformUserResponse(user, roleFeaturePermissions);
       })
@@ -158,7 +169,8 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    const roleIds = user.user_roles?.map(ur => ur.role.id) || [];
+    const roleIds = user.user_roles?.filter(ur => ur.role?.status)
+                                  .map(ur => ur.role.id) || [];
     const roleFeaturePermissions = await this.getUserPermissions(roleIds);
     const transformedUser = this.transformUserResponse(user, roleFeaturePermissions);
 
