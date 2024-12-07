@@ -1,27 +1,24 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UpdateUserStatusDto } from '../dtos/user-status.dto';
-import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
-import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
+import { UserQueryDto } from '../dtos/user-query.dto';
+import { UserValidator } from '../../domain/validators/user.validator';
+import { UserQueryBuilder } from '../../domain/builders/user-query.builder';
+import { UserSearchCriteria } from '../../domain/value-objects/user-search.value-object';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
-import { FindOptionsWhere, IsNull } from 'typeorm';
-import { User } from '../../domain/entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly paginationHelper: PaginationHelper,
+    private readonly userValidator: UserValidator,
     private readonly responseTransformer: ResponseTransformer,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const existingUser = await this.userRepository.findByEmail(createUserDto.email);
-    if (existingUser) {
-      throw new ConflictException('Email already exists');
-    }
+    await this.userValidator.validateEmail(createUserDto.email);
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = await this.userRepository.create({
@@ -33,38 +30,46 @@ export class UserService {
     return this.responseTransformer.transform(user);
   }
 
-  async findAll(query: PaginationQueryDto) {
-    const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
-    const [users, total] = await this.userRepository.findAndCount({
-      where: { deleted_at: IsNull() } as FindOptionsWhere<User>,
-      relations: ['user_roles', 'user_roles.role'],
-      skip,
-      take,
-      order: { created_at: 'DESC' },
-    });
-
-    const paginationData = this.paginationHelper.generatePaginationData({
-      serviceName: 'users',
-      totalItems: total,
+  async findAll(query: UserQueryDto) {
+    const searchCriteria = UserSearchCriteria.create({
+      firstName: query.firstName,
+      lastName: query.lastName,
+      email: query.email,
       page: query.page,
       limit: query.limit,
+      sort: query.sort,
+      order: query.order,
     });
+
+    const queryBuilder = UserQueryBuilder.create('user')
+      .applySearchCriteria(searchCriteria)
+      .applyPagination(searchCriteria.page, searchCriteria.limit)
+      .applySorting(searchCriteria.sort, searchCriteria.order)
+      .build();
+
+    const [users, total] = await queryBuilder.getManyAndCount();
 
     return this.responseTransformer.transformPaginated(
       users,
       total,
-      query.page || 1,
-      query.limit || 10,
-      paginationData.links
+      searchCriteria.page,
+      searchCriteria.limit,
+      {
+        first: this.buildPageUrl(query, 1),
+        previous: searchCriteria.page > 1 ? this.buildPageUrl(query, searchCriteria.page - 1) : null,
+        current: this.buildPageUrl(query, searchCriteria.page),
+        next: searchCriteria.page * searchCriteria.limit < total ? this.buildPageUrl(query, searchCriteria.page + 1) : null,
+        last: this.buildPageUrl(query, Math.ceil(total / searchCriteria.limit))
+      }
     );
   }
 
   async findOne(id: number) {
-    const user = await this.userRepository.findOneWithOptions({
-      where: { id, deleted_at: IsNull() } as FindOptionsWhere<User>,
-      relations: ['user_roles', 'user_roles.role'],
-    });
+    const queryBuilder = UserQueryBuilder.create('user')
+      .build()
+      .andWhere('user.id = :id', { id });
 
+    const user = await queryBuilder.getOne();
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -79,14 +84,11 @@ export class UserService {
     }
 
     if (updateUserDto.email) {
-      const existingUser = await this.userRepository.findByEmail(updateUserDto.email);
-      if (existingUser && existingUser.id !== id) {
-        throw new ConflictException('Email already exists');
-      }
+      await this.userValidator.validateEmail(updateUserDto.email, id);
     }
 
-    await this.userRepository.update(id, updateUserDto);
-    return this.responseTransformer.transform({ message: 'User updated successfully' });
+    const updated = await this.userRepository.update(id, updateUserDto);
+    return this.responseTransformer.transform(updated);
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateUserStatusDto) {
@@ -95,17 +97,8 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    const updatedUser = await this.userRepository.update(id, {
-      status: updateStatusDto.status
-    });
-
-    return this.responseTransformer.transform({
-      message: 'User status updated successfully',
-      data: {
-        id: user.id,
-        status: updateStatusDto.status
-      }
-    });
+    const updated = await this.userRepository.update(id, updateStatusDto);
+    return this.responseTransformer.transform(updated);
   }
 
   async remove(id: number) {
@@ -115,5 +108,19 @@ export class UserService {
     }
     await this.userRepository.softDelete(id);
     return this.responseTransformer.transformDelete('User');
+  }
+
+  private buildPageUrl(query: UserQueryDto, page: number): string {
+    const baseUrl = process.env.APP_URL || 'http://localhost:4000';
+    const url = new URL(`${baseUrl}/users`);
+    
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && key !== 'page') {
+        url.searchParams.set(key, value.toString());
+      }
+    });
+    
+    url.searchParams.set('page', page.toString());
+    return url.toString();
   }
 }

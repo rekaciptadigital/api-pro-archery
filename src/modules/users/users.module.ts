@@ -1,21 +1,22 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './domain/entities/user.entity';
-import { Role } from '../roles/domain/entities/role.entity';
-import { UserRole } from '../user-roles/domain/entities/user-role.entity';
 import { UserRepository } from './domain/repositories/user.repository';
 import { UserService } from './application/services/user.service';
 import { UserController } from './presentation/controllers/user.controller';
-import { PaginationModule } from '../../common/pagination/pagination.module';
+import { UserValidator } from './domain/validators/user.validator';
 import { TransformersModule } from '../../common/transformers/transformers.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role, UserRole]),
-    PaginationModule,
+    TypeOrmModule.forFeature([User]),
     TransformersModule
   ],
-  providers: [UserRepository, UserService],
+  providers: [
+    UserRepository,
+    UserService,
+    UserValidator
+  ],
   controllers: [UserController],
   exports: [UserRepository],
 })

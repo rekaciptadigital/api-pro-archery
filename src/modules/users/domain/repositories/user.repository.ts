@@ -34,4 +34,8 @@ export class UserRepository extends BaseRepository<User> {
   async findAndCount(options?: FindManyOptions<User>): Promise<[User[], number]> {
     return this.userRepository.findAndCount(options);
   }
+
+  getRepository(): Repository<User> {
+    return this.userRepository;
+  }
 }
