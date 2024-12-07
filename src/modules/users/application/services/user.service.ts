@@ -10,7 +10,8 @@ import { ResponseTransformer } from '../../../../common/transformers/response.tr
 import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
 import { Repository, In, IsNull } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Feature, Permission, UserWithPermissionsResponse } from '../../domain/interfaces/permission-response.interface';
+import { Feature, Permission, UserWithPermissionsResponse, Role } from '../../domain/interfaces/permission-response.interface';
+import { UserWithRoles, UserRole } from '../../domain/interfaces/user-role.interface';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -90,9 +91,17 @@ export class UserService {
   }
 
   private transformUserResponse(
-    user: any,
+    user: UserWithRoles,
     roleFeaturePermissions: { features: Feature[]; permissions: Permission[] }
   ): UserWithPermissionsResponse {
+    const activeRole = user.user_roles?.find((ur: UserRole) => ur.role?.status && !ur.deleted_at)?.role || null;
+    const role: Role | null = activeRole ? {
+      id: activeRole.id,
+      name: activeRole.name,
+      description: activeRole.description,
+      status: activeRole.status
+    } : null;
+
     return {
       id: user.id,
       nip: user.nip,
@@ -104,6 +113,7 @@ export class UserService {
       phone_number: user.phone_number,
       address: user.address,
       status: user.status,
+      role,
       role_feature_permissions: roleFeaturePermissions,
       created_at: user.created_at,
       updated_at: user.updated_at
@@ -133,8 +143,8 @@ export class UserService {
     const [users, total] = await queryBuilder.getManyAndCount();
 
     const enrichedUsers = await Promise.all(
-      users.map(async (user) => {
-        const roleIds = user.user_roles?.filter(ur => ur.role?.status)
+      users.map(async (user: UserWithRoles) => {
+        const roleIds = user.user_roles?.filter((ur: UserRole) => ur.role?.status && !ur.deleted_at)
                                       .map(ur => ur.role.id) || [];
         const roleFeaturePermissions = await this.getUserPermissions(roleIds);
         return this.transformUserResponse(user, roleFeaturePermissions);
@@ -164,12 +174,12 @@ export class UserService {
       .build()
       .andWhere('user.id = :id', { id });
 
-    const user = await queryBuilder.getOne();
+    const user = await queryBuilder.getOne() as UserWithRoles;
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const roleIds = user.user_roles?.filter(ur => ur.role?.status)
+    const roleIds = user.user_roles?.filter((ur: UserRole) => ur.role?.status && !ur.deleted_at)
                                   .map(ur => ur.role.id) || [];
     const roleFeaturePermissions = await this.getUserPermissions(roleIds);
     const transformedUser = this.transformUserResponse(user, roleFeaturePermissions);
