@@ -41,7 +41,10 @@ export class UserService {
       order: query.order,
     });
 
-    const queryBuilder = UserQueryBuilder.create('user')
+    const queryBuilder = UserQueryBuilder.create(
+      this.userRepository.getRepository(),
+      'user'
+    )
       .applySearchCriteria(searchCriteria)
       .applyPagination(searchCriteria.page, searchCriteria.limit)
       .applySorting(searchCriteria.sort, searchCriteria.order)
@@ -65,7 +68,10 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    const queryBuilder = UserQueryBuilder.create('user')
+    const queryBuilder = UserQueryBuilder.create(
+      this.userRepository.getRepository(),
+      'user'
+    )
       .build()
       .andWhere('user.id = :id', { id });
 
