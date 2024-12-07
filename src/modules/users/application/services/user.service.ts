@@ -160,7 +160,8 @@ export class UserService {
         first: this.buildPageUrl(query, 1),
         previous: searchCriteria.page > 1 ? this.buildPageUrl(query, searchCriteria.page - 1) : null,
         current: this.buildPageUrl(query, searchCriteria.page),
-        next: searchCriteria.page * searchCriteria.limit < total ? this.buildPageUrl(query, searchCriteria.page + 1) : null,
+        next: searchCriteria.page * searchCriteria.limit < total ? 
+              this.buildPageUrl(query, searchCriteria.page + 1) : null,
         last: this.buildPageUrl(query, Math.ceil(total / searchCriteria.limit))
       }
     );
@@ -206,9 +207,8 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    const updated = await this.userRepository.update(id, updateStatusDto);
-    return this.responseTransformer.transform(updated);
+    await this.userRepository.update(id, updateStatusDto);
+    return this.responseTransformer.transform({ message: 'User status updated successfully' });
   }
 
   async remove(id: number) {
