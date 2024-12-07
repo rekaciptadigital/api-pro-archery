@@ -8,9 +8,9 @@ import { UserQueryBuilder } from '../../domain/builders/user-query.builder';
 import { UserSearchCriteria } from '../../domain/value-objects/user-search.value-object';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
 import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
-import { Repository, In, IsNull } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Feature, Permission, UserWithPermissionsResponse, Role } from '../../domain/interfaces/permission-response.interface';
+import { UserWithPermissionsResponse, Role, RoleFeaturePermission as RoleFeaturePermissionInterface } from '../../domain/interfaces/permission-response.interface';
 import { UserWithRoles, UserRole } from '../../domain/interfaces/user-role.interface';
 import * as bcrypt from 'bcryptjs';
 
@@ -37,62 +37,53 @@ export class UserService {
     return this.responseTransformer.transform(user);
   }
 
-  private async getUserPermissions(roleIds: number[]): Promise<{
-    features: Feature[];
-    permissions: Permission[];
-  }> {
-    if (!roleIds.length) {
-      return { features: [], permissions: [] };
+  private async getRoleFeaturePermissions(roleId: number): Promise<RoleFeaturePermissionInterface[]> {
+    if (!roleId) {
+      return [];
     }
 
     const permissions = await this.permissionRepository.find({
       where: {
-        role_id: In(roleIds),
+        role_id: roleId,
         status: true,
         deleted_at: IsNull()
       },
-      relations: ['feature', 'role'],
+      relations: ['feature'],
       order: {
-        feature: {
-          name: 'ASC'
-        }
+        created_at: 'DESC'
       }
     });
 
-    const uniqueFeatures = new Map<string, Feature>();
-    const uniquePermissions = new Map<string, Permission>();
-
-    permissions.forEach(permission => {
-      if (permission.feature && permission.feature.status) {
-        // Add feature
-        uniqueFeatures.set(permission.feature.id.toString(), {
-          id: permission.feature.id.toString(),
-          name: permission.feature.name
-        });
-
-        // Add permissions based on methods
-        Object.entries(permission.methods).forEach(([method, enabled]) => {
-          if (enabled) {
-            const permissionCode = `${permission.feature.name.toLowerCase()}.${method}`;
-            uniquePermissions.set(permissionCode, {
-              id: permission.id.toString(),
-              name: `${permission.feature.name} ${method.toUpperCase()}`,
-              code: permissionCode
-            });
-          }
-        });
+    return permissions.map(permission => ({
+      id: permission.id,
+      role_id: permission.role_id,
+      feature_id: permission.feature_id,
+      methods: {
+        get: permission.methods.get || false,
+        post: permission.methods.post || false,
+        put: permission.methods.put || false,
+        patch: permission.methods.patch || false,
+        delete: permission.methods.delete || false
+      },
+      status: permission.status,
+      created_at: permission.created_at,
+      updated_at: permission.updated_at,
+      deleted_at: permission.deleted_at,
+      feature: {
+        id: permission.feature.id,
+        name: permission.feature.name,
+        description: permission.feature.description,
+        status: permission.feature.status,
+        created_at: permission.feature.created_at,
+        updated_at: permission.feature.updated_at,
+        deleted_at: permission.feature.deleted_at
       }
-    });
-
-    return {
-      features: Array.from(uniqueFeatures.values()),
-      permissions: Array.from(uniquePermissions.values())
-    };
+    }));
   }
 
   private transformUserResponse(
     user: UserWithRoles,
-    roleFeaturePermissions: { features: Feature[]; permissions: Permission[] }
+    roleFeaturePermissions: RoleFeaturePermissionInterface[]
   ): UserWithPermissionsResponse {
     const activeRole = user.user_roles?.find((ur: UserRole) => ur.role?.status && !ur.deleted_at)?.role || null;
     const role: Role | null = activeRole ? {
@@ -144,9 +135,8 @@ export class UserService {
 
     const enrichedUsers = await Promise.all(
       users.map(async (user: UserWithRoles) => {
-        const roleIds = user.user_roles?.filter((ur: UserRole) => ur.role?.status && !ur.deleted_at)
-                                      .map(ur => ur.role.id) || [];
-        const roleFeaturePermissions = await this.getUserPermissions(roleIds);
+        const activeRole = user.user_roles?.find((ur: UserRole) => ur.role?.status && !ur.deleted_at)?.role;
+        const roleFeaturePermissions = activeRole ? await this.getRoleFeaturePermissions(activeRole.id) : [];
         return this.transformUserResponse(user, roleFeaturePermissions);
       })
     );
@@ -180,9 +170,8 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    const roleIds = user.user_roles?.filter((ur: UserRole) => ur.role?.status && !ur.deleted_at)
-                                  .map(ur => ur.role.id) || [];
-    const roleFeaturePermissions = await this.getUserPermissions(roleIds);
+    const activeRole = user.user_roles?.find((ur: UserRole) => ur.role?.status && !ur.deleted_at)?.role;
+    const roleFeaturePermissions = activeRole ? await this.getRoleFeaturePermissions(activeRole.id) : [];
     const transformedUser = this.transformUserResponse(user, roleFeaturePermissions);
 
     return this.responseTransformer.transform(transformedUser);

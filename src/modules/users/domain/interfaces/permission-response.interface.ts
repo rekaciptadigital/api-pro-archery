@@ -1,12 +1,29 @@
 export interface Feature {
-  id: string;
+  id: number;
   name: string;
+  description: string | null;
+  status: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
 }
 
-export interface Permission {
-  id: string;
-  name: string;
-  code: string;
+export interface RoleFeaturePermission {
+  id: number;
+  role_id: number;
+  feature_id: number;
+  methods: {
+    get: boolean;
+    post: boolean;
+    put: boolean;
+    patch: boolean;
+    delete: boolean;
+  };
+  status: boolean;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at: Date | null;
+  feature: Feature;
 }
 
 export interface Role {
@@ -14,14 +31,6 @@ export interface Role {
   name: string;
   description: string | null;
   status: boolean;
-}
-
-export interface RoleFeaturePermissionsResponse {
-  role: Role | null;
-  role_feature_permissions: {
-    features: Feature[];
-    permissions: Permission[];
-  };
 }
 
 export interface UserWithPermissionsResponse {
@@ -36,10 +45,7 @@ export interface UserWithPermissionsResponse {
   address: string | null;
   status: boolean;
   role: Role | null;
-  role_feature_permissions: {
-    features: Feature[];
-    permissions: Permission[];
-  };
+  role_feature_permissions: RoleFeaturePermission[];
   created_at: Date;
   updated_at: Date;
 }
