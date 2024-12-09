@@ -1,12 +1,32 @@
 import { User } from '../../domain/entities/user.entity';
-import { IUserWithRole } from '../../domain/interfaces/user.interface';
+import { Role } from '../../domain/interfaces/permission-response.interface';
+import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
+import { DateUtil } from '../../../../common/utils/date.util';
 
 export class UserMapper {
-  static toResponse(user: User): IUserWithRole {
-    const role = user.user_roles?.[0]?.role;
+  static toDetailedResponse(user: User, role: any, permissions: RoleFeaturePermission[]) {
+    const mappedPermissions = permissions.map(permission => ({
+      id: permission.id.toString(),
+      role_id: permission.role_id.toString(),
+      feature_id: permission.feature_id.toString(),
+      methods: permission.methods,
+      status: permission.status,
+      created_at: DateUtil.formatTimestamp(permission.created_at),
+      updated_at: DateUtil.formatTimestamp(permission.updated_at),
+      deleted_at: DateUtil.formatTimestamp(permission.deleted_at),
+      feature: {
+        id: permission.feature.id.toString(),
+        name: permission.feature.name,
+        description: permission.feature.description,
+        status: permission.feature.status,
+        created_at: DateUtil.formatTimestamp(permission.feature.created_at),
+        updated_at: DateUtil.formatTimestamp(permission.feature.updated_at),
+        deleted_at: DateUtil.formatTimestamp(permission.feature.deleted_at)
+      }
+    }));
 
     return {
-      id: user.id,
+      id: user.id.toString(),
       nip: user.nip,
       nik: user.nik,
       first_name: user.first_name,
@@ -17,13 +37,14 @@ export class UserMapper {
       address: user.address,
       status: user.status,
       role: role ? {
-        id: role.id,
+        id: role.id.toString(),
         name: role.name,
         description: role.description,
-        status: role.status,
+        status: role.status
       } : null,
-      created_at: user.created_at,
-      updated_at: user.updated_at,
+      role_feature_permissions: mappedPermissions,
+      created_at: DateUtil.formatTimestamp(user.created_at),
+      updated_at: DateUtil.formatTimestamp(user.updated_at)
     };
   }
 }

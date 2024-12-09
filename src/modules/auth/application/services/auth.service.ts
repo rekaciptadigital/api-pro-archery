@@ -10,6 +10,10 @@ import { User } from '../../../users/domain/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { AuthResponse } from '../../domain/interfaces/auth.interface';
 import { HttpStatus } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
+import { UserMapper } from '../../../users/application/mappers/user.mapper';
 
 @Injectable()
 export class AuthService {
@@ -20,10 +24,36 @@ export class AuthService {
     private readonly authTokenRepository: AuthTokenRepository,
     private readonly userSessionRepository: UserSessionRepository,
     private readonly configService: ConfigService,
+    @InjectRepository(RoleFeaturePermission)
+    private readonly permissionRepository: Repository<RoleFeaturePermission>
   ) {}
 
+  private async getRoleFeaturePermissions(roleId: number) {
+    if (!roleId) return [];
+
+    return this.permissionRepository.find({
+      where: {
+        role_id: roleId,
+        status: true,
+      },
+      relations: ['feature'],
+      order: {
+        created_at: 'DESC'
+      }
+    });
+  }
+
+  private getRefreshTokenExpirationTime(): number {
+    const expiration = this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION') || '7d';
+    return this.tokenService.parseExpirationTime(expiration);
+  }
+
   async validateUser(email: string, password: string): Promise<User> {
-    const user = await this.userRepository.findByEmail(email);
+    const user = await this.userRepository.findOneWithOptions({
+      where: { email },
+      relations: ['user_roles', 'user_roles.role']
+    });
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -46,7 +76,6 @@ export class AuthService {
 
   async login(loginDto: LoginDto, ipAddress: string, userAgent: string): Promise<AuthResponse> {
     const user = await this.validateUser(loginDto.email, loginDto.password);
-    
     const tokens = await this.tokenService.generateTokens(user);
     
     await this.authTokenRepository.create({
@@ -63,14 +92,18 @@ export class AuthService {
       last_activity: new Date(),
     });
 
+    const activeRole = user.user_roles?.find(ur => ur.role?.status && !ur.deleted_at)?.role;
+    const roleFeaturePermissions = activeRole ? await this.getRoleFeaturePermissions(activeRole.id) : [];
+
+    const userResponse = UserMapper.toDetailedResponse(user, activeRole, roleFeaturePermissions);
+
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+      status: {
+        code: HttpStatus.OK,
+        message: 'Success'
       },
-      tokens,
+      data: [userResponse],
+      tokens
     };
   }
 
@@ -78,13 +111,6 @@ export class AuthService {
     const existingUser = await this.userRepository.findByEmail(registerDto.email);
     if (existingUser) {
       throw new DomainException('Email already registered', HttpStatus.CONFLICT);
-    }
-
-    if (!this.passwordService.validatePasswordStrength(registerDto.password)) {
-      throw new DomainException(
-        'Password must contain uppercase, lowercase, number/special character',
-        HttpStatus.BAD_REQUEST
-      );
     }
 
     const hashedPassword = await this.passwordService.hashPassword(registerDto.password);
@@ -103,14 +129,15 @@ export class AuthService {
       expires_at: new Date(Date.now() + this.getRefreshTokenExpirationTime()),
     });
 
+    const userResponse = UserMapper.toDetailedResponse(user, null, []);
+
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+      status: {
+        code: HttpStatus.CREATED,
+        message: 'Success'
       },
-      tokens,
+      data: [userResponse],
+      tokens
     };
   }
 
@@ -130,7 +157,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const user = await this.userRepository.findById(authToken.user_id);
+    const user = await this.userRepository.findOneWithOptions({
+      where: { id: authToken.user_id },
+      relations: ['user_roles', 'user_roles.role']
+    });
+
     if (!user || !user.status) {
       throw new UnauthorizedException('User not found or inactive');
     }
@@ -142,14 +173,18 @@ export class AuthService {
       expires_at: new Date(Date.now() + this.getRefreshTokenExpirationTime()),
     });
 
+    const activeRole = user.user_roles?.find(ur => ur.role?.status && !ur.deleted_at)?.role;
+    const roleFeaturePermissions = activeRole ? await this.getRoleFeaturePermissions(activeRole.id) : [];
+
+    const userResponse = UserMapper.toDetailedResponse(user, activeRole, roleFeaturePermissions);
+
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+      status: {
+        code: HttpStatus.OK,
+        message: 'Success'
       },
-      tokens,
+      data: [userResponse],
+      tokens
     };
   }
 
@@ -168,23 +203,12 @@ export class AuthService {
       throw new DomainException('Current password is incorrect', HttpStatus.BAD_REQUEST);
     }
 
-    if (!this.passwordService.validatePasswordStrength(changePasswordDto.new_password)) {
-      throw new DomainException(
-        'New password must contain uppercase, lowercase, number/special character',
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
     const hashedPassword = await this.passwordService.hashPassword(
       changePasswordDto.new_password,
     );
 
     await this.userRepository.update(userId, { password: hashedPassword });
-    await this.logout(user.id.toString());
-  }
-
-  private getRefreshTokenExpirationTime(): number {
-    const expiration = this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION') || '7d';
-    return this.tokenService.parseExpirationTime(expiration);
+    await this.authTokenRepository.deleteUserTokens(userId);
+    await this.userSessionRepository.deleteUserSessions(userId);
   }
 }

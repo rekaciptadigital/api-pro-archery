@@ -19,6 +19,7 @@ import { AuthLoggerInterceptor } from './domain/interceptors/auth-logger.interce
 import { RateLimitGuard } from './domain/guards/rate-limit.guard';
 import { AuthExceptionFilter } from './domain/filters/auth-exception.filter';
 import { APP_INTERCEPTOR, APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { RoleFeaturePermission } from '../permissions/domain/entities/role-feature-permission.entity';
 
 @Module({
   imports: [
@@ -33,7 +34,12 @@ import { APP_INTERCEPTOR, APP_FILTER, APP_GUARD } from '@nestjs/core';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([AuthToken, UserSession, ApiEndpoint]),
+    TypeOrmModule.forFeature([
+      AuthToken, 
+      UserSession, 
+      ApiEndpoint,
+      RoleFeaturePermission
+    ]),
     UsersModule,
   ],
   providers: [
