@@ -14,7 +14,6 @@ import { TransformersModule } from "./common/transformers/transformers.module";
 import { CorsMiddleware } from "./middleware/cors.middleware";
 import { SwaggerAuthMiddleware } from "./common/middleware/swagger-auth.middleware";
 import { JwtAuthGuard } from "./modules/auth/domain/guards/jwt-auth.guard";
-import { PermissionGuard } from "./modules/auth/domain/guards/permission.guard";
 import configuration from "./config/configuration";
 import { validate } from "./config/env.validation";
 
@@ -59,11 +58,7 @@ import { validate } from "./config/env.validation";
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: PermissionGuard,
-    },
+    }
   ],
 })
 export class AppModule implements NestModule {
