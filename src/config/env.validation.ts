@@ -20,14 +20,23 @@ class EnvironmentVariables {
   @IsString()
   DATABASE_PASSWORD: string;
 
-  @IsNumber()
-  PORT: number;
-
   @IsString()
   JWT_SECRET: string;
 
   @IsString()
-  JWT_EXPIRATION: string;
+  JWT_ACCESS_TOKEN_EXPIRATION: string;
+
+  @IsString()
+  JWT_REFRESH_TOKEN_EXPIRATION: string;
+
+  @IsNumber()
+  PASSWORD_SALT_ROUNDS: number;
+
+  @IsNumber()
+  RATE_LIMIT_TTL: number;
+
+  @IsNumber()
+  RATE_LIMIT_LIMIT: number;
 
   @IsString()
   @IsOptional()
@@ -36,6 +45,10 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   SWAGGER_PASSWORD: string;
+
+  @IsString()
+  @IsOptional()
+  ALLOWED_ORIGINS: string;
 }
 
 export function validate(config: Record<string, unknown>) {

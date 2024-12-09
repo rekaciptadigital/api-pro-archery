@@ -1,15 +1,20 @@
 import { Module, MiddlewareConsumer, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { UsersModule } from "./modules/users/users.module";
 import { RolesModule } from "./modules/roles/roles.module";
 import { FeaturesModule } from "./modules/features/features.module";
 import { PermissionsModule } from "./modules/permissions/permissions.module";
 import { UserRolesModule } from "./modules/user-roles/user-roles.module";
+import { AuthModule } from "./modules/auth/auth.module";
 import { CommonModule } from "./common/common.module";
 import { TransformersModule } from "./common/transformers/transformers.module";
 import { CorsMiddleware } from "./middleware/cors.middleware";
 import { SwaggerAuthMiddleware } from "./common/middleware/swagger-auth.middleware";
+import { JwtAuthGuard } from "./modules/auth/domain/guards/jwt-auth.guard";
+import { PermissionGuard } from "./modules/auth/domain/guards/permission.guard";
 import configuration from "./config/configuration";
 import { validate } from "./config/env.validation";
 
@@ -19,6 +24,18 @@ import { validate } from "./config/env.validation";
       isGlobal: true,
       load: [configuration],
       validate,
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        throttlers: [
+          {
+            ttl: config.get('RATE_LIMIT_TTL', 60),
+            limit: config.get('RATE_LIMIT_LIMIT', 100),
+          }
+        ],
+      }),
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -42,18 +59,24 @@ import { validate } from "./config/env.validation";
     FeaturesModule,
     PermissionsModule,
     UserRolesModule,
+    AuthModule,
     CommonModule,
     TransformersModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
+    },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(CorsMiddleware)
-      .forRoutes('*');
-    
-    consumer
-      .apply(SwaggerAuthMiddleware)
-      .forRoutes('api/docs', 'api/docs-json');
+    consumer.apply(CorsMiddleware).forRoutes('*');
+    consumer.apply(SwaggerAuthMiddleware).forRoutes('api/docs', 'api/docs-json');
   }
 }

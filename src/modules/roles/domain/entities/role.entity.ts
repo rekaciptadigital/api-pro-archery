@@ -1,5 +1,6 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
+import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
 
 @Entity('roles')
 export class Role extends BaseEntity {
@@ -11,4 +12,7 @@ export class Role extends BaseEntity {
 
   @Column({ type: 'boolean', default: true })
   status: boolean;
+
+  @OneToMany(() => RoleFeaturePermission, permission => permission.role)
+  role_feature_permissions: RoleFeaturePermission[];
 }
