@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, NotFoundException } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -10,6 +10,9 @@ import fastifyCors from '@fastify/cors';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { securityConfig } from './config/security.config';
+import { createCorsConfig } from './common/config/cors.config';
+import { createSwaggerConfig, swaggerOptions } from './common/config/swagger.config';
+import { validationConfig } from './common/config/validation.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -19,33 +22,21 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  // Apply security headers
-  await app.register(fastifyHelmet, securityConfig);
-
-  // Enable CORS
-  await app.register(fastifyCors, {
-    origin: configService.get<string[]>('cors.origins'),
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Origin', 'X-Requested-With'],
-    credentials: configService.get<boolean>('cors.credentials'),
-    maxAge: 86400,
+  // Apply security headers with relaxed settings for development
+  await app.register(fastifyHelmet, {
+    ...securityConfig,
+    contentSecurityPolicy: false
   });
 
+  // Enable CORS
+  await app.register(fastifyCors, createCorsConfig(configService));
+
   // Global validation pipe
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(new ValidationPipe(validationConfig));
 
   // Swagger documentation setup
-  const config = new DocumentBuilder()
-    .setTitle('Inventory Management API')
-    .setDescription('API documentation for Inventory Management System')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
+  const config = createSwaggerConfig();
+  const document = SwaggerModule.createDocument(app, config, swaggerOptions);
   SwaggerModule.setup('api/docs', app, document);
 
   // Handle root endpoint

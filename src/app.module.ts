@@ -25,18 +25,10 @@ import { validate } from "./config/env.validation";
       load: [configuration],
       validate,
     }),
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        throttlers: [
-          {
-            ttl: config.get('RATE_LIMIT_TTL', 60),
-            limit: config.get('RATE_LIMIT_LIMIT', 100),
-          }
-        ],
-      }),
-    }),
+    ThrottlerModule.forRoot([{
+      ttl: 60,
+      limit: 100,
+    }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
