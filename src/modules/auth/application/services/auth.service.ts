@@ -4,7 +4,7 @@ import { PasswordService } from './password.service';
 import { UserRepository } from '../../../users/domain/repositories/user.repository';
 import { AuthTokenRepository } from '../../domain/repositories/auth-token.repository';
 import { UserSessionRepository } from '../../domain/repositories/user-session.repository';
-import { LoginDto, RegisterDto, ChangePasswordDto } from '../../domain/dtos/auth.dto';
+import { LoginDto, RegisterDto, ChangePasswordDto } from '../dtos/auth.dto';
 import { DomainException } from '../../../common/exceptions/domain.exception';
 import { User } from '../../../users/domain/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
@@ -157,6 +157,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
+    // Check if refresh token has expired
+    if (new Date() > authToken.expires_at) {
+      await this.authTokenRepository.softDelete(authToken.id);
+      throw new UnauthorizedException('Refresh token has expired');
+    }
+
     const user = await this.userRepository.findOneWithOptions({
       where: { id: authToken.user_id },
       relations: ['user_roles', 'user_roles.role']
@@ -168,6 +174,7 @@ export class AuthService {
 
     const tokens = await this.tokenService.generateTokens(user);
 
+    // Update refresh token
     await this.authTokenRepository.update(authToken.id, {
       refresh_token: tokens.refresh_token,
       expires_at: new Date(Date.now() + this.getRefreshTokenExpirationTime()),

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, IsNull, FindOptionsWhere } from 'typeorm';
 import { AuthToken } from '../entities/auth-token.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -14,12 +14,13 @@ export class AuthTokenRepository extends BaseRepository<AuthToken> {
   }
 
   async findByRefreshToken(refreshToken: string): Promise<AuthToken | null> {
+    const where: FindOptionsWhere<AuthToken> = {
+      refresh_token: refreshToken,
+      deleted_at: IsNull()
+    };
+
     return this.authTokenRepository.findOne({
-      where: { 
-        refresh_token: refreshToken,
-        expires_at: LessThan(new Date())
-      },
-      relations: ['user']
+      where
     });
   }
 
