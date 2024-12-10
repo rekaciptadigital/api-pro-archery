@@ -5,9 +5,12 @@ import { Role } from "../modules/roles/domain/entities/role.entity";
 import { Feature } from "../modules/features/domain/entities/feature.entity";
 import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
 import { UserRole } from "../modules/user-roles/domain/entities/user-role.entity";
+import { EnableUuidExtension1701234567889 } from "../migrations/1701234567889-EnableUuidExtension";
 import { CreateInitialSchema1701234567890 } from "../migrations/1701234567890-CreateInitialSchema";
 import { CreateUserRolesTable1701234567891 } from "../migrations/1701234567891-CreateUserRolesTable";
 import { AddStatusToRolesAndFeatures1701234567892 } from "../migrations/1701234567892-AddStatusToRolesAndFeatures";
+import { CreateAuthTables1701234567893 } from "../migrations/1701234567893-CreateAuthTables";
+import { UpdateAuthTablesStructure1701234567894 } from "../migrations/1701234567894-UpdateAuthTablesStructure";
 
 config();
 
@@ -20,9 +23,12 @@ const options: DataSourceOptions = {
   database: process.env.DATABASE_NAME,
   entities: [User, Role, Feature, RoleFeaturePermission, UserRole],
   migrations: [
+    EnableUuidExtension1701234567889,
     CreateInitialSchema1701234567890,
     CreateUserRolesTable1701234567891,
-    AddStatusToRolesAndFeatures1701234567892
+    AddStatusToRolesAndFeatures1701234567892,
+    CreateAuthTables1701234567893,
+    UpdateAuthTablesStructure1701234567894
   ],
   synchronize: false,
 };
