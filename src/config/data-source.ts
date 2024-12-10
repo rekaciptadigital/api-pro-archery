@@ -1,15 +1,13 @@
-import { DataSource, DataSourceOptions } from "typeorm";
 import { config } from "dotenv";
-import { User } from "../modules/users/domain/entities/user.entity";
-import { Role } from "../modules/roles/domain/entities/role.entity";
-import { Feature } from "../modules/features/domain/entities/feature.entity";
-import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
-import { UserRole } from "../modules/user-roles/domain/entities/user-role.entity";
+import { DataSource, DataSourceOptions } from "typeorm";
 import { CreateInitialSchema1701234567890 } from "../migrations/1701234567890-CreateInitialSchema";
 import { CreateUserRolesTable1701234567891 } from "../migrations/1701234567891-CreateUserRolesTable";
 import { AddStatusToRolesAndFeatures1701234567892 } from "../migrations/1701234567892-AddStatusToRolesAndFeatures";
-import { CreateAuthTables1701234567893 } from "../migrations/1701234567893-CreateAuthTables";
-import { UpdateAuthTablesStructure1701234567894 } from "../migrations/1701234567894-UpdateAuthTablesStructure";
+import { Feature } from "../modules/features/domain/entities/feature.entity";
+import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
+import { Role } from "../modules/roles/domain/entities/role.entity";
+import { UserRole } from "../modules/user-roles/domain/entities/user-role.entity";
+import { User } from "../modules/users/domain/entities/user.entity";
 
 config();
 
@@ -25,8 +23,6 @@ const options: DataSourceOptions = {
     CreateInitialSchema1701234567890,
     CreateUserRolesTable1701234567891,
     AddStatusToRolesAndFeatures1701234567892,
-    CreateAuthTables1701234567893,
-    UpdateAuthTablesStructure1701234567894
   ],
   synchronize: false,
 };
