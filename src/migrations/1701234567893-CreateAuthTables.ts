@@ -7,7 +7,7 @@ export class CreateAuthTables1701234567893 implements MigrationInterface {
     // Create auth_tokens table
     await queryRunner.query(`
       CREATE TABLE "auth_tokens" (
-        "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
         "user_id" bigint NOT NULL,
         "refresh_token" varchar(255) NOT NULL,
         "expires_at" TIMESTAMP NOT NULL,
@@ -21,7 +21,7 @@ export class CreateAuthTables1701234567893 implements MigrationInterface {
     // Create user_sessions table
     await queryRunner.query(`
       CREATE TABLE "user_sessions" (
-        "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
         "user_id" bigint NOT NULL,
         "token" varchar(255) NOT NULL,
         "ip_address" varchar(45),
