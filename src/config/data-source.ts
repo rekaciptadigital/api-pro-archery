@@ -5,7 +5,6 @@ import { Role } from "../modules/roles/domain/entities/role.entity";
 import { Feature } from "../modules/features/domain/entities/feature.entity";
 import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
 import { UserRole } from "../modules/user-roles/domain/entities/user-role.entity";
-import { EnableUuidExtension1701234567889 } from "../migrations/1701234567889-EnableUuidExtension";
 import { CreateInitialSchema1701234567890 } from "../migrations/1701234567890-CreateInitialSchema";
 import { CreateUserRolesTable1701234567891 } from "../migrations/1701234567891-CreateUserRolesTable";
 import { AddStatusToRolesAndFeatures1701234567892 } from "../migrations/1701234567892-AddStatusToRolesAndFeatures";
@@ -23,7 +22,6 @@ const options: DataSourceOptions = {
   database: process.env.DATABASE_NAME,
   entities: [User, Role, Feature, RoleFeaturePermission, UserRole],
   migrations: [
-    EnableUuidExtension1701234567889,
     CreateInitialSchema1701234567890,
     CreateUserRolesTable1701234567891,
     AddStatusToRolesAndFeatures1701234567892,
