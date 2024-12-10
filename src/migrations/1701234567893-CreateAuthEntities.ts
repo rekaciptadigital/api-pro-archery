@@ -4,6 +4,9 @@ export class CreateAuthEntities1701234567893 implements MigrationInterface {
   name = "CreateAuthEntities1701234567893";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Enable uuid-ossp extension
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+
     // Create auth_tokens table
     await queryRunner.query(`
       CREATE TABLE "auth_tokens" (
@@ -109,5 +112,8 @@ export class CreateAuthEntities1701234567893 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE IF EXISTS "api_endpoints"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "user_sessions"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "auth_tokens"`);
+
+    // Drop extension if no other tables are using it
+    await queryRunner.query(`DROP EXTENSION IF EXISTS "uuid-ossp"`);
   }
 }
