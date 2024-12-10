@@ -4,7 +4,7 @@ export class CreateAuthTables1701234567893 implements MigrationInterface {
   name = "CreateAuthTables1701234567893";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create auth_tokens table
+    // Create auth_tokens table with UUID
     await queryRunner.query(`
       CREATE TABLE "auth_tokens" (
         "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -14,11 +14,12 @@ export class CreateAuthTables1701234567893 implements MigrationInterface {
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         "deleted_at" TIMESTAMP,
-        FOREIGN KEY ("user_id") REFERENCES "users" ("id")
+        CONSTRAINT "FK_auth_tokens_user_id" FOREIGN KEY ("user_id") 
+          REFERENCES "users" ("id") ON DELETE CASCADE
       )
     `);
 
-    // Create user_sessions table
+    // Create user_sessions table with UUID
     await queryRunner.query(`
       CREATE TABLE "user_sessions" (
         "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -30,7 +31,8 @@ export class CreateAuthTables1701234567893 implements MigrationInterface {
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         "deleted_at" TIMESTAMP,
-        FOREIGN KEY ("user_id") REFERENCES "users" ("id")
+        CONSTRAINT "FK_user_sessions_user_id" FOREIGN KEY ("user_id") 
+          REFERENCES "users" ("id") ON DELETE CASCADE
       )
     `);
 
@@ -61,11 +63,12 @@ export class CreateAuthTables1701234567893 implements MigrationInterface {
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         "deleted_at" TIMESTAMP,
-        FOREIGN KEY ("role_id") REFERENCES "roles" ("id")
+        CONSTRAINT "FK_menu_permissions_role_id" FOREIGN KEY ("role_id") 
+          REFERENCES "roles" ("id") ON DELETE CASCADE
       )
     `);
 
-    // Add indexes
+    // Create indexes
     await queryRunner.query(`
       CREATE INDEX "idx_auth_tokens_user_id" ON "auth_tokens" ("user_id");
       CREATE INDEX "idx_auth_tokens_refresh_token" ON "auth_tokens" ("refresh_token");
@@ -77,9 +80,18 @@ export class CreateAuthTables1701234567893 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "menu_permissions"`);
-    await queryRunner.query(`DROP TABLE "api_endpoints"`);
-    await queryRunner.query(`DROP TABLE "user_sessions"`);
-    await queryRunner.query(`DROP TABLE "auth_tokens"`);
+    // Drop indexes first
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_menu_permissions_role_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_api_endpoints_path_method"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_user_sessions_token"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_user_sessions_user_id"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_auth_tokens_refresh_token"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "idx_auth_tokens_user_id"`);
+
+    // Drop tables
+    await queryRunner.query(`DROP TABLE IF EXISTS "menu_permissions"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "api_endpoints"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "user_sessions"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "auth_tokens"`);
   }
 }
