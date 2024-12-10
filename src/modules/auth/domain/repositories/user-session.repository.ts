@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindOptionsWhere } from 'typeorm';
 import { UserSession } from '../entities/user-session.entity';
-import { BaseRepository } from '../../../common/repositories/base.repository';
+import { BaseRepository } from '../../../../common/repositories/base.repository';
 
 @Injectable()
-export class UserSessionRepository extends BaseRepository<UserSession> {
+export class UserSessionRepository extends BaseRepository<UserSession, string> {
   constructor(
     @InjectRepository(UserSession)
     private readonly userSessionRepository: Repository<UserSession>
@@ -15,7 +15,7 @@ export class UserSessionRepository extends BaseRepository<UserSession> {
 
   async findByToken(token: string): Promise<UserSession | null> {
     return this.userSessionRepository.findOne({
-      where: { token },
+      where: { token } as FindOptionsWhere<UserSession>,
       relations: ['user']
     });
   }
@@ -23,11 +23,11 @@ export class UserSessionRepository extends BaseRepository<UserSession> {
   async deleteUserSessions(userId: number): Promise<void> {
     await this.userSessionRepository.softDelete({
       user_id: userId
-    });
+    } as FindOptionsWhere<UserSession>);
   }
 
-  async updateLastActivity(id: number): Promise<void> {
-    await this.userSessionRepository.update(id, {
+  async updateLastActivity(id: string): Promise<void> {
+    await this.userSessionRepository.update(id as any, {
       last_activity: new Date()
     });
   }

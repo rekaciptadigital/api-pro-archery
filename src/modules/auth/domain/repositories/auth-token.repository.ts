@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan, IsNull, FindOptionsWhere } from 'typeorm';
+import { Repository, FindOptionsWhere, IsNull } from 'typeorm';
 import { AuthToken } from '../entities/auth-token.entity';
-import { BaseRepository } from '../../../common/repositories/base.repository';
+import { BaseRepository } from '../../../../common/repositories/base.repository';
 
 @Injectable()
-export class AuthTokenRepository extends BaseRepository<AuthToken> {
+export class AuthTokenRepository extends BaseRepository<AuthToken, string> {
   constructor(
     @InjectRepository(AuthToken)
     private readonly authTokenRepository: Repository<AuthToken>
@@ -14,25 +14,23 @@ export class AuthTokenRepository extends BaseRepository<AuthToken> {
   }
 
   async findByRefreshToken(refreshToken: string): Promise<AuthToken | null> {
-    const where: FindOptionsWhere<AuthToken> = {
-      refresh_token: refreshToken,
-      deleted_at: IsNull()
-    };
-
     return this.authTokenRepository.findOne({
-      where
+      where: {
+        refresh_token: refreshToken,
+        deleted_at: IsNull()
+      } as FindOptionsWhere<AuthToken>
     });
   }
 
   async deleteExpiredTokens(): Promise<void> {
     await this.authTokenRepository.softDelete({
-      expires_at: LessThan(new Date())
-    });
+      expires_at: new Date()
+    } as FindOptionsWhere<AuthToken>);
   }
 
   async deleteUserTokens(userId: number): Promise<void> {
     await this.authTokenRepository.softDelete({
       user_id: userId
-    });
+    } as FindOptionsWhere<AuthToken>);
   }
 }

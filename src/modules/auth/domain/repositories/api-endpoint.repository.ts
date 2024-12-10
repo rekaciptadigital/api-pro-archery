@@ -15,7 +15,14 @@ export class ApiEndpointRepository extends BaseRepository<ApiEndpoint> {
 
   async findByPathAndMethod(path: string, method: string): Promise<ApiEndpoint | null> {
     return this.apiEndpointRepository.findOne({
-      where: { path, method }
+      where: { path, method },
+      relations: ['role']
+    });
+  }
+
+  async findByRole(roleId: number): Promise<ApiEndpoint[]> {
+    return this.apiEndpointRepository.find({
+      where: { role_id: roleId }
     });
   }
 }

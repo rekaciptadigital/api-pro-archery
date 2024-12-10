@@ -1,25 +1,25 @@
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { BaseEntity } from "../../../common/entities/base.entity";
+import { UUIDEntity } from "../../../../common/entities/uuid.entity";
 import { User } from "../../../users/domain/entities/user.entity";
 
 @Entity("user_sessions")
-export class UserSession extends BaseEntity {
+export class UserSession extends UUIDEntity {
   @Column("bigint")
-  user_id: number;
+  user_id!: number;
 
   @Column()
-  token: string;
+  token!: string;
 
   @Column({ nullable: true })
-  ip_address: string;
+  ip_address!: string;
 
   @Column({ type: "text", nullable: true })
-  user_agent: string;
+  user_agent!: string;
 
   @Column()
-  last_activity: Date;
+  last_activity!: Date;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: "user_id" })
-  user: User;
+  user!: User;
 }
