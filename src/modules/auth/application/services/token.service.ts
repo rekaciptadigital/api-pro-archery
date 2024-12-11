@@ -3,12 +3,17 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../../../users/domain/entities/user.entity';
 import { TokenResponse } from '../../domain/interfaces/auth.interface';
+import { AuthTokenRepository } from '../../domain/repositories/auth-token.repository';
+import { UserSessionRepository } from '../../domain/repositories/user-session.repository';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class TokenService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly authTokenRepository: AuthTokenRepository,
+    private readonly userSessionRepository: UserSessionRepository
   ) {}
 
   async generateTokens(user: User): Promise<TokenResponse> {
@@ -32,7 +37,36 @@ export class TokenService {
   }
 
   async verifyToken(token: string): Promise<any> {
-    return this.jwtService.verifyAsync(token);
+    // Verify JWT signature and expiration
+    const payload = await this.jwtService.verifyAsync(token);
+
+    // Check if token exists in user_sessions and is not soft deleted
+    const session = await this.userSessionRepository.findOneWithOptions({
+      where: {
+        token,
+        deleted_at: IsNull()
+      }
+    });
+
+    if (!session) {
+      throw new Error('Token has been invalidated');
+    }
+
+    // If it's a refresh token, verify it exists in auth_tokens and is not soft deleted
+    if (payload.tokenType === 'refresh') {
+      const authToken = await this.authTokenRepository.findOneWithOptions({
+        where: {
+          refresh_token: token,
+          deleted_at: IsNull()
+        }
+      });
+
+      if (!authToken) {
+        throw new Error('Refresh token has been invalidated');
+      }
+    }
+
+    return payload;
   }
 
   parseExpirationTime(expiration: string): number {
