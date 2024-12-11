@@ -4,12 +4,16 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+// Feature Modules
+import { UsersModule } from '../users/users.module';
+
 // Services
 import { AuthService } from './application/services/auth.service';
 import { TokenService } from './application/services/token.service';
 import { VerifyTokenService } from './application/services/verify-token.service';
 import { PasswordService } from './application/services/password.service';
 import { AuthenticationService } from './application/services/authentication.service';
+import { TokenConfigService } from './application/services/token-config.service';
 
 // Controllers
 import { AuthController } from './presentation/controllers/auth.controller';
@@ -37,9 +41,6 @@ import { AuthExceptionFilter } from './domain/filters/auth-exception.filter';
 // Core Providers
 import { APP_INTERCEPTOR, APP_FILTER, APP_GUARD } from '@nestjs/core';
 
-// Feature Modules
-import { UsersModule } from '../users/users.module';
-
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -62,15 +63,21 @@ import { UsersModule } from '../users/users.module';
     UsersModule,
   ],
   providers: [
+    // Services
     AuthService,
     TokenService,
     VerifyTokenService,
     PasswordService,
     AuthenticationService,
+    TokenConfigService,
     JwtStrategy,
+    
+    // Repositories
     AuthTokenRepository,
     UserSessionRepository,
     ApiEndpointRepository,
+    
+    // Global Providers
     {
       provide: APP_INTERCEPTOR,
       useClass: AuthLoggerInterceptor,
@@ -87,3 +94,4 @@ import { UsersModule } from '../users/users.module';
   controllers: [AuthController, VerifyTokenController],
   exports: [AuthService, TokenService, PasswordService, ApiEndpointRepository],
 })
+export class AuthModule {}
