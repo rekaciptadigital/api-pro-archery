@@ -69,3 +69,4 @@ import { RoleFeaturePermission } from '../permissions/domain/entities/role-featu
   controllers: [AuthController, VerifyTokenController],
   exports: [AuthService, TokenService, PasswordService, ApiEndpointRepository],
 })
+export class AuthModule {}

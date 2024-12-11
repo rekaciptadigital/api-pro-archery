@@ -1,19 +1,23 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { VerifyTokenService } from '../../application/services/verify-token.service';
-import { VerifyTokenDto } from '../../application/dtos/verify-token.dto';
-import { Public } from '../../domain/decorators/public.decorator';
+import { JwtAuthGuard } from '../../domain/guards/jwt-auth.guard';
+import { FastifyRequest } from 'fastify';
+import { RequestUtil } from '../../../../common/utils/request.util';
 
 @ApiTags('auth')
 @Controller('auth')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class VerifyTokenController {
   constructor(private readonly verifyTokenService: VerifyTokenService) {}
 
-  @Public()
-  @Post('verify-token')
-  @ApiOperation({ summary: 'Verify JWT token validity' })
+  @Get('verify-token')
+  @ApiOperation({ summary: 'Verify current JWT token validity' })
   @ApiResponse({ status: 200, description: 'Token verification result' })
-  async verifyToken(@Body() verifyTokenDto: VerifyTokenDto) {
-    return this.verifyTokenService.verify(verifyTokenDto.token);
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async verifyToken(@Req() request: FastifyRequest) {
+    const token = RequestUtil.getAuthToken(request);
+    return this.verifyTokenService.verify(token || '');
   }
 }
