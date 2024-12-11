@@ -138,7 +138,7 @@ export class AuthService {
 
     try {
       await this.userRepository.update(user.id, { password: hashedPassword });
-      await this.invalidateUserSessions(user.id);
+      // Removed invalidateUserSessions call since we want to keep existing sessions
     } catch (error) {
       throw new DomainException(
         'Failed to update password. Please try again.',
