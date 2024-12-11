@@ -5,8 +5,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './application/services/auth.service';
 import { TokenService } from './application/services/token.service';
+import { VerifyTokenService } from './application/services/verify-token.service';
 import { PasswordService } from './application/services/password.service';
 import { AuthController } from './presentation/controllers/auth.controller';
+import { VerifyTokenController } from './presentation/controllers/verify-token.controller';
 import { JwtStrategy } from './domain/strategies/jwt.strategy';
 import { UsersModule } from '../users/users.module';
 import { AuthTokenRepository } from './domain/repositories/auth-token.repository';
@@ -45,6 +47,7 @@ import { RoleFeaturePermission } from '../permissions/domain/entities/role-featu
   providers: [
     AuthService,
     TokenService,
+    VerifyTokenService,
     PasswordService,
     JwtStrategy,
     AuthTokenRepository,
@@ -63,7 +66,6 @@ import { RoleFeaturePermission } from '../permissions/domain/entities/role-featu
       useClass: AuthExceptionFilter,
     },
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, VerifyTokenController],
   exports: [AuthService, TokenService, PasswordService, ApiEndpointRepository],
 })
-export class AuthModule {}
