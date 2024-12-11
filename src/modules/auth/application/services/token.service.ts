@@ -1,13 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { User } from '../../../users/domain/entities/user.entity';
-import { TokenResponse } from '../../domain/interfaces/auth.interface';
-import { AuthTokenRepository } from '../../domain/repositories/auth-token.repository';
-import { UserSessionRepository } from '../../domain/repositories/user-session.repository';
-import { FindOptionsWhere, IsNull } from 'typeorm';
-import { UserSession } from '../../domain/entities/user-session.entity';
-import { AuthToken } from '../../domain/entities/auth-token.entity';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import { User } from "../../../users/domain/entities/user.entity";
+import { TokenResponse } from "../../domain/interfaces/auth.interface";
+import { AuthTokenRepository } from "../../domain/repositories/auth-token.repository";
+import { UserSessionRepository } from "../../domain/repositories/user-session.repository";
+import { FindOptionsWhere, IsNull } from "typeorm";
+import { UserSession } from "../../domain/entities/user-session.entity";
+import { AuthToken } from "../../domain/entities/auth-token.entity";
 
 @Injectable()
 export class TokenService {
@@ -26,32 +26,33 @@ export class TokenService {
       // Check if token exists in user_sessions and is not soft deleted
       const sessionWhere: FindOptionsWhere<UserSession> = {
         token,
-        deleted_at: IsNull()
+        deleted_at: IsNull(),
       };
 
       const session = await this.userSessionRepository.findOne(sessionWhere);
 
       if (!session) {
-        throw new UnauthorizedException('Token has been invalidated');
+        throw new UnauthorizedException("Token has been invalidated");
       }
 
       // If it's a refresh token, verify it exists in auth_tokens and is not soft deleted
-      if (payload.tokenType === 'refresh') {
+      if (payload.tokenType === "refresh") {
         const authTokenWhere: FindOptionsWhere<AuthToken> = {
           refresh_token: token,
-          deleted_at: IsNull()
+          deleted_at: IsNull(),
         };
 
-        const authToken = await this.authTokenRepository.findOne(authTokenWhere);
+        const authToken =
+          await this.authTokenRepository.findOne(authTokenWhere);
 
         if (!authToken) {
-          throw new UnauthorizedException('Refresh token has been invalidated');
+          throw new UnauthorizedException("Refresh token has been invalidated");
         }
 
         // Check if refresh token has expired
         if (new Date() > authToken.expires_at) {
           await this.authTokenRepository.softDelete(authToken.id);
-          throw new UnauthorizedException('Refresh token has expired');
+          throw new UnauthorizedException("Refresh token has expired");
         }
       }
 
@@ -60,22 +61,23 @@ export class TokenService {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException("Invalid token");
     }
   }
 
   async generateTokens(user: User): Promise<TokenResponse> {
-    const payload = { sub: user.id, email: user.email };
+    const payload = { id: user.id, email: user.email };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(
-        { ...payload, tokenType: 'refresh' },
-        { expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION') }
+        { ...payload, tokenType: "refresh" },
+        { expiresIn: this.configService.get("JWT_REFRESH_TOKEN_EXPIRATION") }
       ),
     ]);
 
-    const expirationTime = this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRATION') || '15m';
+    const expirationTime =
+      this.configService.get<string>("JWT_ACCESS_TOKEN_EXPIRATION") || "15m";
 
     return {
       access_token: accessToken,
@@ -91,13 +93,13 @@ export class TokenService {
     const value = parseInt(expiration.slice(0, -1));
 
     switch (unit) {
-      case 's':
+      case "s":
         return value * 1000;
-      case 'm':
+      case "m":
         return value * 60 * 1000;
-      case 'h':
+      case "h":
         return value * 60 * 60 * 1000;
-      case 'd':
+      case "d":
         return value * 24 * 60 * 60 * 1000;
       default:
         return value;
