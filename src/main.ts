@@ -1,3 +1,4 @@
+import 'module-alias/register';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, NotFoundException } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';

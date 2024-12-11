@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, HttpStatus } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { PasswordService } from './password.service';
 import { UserRepository } from '../../../users/domain/repositories/user.repository';
@@ -9,7 +9,6 @@ import { DomainException } from '../../../common/exceptions/domain.exception';
 import { User } from '../../../users/domain/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { AuthResponse } from '../../domain/interfaces/auth.interface';
-import { HttpStatus } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
@@ -202,6 +201,10 @@ export class AuthService {
   }
 
   async changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<void> {
+    if (!userId) {
+      throw new UnauthorizedException('User ID is required');
+    }
+
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -220,8 +223,21 @@ export class AuthService {
       changePasswordDto.new_password,
     );
 
-    await this.userRepository.update(userId, { password: hashedPassword });
-    await this.authTokenRepository.deleteUserTokens(userId);
-    await this.userSessionRepository.deleteUserSessions(userId);
+    try {
+      await this.userRepository.update(user.id, { 
+        password: hashedPassword 
+      });
+
+      // Invalidate all existing sessions and tokens
+      await Promise.all([
+        this.authTokenRepository.deleteUserTokens(user.id),
+        this.userSessionRepository.deleteUserSessions(user.id)
+      ]);
+    } catch (error) {
+      throw new DomainException(
+        'Failed to update password. Please try again.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }

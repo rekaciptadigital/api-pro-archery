@@ -3,22 +3,33 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { UsersModule } from "./modules/users/users.module";
-import { RolesModule } from "./modules/roles/roles.module";
-import { FeaturesModule } from "./modules/features/features.module";
-import { PermissionsModule } from "./modules/permissions/permissions.module";
-import { UserRolesModule } from "./modules/user-roles/user-roles.module";
-import { AuthModule } from "./modules/auth/auth.module";
-import { CommonModule } from "./common/common.module";
-import { TransformersModule } from "./common/transformers/transformers.module";
-import { CorsMiddleware } from "./middleware/cors.middleware";
-import { SwaggerAuthMiddleware } from "./common/middleware/swagger-auth.middleware";
-import { JwtAuthGuard } from "./modules/auth/domain/guards/jwt-auth.guard";
-import configuration from "./config/configuration";
-import { validate } from "./config/env.validation";
+
+// Feature Modules
+import { UsersModule } from "@/modules/users/users.module";
+import { RolesModule } from "@/modules/roles/roles.module";
+import { FeaturesModule } from "@/modules/features/features.module";
+import { PermissionsModule } from "@/modules/permissions/permissions.module";
+import { UserRolesModule } from "@/modules/user-roles/user-roles.module";
+import { AuthModule } from "@/modules/auth/auth.module";
+
+// Common Modules
+import { CommonModule } from "@/common/common.module";
+import { TransformersModule } from "@/common/transformers/transformers.module";
+
+// Middleware
+import { CorsMiddleware } from "@/middleware/cors.middleware";
+import { SwaggerAuthMiddleware } from "@/common/middleware/swagger-auth.middleware";
+
+// Guards
+import { JwtAuthGuard } from "@/modules/auth/domain/guards/jwt-auth.guard";
+
+// Config
+import configuration from "@/config/configuration";
+import { validate } from "@/config/env.validation";
 
 @Module({
   imports: [
+    // Core Modules
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
@@ -45,12 +56,16 @@ import { validate } from "./config/env.validation";
       }),
       inject: [ConfigService],
     }),
+
+    // Feature Modules
     UsersModule,
     RolesModule,
     FeaturesModule,
     PermissionsModule,
     UserRolesModule,
     AuthModule,
+
+    // Common Modules
     CommonModule,
     TransformersModule,
   ],
