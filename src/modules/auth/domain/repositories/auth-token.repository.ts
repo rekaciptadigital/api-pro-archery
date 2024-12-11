@@ -18,19 +18,27 @@ export class AuthTokenRepository extends BaseRepository<AuthToken> {
       where: {
         refresh_token: refreshToken,
         deleted_at: IsNull()
-      } as FindOptionsWhere<AuthToken>
+      }
     });
   }
 
   async deleteExpiredTokens(): Promise<void> {
     await this.authTokenRepository.softDelete({
       expires_at: new Date()
-    } as FindOptionsWhere<AuthToken>);
+    });
   }
 
   async deleteUserTokens(userId: number): Promise<void> {
     await this.authTokenRepository.softDelete({
       user_id: userId
-    } as FindOptionsWhere<AuthToken>);
+    });
+  }
+
+  async findAndCount(options?: any): Promise<[AuthToken[], number]> {
+    return this.authTokenRepository.findAndCount(options);
+  }
+
+  createQueryBuilder(alias: string) {
+    return this.authTokenRepository.createQueryBuilder(alias);
   }
 }

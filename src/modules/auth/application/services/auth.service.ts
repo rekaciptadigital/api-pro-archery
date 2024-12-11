@@ -78,13 +78,13 @@ export class AuthService {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     const tokens = await this.tokenService.generateTokens(user);
     
-    const authToken = await this.authTokenRepository.getRepository().save({
+    const authToken = await this.authTokenRepository.create({
       user_id: user.id,
       refresh_token: tokens.refresh_token,
       expires_at: new Date(Date.now() + this.getRefreshTokenExpirationTime()),
     });
 
-    await this.userSessionRepository.getRepository().save({
+    await this.userSessionRepository.create({
       user_id: user.id,
       token: tokens.access_token,
       ip_address: ipAddress,
@@ -123,7 +123,7 @@ export class AuthService {
 
     const tokens = await this.tokenService.generateTokens(user);
 
-    await this.authTokenRepository.getRepository().save({
+    await this.authTokenRepository.create({
       user_id: user.id,
       refresh_token: tokens.refresh_token,
       expires_at: new Date(Date.now() + this.getRefreshTokenExpirationTime()),
@@ -143,12 +143,20 @@ export class AuthService {
 
   async logout(token: string): Promise<void> {
     if (!token) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Token not provided');
     }
 
-    const payload = await this.tokenService.verifyToken(token);
-    await this.userSessionRepository.deleteUserSessions(payload.sub);
-    await this.authTokenRepository.deleteUserTokens(payload.sub);
+    try {
+      const payload = await this.tokenService.verifyToken(token);
+      await this.userSessionRepository.deleteUserSessions(payload.sub);
+      await this.authTokenRepository.deleteUserTokens(payload.sub);
+    } catch (error) {
+      if (error.message === 'Token has been invalidated') {
+        // If token is already invalidated, we can consider the logout successful
+        return;
+      }
+      throw new UnauthorizedException(error.message);
+    }
   }
 
   async refreshToken(refreshToken: string): Promise<AuthResponse> {
@@ -158,7 +166,7 @@ export class AuthService {
     }
 
     if (new Date() > authToken.expires_at) {
-      await this.authTokenRepository.getRepository().softDelete(authToken.id);
+      await this.authTokenRepository.softDelete(authToken.id);
       throw new UnauthorizedException('Refresh token has expired');
     }
 
@@ -173,7 +181,7 @@ export class AuthService {
 
     const tokens = await this.tokenService.generateTokens(user);
 
-    await this.authTokenRepository.getRepository().update(authToken.id, {
+    await this.authTokenRepository.update(authToken.id, {
       refresh_token: tokens.refresh_token,
       expires_at: new Date(Date.now() + this.getRefreshTokenExpirationTime()),
     });

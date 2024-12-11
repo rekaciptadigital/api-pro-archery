@@ -31,4 +31,12 @@ export class UserSessionRepository extends BaseRepository<UserSession> {
       last_activity: new Date()
     });
   }
+
+  async findAndCount(options?: any): Promise<[UserSession[], number]> {
+    return this.userSessionRepository.findAndCount(options);
+  }
+
+  createQueryBuilder(alias: string) {
+    return this.userSessionRepository.createQueryBuilder(alias);
+  }
 }
