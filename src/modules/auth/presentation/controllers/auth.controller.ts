@@ -6,8 +6,9 @@ import {
   HttpStatus,
   Req,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from '../../application/services/auth.service';
 import {
   LoginDto,
@@ -20,6 +21,7 @@ import { AuthLoggerInterceptor } from '../../domain/interceptors/auth-logger.int
 import { FastifyRequest } from 'fastify';
 import { User } from '../../../users/domain/entities/user.entity';
 import { RequestUtil } from '../../../../common/utils/request.util';
+import { JwtAuthGuard } from '../../domain/guards/jwt-auth.guard';
 
 interface AuthenticatedRequest extends FastifyRequest {
   user: User;
@@ -51,8 +53,10 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'User logout' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Logout successful' })
   async logout(@Req() request: FastifyRequest) {
@@ -69,14 +73,16 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto.refresh_token);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Change password' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Password changed successfully' })
   async changePassword(
     @Req() request: AuthenticatedRequest,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    return this.authService.changePassword(request.user.id, changePasswordDto);
+    return this.authService.changePassword(request.user?.id, changePasswordDto);
   }
 }
