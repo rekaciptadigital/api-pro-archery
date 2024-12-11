@@ -5,7 +5,7 @@ import { AuthToken } from '../entities/auth-token.entity';
 import { BaseRepository } from '../../../../common/repositories/base.repository';
 
 @Injectable()
-export class AuthTokenRepository extends BaseRepository<AuthToken, string> {
+export class AuthTokenRepository extends BaseRepository<AuthToken> {
   constructor(
     @InjectRepository(AuthToken)
     private readonly authTokenRepository: Repository<AuthToken>

@@ -1,9 +1,9 @@
 import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { UUIDEntity } from "../../../../common/entities/uuid.entity";
+import { BaseEntity } from "../../../../common/entities/base.entity";
 import { User } from "../../../users/domain/entities/user.entity";
 
 @Entity("user_sessions")
-export class UserSession extends UUIDEntity {
+export class UserSession extends BaseEntity {
   @Column("bigint")
   user_id!: number;
 

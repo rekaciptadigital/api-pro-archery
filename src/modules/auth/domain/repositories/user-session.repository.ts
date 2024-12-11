@@ -5,7 +5,7 @@ import { UserSession } from '../entities/user-session.entity';
 import { BaseRepository } from '../../../../common/repositories/base.repository';
 
 @Injectable()
-export class UserSessionRepository extends BaseRepository<UserSession, string> {
+export class UserSessionRepository extends BaseRepository<UserSession> {
   constructor(
     @InjectRepository(UserSession)
     private readonly userSessionRepository: Repository<UserSession>
@@ -26,8 +26,8 @@ export class UserSessionRepository extends BaseRepository<UserSession, string> {
     } as FindOptionsWhere<UserSession>);
   }
 
-  async updateLastActivity(id: string): Promise<void> {
-    await this.userSessionRepository.update(id as any, {
+  async updateLastActivity(id: number): Promise<void> {
+    await this.userSessionRepository.update(id, {
       last_activity: new Date()
     });
   }

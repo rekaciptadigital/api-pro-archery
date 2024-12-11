@@ -1,10 +1,10 @@
-import { Repository, FindOptionsWhere, DeleteResult, ObjectLiteral, DeepPartial, FindOneOptions, FindManyOptions } from 'typeorm';
+import { Repository, FindOptionsWhere, DeleteResult, ObjectLiteral, DeepPartial, FindOneOptions, FindManyOptions, SelectQueryBuilder } from 'typeorm';
 import { IBaseRepository } from '../interfaces/repository.interface';
 
-export abstract class BaseRepository<T extends ObjectLiteral, IdType = number | string> implements IBaseRepository<T, IdType> {
+export abstract class BaseRepository<T extends ObjectLiteral> implements IBaseRepository<T> {
   constructor(protected readonly repository: Repository<T>) {}
 
-  async findById(id: IdType): Promise<T | null> {
+  async findById(id: number): Promise<T | null> {
     return this.repository.findOne({ 
       where: { id } as unknown as FindOptionsWhere<T>
     });
@@ -35,8 +35,8 @@ export abstract class BaseRepository<T extends ObjectLiteral, IdType = number | 
     return this.repository.save(entity);
   }
 
-  async update(id: IdType, data: DeepPartial<T>): Promise<T> {
-    await this.repository.update(id as any, data as any);
+  async update(id: number, data: DeepPartial<T>): Promise<T> {
+    await this.repository.update(id, data as any);
     const updated = await this.findById(id);
     if (!updated) {
       throw new Error('Entity not found after update');
@@ -44,11 +44,11 @@ export abstract class BaseRepository<T extends ObjectLiteral, IdType = number | 
     return updated;
   }
 
-  async softDelete(id: IdType): Promise<DeleteResult> {
-    return this.repository.softDelete(id as any);
+  async softDelete(id: number): Promise<DeleteResult> {
+    return this.repository.softDelete(id);
   }
 
-  createQueryBuilder(alias: string) {
+  createQueryBuilder(alias: string): SelectQueryBuilder<T> {
     return this.repository.createQueryBuilder(alias);
   }
 
