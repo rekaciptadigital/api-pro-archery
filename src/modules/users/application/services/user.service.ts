@@ -1,79 +1,54 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
-import { UserQueryBuilder } from '../../domain/builders/user-query.builder';
-import { UserSearchCriteria } from '../../domain/value-objects/user-search.value-object';
-import { UserQueryDto } from '../dtos/user-query.dto';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UpdateUserStatusDto } from '../dtos/user-status.dto';
-import { UserWithRoles, UserRole } from '../../domain/interfaces/user-role.interface';
-import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { ApiResponse } from '../../../../common/interfaces/api-response.interface';
+import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
+import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
+import { PasswordService } from '../../../auth/application/services/password.service';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly responseTransformer: ResponseTransformer,
-    @InjectRepository(RoleFeaturePermission)
-    private readonly permissionRepository: Repository<RoleFeaturePermission>
+    private readonly paginationHelper: PaginationHelper,
+    private readonly passwordService: PasswordService
   ) {}
 
-  async findAll(query: UserQueryDto) {
-    const searchCriteria = UserSearchCriteria.create(query);
-    const queryBuilder = UserQueryBuilder.create(
-      this.userRepository.getRepository(),
-      'user'
-    )
-      .applySearchCriteria(searchCriteria)
-      .applyPagination(searchCriteria.page, searchCriteria.limit)
-      .applySorting(searchCriteria.sort, searchCriteria.order)
-      .build();
+  async findAll(query: PaginationQueryDto) {
+    const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
 
-    const [users, total] = await queryBuilder.getManyAndCount();
-    const enrichedUsers = await this.enrichUsersWithPermissions(users);
+    const [users, total] = await this.userRepository.findAndCount({
+      where: { deleted_at: IsNull() },
+      relations: ['user_roles', 'user_roles.role'],
+      skip,
+      take,
+      order: { created_at: 'DESC' }
+    });
+
+    const paginationData = this.paginationHelper.generatePaginationData({
+      serviceName: 'users',
+      totalItems: total,
+      page: query.page,
+      limit: query.limit,
+      customParams: {
+        page: query.page?.toString() || '1',
+        limit: query.limit?.toString() || '10'
+      }
+    });
 
     return this.responseTransformer.transformPaginated(
-      enrichedUsers,
+      users,
       total,
-      searchCriteria.page,
-      searchCriteria.limit,
-      this.generatePaginationLinks(query, searchCriteria, total)
+      query.page || 1,
+      query.limit || 10,
+      paginationData.links
     );
   }
 
   async findOne(id: number) {
-    const user = await this.findUserById(id);
-    const enrichedUser = await this.enrichUserWithPermissions(user);
-    return this.responseTransformer.transform(enrichedUser, false);
-  }
-
-  async create(createUserDto: CreateUserDto) {
-    const user = await this.userRepository.create(createUserDto);
-    return this.responseTransformer.transform(user, false);
-  }
-
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.findUserById(id);
-    const updated = await this.userRepository.update(id, updateUserDto);
-    return this.responseTransformer.transform(updated, false);
-  }
-
-  async updateStatus(id: number, updateStatusDto: UpdateUserStatusDto) {
-    const user = await this.findUserById(id);
-    await this.userRepository.update(id, updateStatusDto);
-    return this.responseTransformer.transform({ message: 'User status updated successfully' }, false);
-  }
-
-  async remove(id: number) {
-    const user = await this.findUserById(id);
-    await this.userRepository.softDelete(id);
-    return this.responseTransformer.transform({ message: 'User deleted successfully' }, false);
-  }
-
-  private async findUserById(id: number): Promise<UserWithRoles> {
     const user = await this.userRepository.findOneWithOptions({
       where: { id },
       relations: ['user_roles', 'user_roles.role']
@@ -83,28 +58,54 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    return user as UserWithRoles;
+    return this.responseTransformer.transform(user);
   }
 
-  // Helper methods implementation...
-  private async enrichUsersWithPermissions(users: UserWithRoles[]) {
-    // Implementation
-    return users;
+  async create(createUserDto: CreateUserDto) {
+    const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
+    
+    const user = await this.userRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+      status: createUserDto.status ?? true
+    });
+
+    return this.responseTransformer.transform(user);
   }
 
-  private async enrichUserWithPermissions(user: UserWithRoles) {
-    // Implementation
-    return user;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const dataToUpdate = { ...updateUserDto };
+
+    if (updateUserDto.password) {
+      dataToUpdate.password = await this.passwordService.hashPassword(updateUserDto.password);
+    }
+
+    const updated = await this.userRepository.update(id, dataToUpdate);
+    return this.responseTransformer.transform(updated);
   }
 
-  private generatePaginationLinks(query: UserQueryDto, criteria: UserSearchCriteria, total: number) {
-    // Implementation
-    return {
-      first: '',
-      previous: null,
-      current: '',
-      next: null,
-      last: ''
-    };
+  async updateStatus(id: number, updateStatusDto: UpdateUserStatusDto) {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.userRepository.update(id, updateStatusDto);
+    return this.responseTransformer.transform({ message: 'User status updated successfully' });
+  }
+
+  async remove(id: number) {
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.userRepository.softDelete(id);
+    return this.responseTransformer.transform({ message: 'User deleted successfully' });
   }
 }

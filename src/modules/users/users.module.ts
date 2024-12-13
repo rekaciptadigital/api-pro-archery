@@ -7,6 +7,7 @@ import { UserController } from './presentation/controllers/user.controller';
 import { UserValidator } from './domain/validators/user.validator';
 import { TransformersModule } from '@/common/transformers/transformers.module';
 import { RoleFeaturePermission } from '@/modules/permissions/domain/entities/role-feature-permission.entity';
+import { PasswordService } from '../auth/application/services/password.service';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { RoleFeaturePermission } from '@/modules/permissions/domain/entities/rol
   providers: [
     UserRepository,
     UserService,
-    UserValidator
+    UserValidator,
+    PasswordService
   ],
   controllers: [UserController],
   exports: [UserRepository],

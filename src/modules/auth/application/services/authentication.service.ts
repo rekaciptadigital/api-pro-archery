@@ -71,13 +71,19 @@ export class AuthenticationService {
     }
 
     const tokens = await this.tokenService.generateTokens(user);
-
     await this.authTokenRepository.update(authToken.id, {
       refresh_token: tokens.refresh_token,
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
 
     return { user, tokens };
+  }
+
+  async invalidateUserSessions(userId: number): Promise<void> {
+    await Promise.all([
+      this.authTokenRepository.deleteUserTokens(userId),
+      this.userSessionRepository.deleteUserSessions(userId)
+    ]);
   }
 
   private async validateUser(email: string, password: string): Promise<User> {
@@ -92,7 +98,7 @@ export class AuthenticationService {
 
     const isPasswordValid = await this.passwordService.comparePassword(
       password,
-      user.password,
+      user.password
     );
 
     if (!isPasswordValid) {
@@ -104,6 +110,32 @@ export class AuthenticationService {
     }
 
     return user;
+  }
+
+  async changeUserPassword(userId: number | undefined, changePasswordDto: ChangePasswordDto): Promise<void> {
+    if (!userId) {
+      throw new UnauthorizedException('User ID is required');
+    }
+
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isCurrentPasswordValid = await this.passwordService.comparePassword(
+      changePasswordDto.current_password,
+      user.password
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new DomainException('Current password is incorrect');
+    }
+
+    const hashedPassword = await this.passwordService.hashPassword(
+      changePasswordDto.new_password
+    );
+
+    await this.userRepository.update(user.id, { password: hashedPassword });
   }
 
   private async generateAndStoreTokens(
@@ -143,38 +175,5 @@ export class AuthenticationService {
       user_agent: userAgent,
       last_activity: new Date(),
     });
-  }
-
-  async invalidateUserSessions(userId: number): Promise<void> {
-    await Promise.all([
-      this.authTokenRepository.deleteUserTokens(userId),
-      this.userSessionRepository.deleteUserSessions(userId)
-    ]);
-  }
-
-  async changeUserPassword(userId: number | undefined, changePasswordDto: ChangePasswordDto): Promise<void> {
-    if (!userId) {
-      throw new UnauthorizedException('User ID is required');
-    }
-
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    const isCurrentPasswordValid = await this.passwordService.comparePassword(
-      changePasswordDto.current_password,
-      user.password
-    );
-
-    if (!isCurrentPasswordValid) {
-      throw new DomainException('Current password is incorrect');
-    }
-
-    const hashedPassword = await this.passwordService.hashPassword(
-      changePasswordDto.new_password
-    );
-
-    await this.userRepository.update(user.id, { password: hashedPassword });
   }
 }

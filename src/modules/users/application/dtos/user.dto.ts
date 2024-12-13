@@ -85,6 +85,12 @@ export class UpdateUserDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MinLength(6)
+  password?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   phone_number?: string;
 
   @ApiPropertyOptional()
