@@ -11,6 +11,7 @@ import { FeaturesModule } from "@/modules/features/features.module";
 import { PermissionsModule } from "@/modules/permissions/permissions.module";
 import { UserRolesModule } from "@/modules/user-roles/user-roles.module";
 import { AuthModule } from "@/modules/auth/auth.module";
+import { BrandsModule } from "@/modules/brands/brands.module";
 
 // Common Modules
 import { CommonModule } from "@/common/common.module";
@@ -64,6 +65,7 @@ import { validate } from "@/config/env.validation";
     PermissionsModule,
     UserRolesModule,
     AuthModule,
+    BrandsModule,
 
     // Common Modules
     CommonModule,

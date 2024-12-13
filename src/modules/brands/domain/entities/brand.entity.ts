@@ -1,0 +1,19 @@
+import { Entity, Column, Index } from 'typeorm';
+import { BaseEntity } from '@/common/entities/base.entity';
+
+@Entity('brands')
+export class Brand extends BaseEntity {
+  @Column()
+  @Index()
+  name: string;
+
+  @Column({ unique: true })
+  @Index()
+  code: string;
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Column({ type: 'boolean', default: true })
+  status: boolean;
+}
