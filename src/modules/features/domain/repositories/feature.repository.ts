@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions, ILike, IsNull } from 'typeorm';
+import { Repository, FindManyOptions } from 'typeorm';
 import { Feature } from '../entities/feature.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -17,12 +17,15 @@ export class FeatureRepository extends BaseRepository<Feature> {
     return this.featureRepository.findAndCount(options);
   }
 
-  async findByNameCaseInsensitive(name: string, excludeDeleted: boolean = true): Promise<Feature | null> {
-    return this.featureRepository.findOne({
-      where: {
-        name: ILike(`${name}`),
-        ...(excludeDeleted && { deleted_at: IsNull() }),
-      },
-    });
+  async findByNameCaseInsensitive(name: string, excludeId?: number): Promise<Feature | null> {
+    const query = this.featureRepository.createQueryBuilder('feature')
+      .where('LOWER(feature.name) = LOWER(:name)', { name })
+      .andWhere('feature.deleted_at IS NULL');
+
+    if (excludeId) {
+      query.andWhere('feature.id != :id', { id: excludeId });
+    }
+
+    return query.getOne();
   }
 }

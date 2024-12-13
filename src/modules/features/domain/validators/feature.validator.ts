@@ -12,7 +12,12 @@ export class FeatureValidator {
     await this.validateNameUnique(name);
   }
 
-  async validateForOperation(name: string, excludeId?: number): Promise<void> {
+  async validateForOperation(name: string | undefined, excludeId?: number): Promise<void> {
+    // If name is not being updated, skip validation
+    if (!name) {
+      return;
+    }
+
     await this.validateNameNotEmpty(name);
     await this.validateNameUniqueForUpdate(name, excludeId);
   }
@@ -35,9 +40,9 @@ export class FeatureValidator {
   }
 
   private async validateNameUniqueForUpdate(name: string, excludeId?: number): Promise<void> {
-    const existingFeature = await this.featureRepository.findByNameCaseInsensitive(name);
+    const existingFeature = await this.featureRepository.findByNameCaseInsensitive(name, excludeId);
 
-    if (existingFeature && existingFeature.id !== excludeId) {
+    if (existingFeature) {
       throw new FeatureException(
         'Another feature with this name already exists (case-insensitive match)',
         HttpStatus.CONFLICT

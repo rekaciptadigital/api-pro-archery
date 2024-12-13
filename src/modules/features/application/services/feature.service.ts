@@ -66,15 +66,13 @@ export class FeatureService {
       throw new NotFoundException('Feature not found');
     }
 
-    if (updateFeatureDto.name) {
+    // Only validate name if it's being updated and different from current name
+    if (updateFeatureDto.name && updateFeatureDto.name.toLowerCase() !== feature.name.toLowerCase()) {
       await this.featureValidator.validateForOperation(updateFeatureDto.name, id);
     }
 
     const updated = await this.featureRepository.update(id, updateFeatureDto);
-    return this.responseTransformer.transform({
-      message: 'Feature updated successfully',
-      data: updated
-    });
+    return this.responseTransformer.transform(updated);
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateFeatureStatusDto) {
