@@ -17,6 +17,11 @@ export class UserService {
     private readonly passwordService: PasswordService
   ) {}
 
+  private excludePasswordField<T extends Record<string, any>>(data: T): Omit<T, 'password'> {
+    const { password, ...rest } = data;
+    return rest;
+  }
+
   async findAll(query: PaginationQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
 
@@ -27,6 +32,8 @@ export class UserService {
       take,
       order: { created_at: 'DESC' }
     });
+
+    const usersWithoutPassword = users.map(user => this.excludePasswordField(user));
 
     const paginationData = this.paginationHelper.generatePaginationData({
       serviceName: 'users',
@@ -40,7 +47,7 @@ export class UserService {
     });
 
     return this.responseTransformer.transformPaginated(
-      users,
+      usersWithoutPassword,
       total,
       query.page || 1,
       query.limit || 10,
@@ -58,7 +65,7 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    return this.responseTransformer.transform(user);
+    return this.responseTransformer.transform(this.excludePasswordField(user));
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -70,7 +77,7 @@ export class UserService {
       status: createUserDto.status ?? true
     });
 
-    return this.responseTransformer.transform(user);
+    return this.responseTransformer.transform(this.excludePasswordField(user));
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -86,7 +93,7 @@ export class UserService {
     }
 
     const updated = await this.userRepository.update(id, dataToUpdate);
-    return this.responseTransformer.transform(updated);
+    return this.responseTransformer.transform(this.excludePasswordField(updated));
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateUserStatusDto) {
