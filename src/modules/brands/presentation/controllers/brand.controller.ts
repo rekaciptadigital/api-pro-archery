@@ -9,17 +9,14 @@ import {
   Delete,
   Query,
   ParseIntPipe,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { BrandService } from '../../application/services/brand.service';
 import { CreateBrandDto, UpdateBrandDto, UpdateBrandStatusDto } from '../../application/dtos/brand.dto';
 import { BrandQueryDto } from '../../application/dtos/brand-query.dto';
-import { JwtAuthGuard } from '@/modules/auth/domain/guards/jwt-auth.guard';
 
 @ApiTags('brands')
 @Controller('brands')
-@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class BrandController {
   constructor(private readonly brandService: BrandService) {}
