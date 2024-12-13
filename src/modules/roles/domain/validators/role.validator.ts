@@ -12,7 +12,12 @@ export class RoleValidator {
     await this.validateNameUnique(name);
   }
 
-  async validateForOperation(name: string, excludeId?: number): Promise<void> {
+  async validateForOperation(name: string | undefined, excludeId?: number): Promise<void> {
+    // If name is not being updated, skip validation
+    if (!name) {
+      return;
+    }
+
     await this.validateNameNotEmpty(name);
     await this.validateNameUniqueForUpdate(name, excludeId);
   }
@@ -37,6 +42,7 @@ export class RoleValidator {
   private async validateNameUniqueForUpdate(name: string, excludeId?: number): Promise<void> {
     const existingRole = await this.roleRepository.findByNameCaseInsensitive(name);
 
+    // Allow the same name if it belongs to the role being updated
     if (existingRole && existingRole.id !== excludeId) {
       throw new RoleException(
         `Role name '${name}' already exists. Please choose a different name.`,

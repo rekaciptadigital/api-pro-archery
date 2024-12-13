@@ -71,15 +71,13 @@ export class RoleService {
       throw new NotFoundException('Role not found');
     }
 
+    // Only validate name if it's being updated
     if (updateRoleDto.name) {
       await this.roleValidator.validateForOperation(updateRoleDto.name, id);
     }
 
     const updated = await this.roleRepository.update(id, updateRoleDto);
-    return this.responseTransformer.transform({
-      message: 'Role updated successfully',
-      data: updated
-    });
+    return this.responseTransformer.transform(updated);
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateRoleStatusDto) {
