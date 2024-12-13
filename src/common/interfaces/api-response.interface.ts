@@ -25,10 +25,6 @@ export interface ApiResponse<T> {
   status: ApiStatus;
   data?: T[];
   info?: string;
+  error?: string[];
   pagination?: ApiPagination;
-}
-
-export interface ApiErrorResponse {
-  status: ApiStatus;
-  error: string[];
 }
