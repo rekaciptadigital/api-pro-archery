@@ -18,7 +18,7 @@ export class ResponseTransformer extends BaseTransformer {
 
   transform<T extends Record<string, any>>(
     data: T | T[] | { message: string }, 
-    forceArray: boolean = true
+    forceArray: boolean = false
   ): ApiResponse<T> {
     // Handle message-only responses
     if (typeof data === 'object' && data !== null && 'message' in data) {
@@ -32,13 +32,6 @@ export class ResponseTransformer extends BaseTransformer {
     const formattedData = Array.isArray(data)
       ? data.map(item => DateUtil.formatTimestamps(item))
       : DateUtil.formatTimestamps(data);
-
-    if (forceArray) {
-      return {
-        status: this.createSuccessStatus(),
-        data: Array.isArray(formattedData) ? formattedData : [formattedData]
-      } as ArrayApiResponse<T>;
-    }
 
     return {
       status: this.createSuccessStatus(),
