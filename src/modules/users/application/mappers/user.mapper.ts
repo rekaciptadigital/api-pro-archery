@@ -1,10 +1,10 @@
 import { User } from '../../domain/entities/user.entity';
-import { Role } from '../../domain/interfaces/permission-response.interface';
+import { Role } from '../../../roles/domain/entities/role.entity';
 import { RoleFeaturePermission } from '../../../permissions/domain/entities/role-feature-permission.entity';
 import { DateUtil } from '../../../../common/utils/date.util';
 
 export class UserMapper {
-  static toDetailedResponse(user: User, role: any, permissions: RoleFeaturePermission[]) {
+  static toDetailedResponse(user: User, role?: Role | null, permissions: RoleFeaturePermission[] = []) {
     const mappedPermissions = permissions.map(permission => ({
       id: permission.id.toString(),
       role_id: permission.role_id.toString(),
@@ -14,7 +14,7 @@ export class UserMapper {
       created_at: DateUtil.formatTimestamp(permission.created_at),
       updated_at: DateUtil.formatTimestamp(permission.updated_at),
       deleted_at: DateUtil.formatTimestamp(permission.deleted_at),
-      feature: {
+      feature: permission.feature ? {
         id: permission.feature.id.toString(),
         name: permission.feature.name,
         description: permission.feature.description,
@@ -22,7 +22,7 @@ export class UserMapper {
         created_at: DateUtil.formatTimestamp(permission.feature.created_at),
         updated_at: DateUtil.formatTimestamp(permission.feature.updated_at),
         deleted_at: DateUtil.formatTimestamp(permission.feature.deleted_at)
-      }
+      } : null
     }));
 
     return {
