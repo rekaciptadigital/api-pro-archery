@@ -24,7 +24,7 @@ export class AuthResponseHelper {
         code: status,
         message: 'Success'
       },
-      data: [UserMapper.toDetailedResponse(user, activeRole, roleFeaturePermissions)],
+      data: UserMapper.toDetailedResponse(user, activeRole, roleFeaturePermissions),
       tokens
     };
   }

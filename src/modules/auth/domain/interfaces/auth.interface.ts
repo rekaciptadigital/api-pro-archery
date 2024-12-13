@@ -10,11 +10,11 @@ export interface TokenResponse {
   expires_in: number;
 }
 
-export interface AuthResponse {
+export interface AuthResponse<T = any> {
   status: {
     code: number;
     message: string;
   };
-  data: any[];
+  data: T;
   tokens: TokenResponse;
 }

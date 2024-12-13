@@ -1,24 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiResponse, ApiStatus } from '../interfaces/api-response.interface';
+import { 
+  ApiResponse, 
+  SingleApiResponse, 
+  ArrayApiResponse, 
+  PaginatedApiResponse 
+} from '../interfaces/api-response.interface';
 import { DateUtil } from '../utils/date.util';
+import { BaseTransformer } from './base.transformer';
 
 @Injectable()
-export class ResponseTransformer {
+export class ResponseTransformer extends BaseTransformer {
   constructor(private configService: ConfigService) {
+    super();
     DateUtil.setConfigService(this.configService);
   }
 
-  transform<T extends Record<string, any>>(data: T | T[] | { message: string }): ApiResponse<T> {
-    const status: ApiStatus = {
-      code: 200,
-      message: 'Success'
-    };
-
+  transform<T extends Record<string, any>>(
+    data: T | T[] | { message: string }, 
+    forceArray: boolean = true
+  ): ApiResponse<T> {
     // Handle message-only responses
     if (typeof data === 'object' && data !== null && 'message' in data) {
       return {
-        status,
+        status: this.createSuccessStatus(),
         info: (data as any).message
       };
     }
@@ -28,18 +33,22 @@ export class ResponseTransformer {
       ? data.map(item => DateUtil.formatTimestamps(item))
       : DateUtil.formatTimestamps(data);
 
+    if (forceArray) {
+      return {
+        status: this.createSuccessStatus(),
+        data: Array.isArray(formattedData) ? formattedData : [formattedData]
+      } as ArrayApiResponse<T>;
+    }
+
     return {
-      status,
-      data: Array.isArray(formattedData) ? formattedData : [formattedData]
-    };
+      status: this.createSuccessStatus(),
+      data: formattedData
+    } as SingleApiResponse<T>;
   }
 
   transformDelete(entityName: string): ApiResponse<any> {
     return {
-      status: {
-        code: 200,
-        message: 'Success'
-      },
+      status: this.createSuccessStatus(),
       info: `${entityName} deleted successfully`
     };
   }
@@ -56,16 +65,13 @@ export class ResponseTransformer {
       next: string | null;
       last: string;
     }
-  ): ApiResponse<T> {
+  ): PaginatedApiResponse<T> {
     const totalPages = Math.ceil(totalItems / pageSize);
 
     // Handle empty page beyond valid range
     if (currentPage > totalPages && totalItems > 0) {
       return {
-        status: {
-          code: 200,
-          message: 'Success'
-        },
+        status: this.createSuccessStatus(),
         data: [],
         pagination: {
           links,
@@ -82,10 +88,7 @@ export class ResponseTransformer {
     const formattedData = data.map(item => DateUtil.formatTimestamps(item));
 
     return {
-      status: {
-        code: 200,
-        message: 'Success'
-      },
+      status: this.createSuccessStatus(),
       data: formattedData,
       pagination: {
         links,
@@ -101,10 +104,7 @@ export class ResponseTransformer {
 
   transformError(code: number, message: string | string[]): ApiResponse<any> {
     return {
-      status: {
-        code,
-        message: 'Error'
-      },
+      status: this.createErrorStatus(code),
       error: Array.isArray(message) ? message : [message]
     };
   }

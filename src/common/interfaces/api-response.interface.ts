@@ -21,10 +21,22 @@ export interface ApiPagination {
   hasPrevious: boolean;
 }
 
-export interface ApiResponse<T> {
+export interface BaseApiResponse {
   status: ApiStatus;
-  data?: T[];
   info?: string;
   error?: string[];
+}
+
+export interface SingleApiResponse<T> extends BaseApiResponse {
+  data?: T;
+}
+
+export interface ArrayApiResponse<T> extends BaseApiResponse {
+  data?: T[];
+}
+
+export interface PaginatedApiResponse<T> extends ArrayApiResponse<T> {
   pagination?: ApiPagination;
 }
+
+export type ApiResponse<T> = SingleApiResponse<T> | ArrayApiResponse<T> | PaginatedApiResponse<T>;
