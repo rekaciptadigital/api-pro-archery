@@ -17,12 +17,15 @@ export class RoleRepository extends BaseRepository<Role> {
     return this.roleRepository.findAndCount(options);
   }
 
-  async findByNameCaseInsensitive(name: string, excludeDeleted: boolean = true): Promise<Role | null> {
-    return this.roleRepository.findOne({
-      where: {
-        name: ILike(`${name}`),
-        ...(excludeDeleted && { deleted_at: IsNull() }),
-      },
-    });
+  async findByNameCaseInsensitive(name: string, excludeId?: number): Promise<Role | null> {
+    const query = this.roleRepository.createQueryBuilder('role')
+      .where('LOWER(role.name) = LOWER(:name)', { name })
+      .andWhere('role.deleted_at IS NULL');
+
+    if (excludeId) {
+      query.andWhere('role.id != :id', { id: excludeId });
+    }
+
+    return query.getOne();
   }
 }

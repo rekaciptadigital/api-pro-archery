@@ -71,8 +71,8 @@ export class RoleService {
       throw new NotFoundException('Role not found');
     }
 
-    // Only validate name if it's being updated
-    if (updateRoleDto.name) {
+    // Only validate name if it's being updated and different from current name
+    if (updateRoleDto.name && updateRoleDto.name.toLowerCase() !== role.name.toLowerCase()) {
       await this.roleValidator.validateForOperation(updateRoleDto.name, id);
     }
 

@@ -40,10 +40,9 @@ export class RoleValidator {
   }
 
   private async validateNameUniqueForUpdate(name: string, excludeId?: number): Promise<void> {
-    const existingRole = await this.roleRepository.findByNameCaseInsensitive(name);
+    const existingRole = await this.roleRepository.findByNameCaseInsensitive(name, excludeId);
 
-    // Allow the same name if it belongs to the role being updated
-    if (existingRole && existingRole.id !== excludeId) {
+    if (existingRole) {
       throw new RoleException(
         `Role name '${name}' already exists. Please choose a different name.`,
         HttpStatus.CONFLICT
