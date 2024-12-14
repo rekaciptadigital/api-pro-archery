@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, ILike, IsNull, Not } from 'typeorm';
+import { Repository, FindOptionsWhere, ILike, IsNull } from 'typeorm';
 import { Brand } from '../entities/brand.entity';
 import { BaseRepository } from '@/common/repositories/base.repository';
 
@@ -30,7 +30,7 @@ export class BrandRepository extends BaseRepository<Brand> {
       ...options,
       where: {
         ...options.where,
-        deleted_at: Not(IsNull())
+        deleted_at: IsNull()
       }
     });
   }
