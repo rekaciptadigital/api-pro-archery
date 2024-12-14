@@ -16,6 +16,17 @@ export class BrandService {
     private readonly responseTransformer: ResponseTransformer,
   ) {}
 
+  async create(createBrandDto: CreateBrandDto) {
+    await this.brandValidator.validateCode(createBrandDto.code);
+
+    const brand = await this.brandRepository.create({
+      ...createBrandDto,
+      status: createBrandDto.status ?? true,
+    });
+
+    return this.responseTransformer.transform(brand);
+  }
+
   async findAll(query: BrandQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
 
@@ -53,32 +64,48 @@ export class BrandService {
     );
   }
 
-  async findDeleted(query: BrandQueryDto) {
-    const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
-
-    const [brands, total] = await this.brandRepository.findAndCount({
-      where: { deleted_at: IsNull() },
-      skip,
-      take,
-      order: { deleted_at: 'DESC' },
-    });
-
-    const paginationData = this.paginationHelper.generatePaginationData({
-      serviceName: 'brands/deleted',
-      totalItems: total,
-      page: query.page,
-      limit: query.limit,
-      customParams: query.toCustomParams()
-    });
-
-    return this.responseTransformer.transformPaginated(
-      brands,
-      total,
-      query.page || 1,
-      query.limit || 10,
-      paginationData.links
-    );
+  async findOne(id: number) {
+    const brand = await this.brandRepository.findById(id);
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+    return this.responseTransformer.transform(brand);
   }
 
-  // ... rest of the service methods remain unchanged
+  async update(id: number, updateBrandDto: UpdateBrandDto) {
+    const brand = await this.brandRepository.findById(id);
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    if (updateBrandDto.code && updateBrandDto.code !== brand.code) {
+      await this.brandValidator.validateCode(updateBrandDto.code, id);
+    }
+
+    const updated = await this.brandRepository.update(id, updateBrandDto);
+    return this.responseTransformer.transform(updated);
+  }
+
+  async updateStatus(id: number, updateStatusDto: UpdateBrandStatusDto) {
+    const brand = await this.brandRepository.findById(id);
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    await this.brandRepository.update(id, updateStatusDto);
+    return this.responseTransformer.transform({
+      id,
+      status: updateStatusDto.status
+    });
+  }
+
+  async remove(id: number) {
+    const brand = await this.brandRepository.findById(id);
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    await this.brandRepository.softDelete(id);
+    return this.responseTransformer.transform({ message: 'Brand deleted successfully' });
+  }
 }
