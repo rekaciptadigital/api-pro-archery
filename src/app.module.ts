@@ -12,6 +12,7 @@ import { PermissionsModule } from "@/modules/permissions/permissions.module";
 import { UserRolesModule } from "@/modules/user-roles/user-roles.module";
 import { AuthModule } from "@/modules/auth/auth.module";
 import { BrandsModule } from "@/modules/brands/brands.module";
+import { TaxesModule } from "@/modules/taxes/taxes.module";
 
 // Common Modules
 import { CommonModule } from "@/common/common.module";
@@ -66,6 +67,7 @@ import { validate } from "@/config/env.validation";
     UserRolesModule,
     AuthModule,
     BrandsModule,
+    TaxesModule,
 
     // Common Modules
     CommonModule,
