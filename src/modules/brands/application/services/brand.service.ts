@@ -5,7 +5,9 @@ import { BrandQueryDto } from '../dtos/brand-query.dto';
 import { BrandValidator } from '../../domain/validators/brand.validator';
 import { PaginationHelper } from '@/common/pagination/helpers/pagination.helper';
 import { ResponseTransformer } from '@/common/transformers/response.transformer';
-import { ILike, IsNull } from 'typeorm';
+import { ILike } from 'typeorm';
+import { DomainException } from '@/common/exceptions/domain.exception';
+import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class BrandService {
@@ -18,6 +20,7 @@ export class BrandService {
 
   async create(createBrandDto: CreateBrandDto) {
     await this.brandValidator.validateCode(createBrandDto.code);
+    await this.brandValidator.validateName(createBrandDto.name);
 
     const brand = await this.brandRepository.create({
       ...createBrandDto,
@@ -30,7 +33,7 @@ export class BrandService {
   async findAll(query: BrandQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
 
-    const where: any = { deleted_at: IsNull() };
+    const where: any = {};
     
     if (query.status !== undefined) {
       where.status = query.status;
@@ -40,7 +43,7 @@ export class BrandService {
       where.name = ILike(`%${query.search}%`);
     }
 
-    const [brands, total] = await this.brandRepository.findAndCount({
+    const [brands, total] = await this.brandRepository.findAndCountWithDeleted({
       where,
       skip,
       take,
@@ -65,7 +68,7 @@ export class BrandService {
   }
 
   async findOne(id: number) {
-    const brand = await this.brandRepository.findById(id);
+    const brand = await this.brandRepository.findWithDeleted(id);
     if (!brand) {
       throw new NotFoundException('Brand not found');
     }
@@ -80,6 +83,10 @@ export class BrandService {
 
     if (updateBrandDto.code && updateBrandDto.code !== brand.code) {
       await this.brandValidator.validateCode(updateBrandDto.code, id);
+    }
+
+    if (updateBrandDto.name) {
+      await this.brandValidator.validateName(updateBrandDto.name);
     }
 
     const updated = await this.brandRepository.update(id, updateBrandDto);
@@ -107,5 +114,23 @@ export class BrandService {
 
     await this.brandRepository.softDelete(id);
     return this.responseTransformer.transform({ message: 'Brand deleted successfully' });
+  }
+
+  async restore(id: number) {
+    const brand = await this.brandRepository.findWithDeleted(id);
+    if (!brand) {
+      throw new NotFoundException('Brand not found');
+    }
+
+    if (!brand.deleted_at) {
+      throw new DomainException('Brand is not deleted', HttpStatus.BAD_REQUEST);
+    }
+
+    const restored = await this.brandRepository.restore(id);
+    if (!restored) {
+      throw new DomainException('Failed to restore brand', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return this.responseTransformer.transform(brand);
   }
 }

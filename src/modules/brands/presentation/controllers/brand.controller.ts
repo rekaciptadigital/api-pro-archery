@@ -31,7 +31,14 @@ export class BrandController {
     status: HttpStatus.CREATED,
     description: "Brand created successfully",
   })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid input" })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: "Invalid input or code format" 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.CONFLICT, 
+    description: "Brand code already exists" 
+  })
   create(@Body() createBrandDto: CreateBrandDto) {
     return this.brandService.create(createBrandDto);
   }
@@ -58,6 +65,10 @@ export class BrandController {
     description: "Brand updated successfully",
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Brand not found" })
+  @ApiResponse({ 
+    status: HttpStatus.CONFLICT, 
+    description: "Brand code already exists" 
+  })
   update(
     @Param("id", ParseIntPipe) id: number,
     @Body() updateBrandDto: UpdateBrandDto
@@ -88,5 +99,20 @@ export class BrandController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Brand not found" })
   remove(@Param("id", ParseIntPipe) id: number) {
     return this.brandService.remove(id);
+  }
+
+  @Post(":id/restore")
+  @ApiOperation({ summary: "Restore deleted brand" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Brand restored successfully",
+  })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Brand not found" })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: "Brand is not deleted" 
+  })
+  restore(@Param("id", ParseIntPipe) id: number) {
+    return this.brandService.restore(id);
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, ILike, IsNull } from 'typeorm';
+import { Repository, FindOptionsWhere, ILike } from 'typeorm';
 import { Brand } from '../entities/brand.entity';
 import { BaseRepository } from '@/common/repositories/base.repository';
 
@@ -15,8 +15,7 @@ export class BrandRepository extends BaseRepository<Brand> {
 
   async findByCode(code: string, excludeId?: number): Promise<Brand | null> {
     const query = this.brandRepository.createQueryBuilder('brand')
-      .where('LOWER(brand.code) = LOWER(:code)', { code })
-      .andWhere('brand.deleted_at IS NULL');
+      .where('LOWER(brand.code) = LOWER(:code)', { code });
 
     if (excludeId) {
       query.andWhere('brand.id != :id', { id: excludeId });
@@ -25,22 +24,22 @@ export class BrandRepository extends BaseRepository<Brand> {
     return query.getOne();
   }
 
-  async findDeleted(options: any = {}): Promise<[Brand[], number]> {
-    return this.brandRepository.findAndCount({
-      ...options,
-      where: {
-        ...options.where,
-        deleted_at: IsNull()
-      }
+  async restore(id: number): Promise<Brand | null> {
+    await this.brandRepository.restore(id);
+    return this.findById(id);
+  }
+
+  async findWithDeleted(id: number): Promise<Brand | null> {
+    return this.brandRepository.findOne({
+      where: { id } as FindOptionsWhere<Brand>,
+      withDeleted: true
     });
   }
 
-  async search(query: string): Promise<Brand[]> {
-    return this.brandRepository.find({
-      where: [
-        { name: ILike(`%${query}%`) },
-        { code: ILike(`%${query}%`) }
-      ]
+  async findAndCountWithDeleted(options: any = {}): Promise<[Brand[], number]> {
+    return this.brandRepository.findAndCount({
+      ...options,
+      withDeleted: true
     });
   }
 }
