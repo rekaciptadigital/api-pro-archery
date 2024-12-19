@@ -23,6 +23,13 @@ export class VariantService {
     await this.variantValidator.validateValues(createVariantDto.values);
     await this.variantValidator.validateDisplayOrder(createVariantDto.display_order);
 
+    // Check if display order is taken
+    const isDisplayOrderTaken = await this.variantRepository.isDisplayOrderTaken(createVariantDto.display_order);
+    if (isDisplayOrderTaken) {
+      // If taken, shift up existing variants to make room
+      await this.variantRepository.shiftDisplayOrdersUp(createVariantDto.display_order);
+    }
+
     const variant = await this.variantRepository.create({
       name: createVariantDto.name,
       display_order: createVariantDto.display_order,
@@ -109,8 +116,19 @@ export class VariantService {
       await this.variantValidator.validateValues(updateVariantDto.values);
     }
 
-    if (updateVariantDto.display_order) {
+    if (updateVariantDto.display_order && updateVariantDto.display_order !== variant.display_order) {
       await this.variantValidator.validateDisplayOrder(updateVariantDto.display_order);
+      
+      // Check if new display order is taken
+      const isDisplayOrderTaken = await this.variantRepository.isDisplayOrderTaken(
+        updateVariantDto.display_order,
+        id
+      );
+
+      if (isDisplayOrderTaken) {
+        // If taken, shift up existing variants to make room
+        await this.variantRepository.shiftDisplayOrdersUp(updateVariantDto.display_order);
+      }
     }
 
     const updated = await this.variantRepository.update(id, {
@@ -145,6 +163,8 @@ export class VariantService {
     }
 
     await this.variantRepository.softDelete(id);
+    
+    // After deletion, shift down display orders of variants after this one
     await this.variantRepository.shiftDisplayOrdersDown(variant.display_order);
     
     return this.responseTransformer.transform({ 
@@ -162,6 +182,7 @@ export class VariantService {
       throw new DomainException('Variant is not deleted', HttpStatus.BAD_REQUEST);
     }
 
+    // Get the highest display order and add 1 for the restored variant
     const maxDisplayOrder = await this.variantRepository.getMaxDisplayOrder();
     const newDisplayOrder = maxDisplayOrder + 1;
 
@@ -170,7 +191,9 @@ export class VariantService {
       throw new DomainException('Failed to restore variant', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // Update the display order of the restored variant
     await this.variantRepository.update(id, { display_order: newDisplayOrder });
+    
     const updatedVariant = await this.variantRepository.findById(id);
     if (!updatedVariant) {
       throw new DomainException('Failed to retrieve updated variant', HttpStatus.INTERNAL_SERVER_ERROR);

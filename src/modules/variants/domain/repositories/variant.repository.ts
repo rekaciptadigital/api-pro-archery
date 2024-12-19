@@ -28,6 +28,13 @@ export class VariantRepository extends BaseRepository<Variant> {
     });
   }
 
+  async findById(id: number): Promise<Variant | null> {
+    return this.variantRepository.findOne({
+      where: { id } as FindOptionsWhere<Variant>,
+      relations: ['values']
+    });
+  }
+
   async findAndCount(options: any = {}): Promise<[Variant[], number]> {
     return this.variantRepository.findAndCount({
       ...options,
@@ -60,5 +67,31 @@ export class VariantRepository extends BaseRepository<Variant> {
       .where('display_order > :fromOrder', { fromOrder })
       .andWhere('deleted_at IS NULL')
       .execute();
+  }
+
+  async shiftDisplayOrdersUp(fromOrder: number): Promise<void> {
+    await this.variantRepository
+      .createQueryBuilder()
+      .update(Variant)
+      .set({
+        display_order: () => 'display_order + 1'
+      })
+      .where('display_order >= :fromOrder', { fromOrder })
+      .andWhere('deleted_at IS NULL')
+      .execute();
+  }
+
+  async isDisplayOrderTaken(displayOrder: number, excludeId?: number): Promise<boolean> {
+    const query = this.variantRepository
+      .createQueryBuilder('variant')
+      .where('variant.display_order = :displayOrder', { displayOrder })
+      .andWhere('variant.deleted_at IS NULL');
+
+    if (excludeId) {
+      query.andWhere('variant.id != :id', { id: excludeId });
+    }
+
+    const count = await query.getCount();
+    return count > 0;
   }
 }
