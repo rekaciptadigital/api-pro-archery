@@ -49,11 +49,12 @@ export class VariantService {
       where.name = ILike(`%${query.search}%`);
     }
 
-    const [variants, total] = await this.variantRepository.findAndCountWithDeleted({
+    const [variants, total] = await this.variantRepository.findAndCount({
       where,
       skip,
       take,
-      order: { display_order: 'ASC' }
+      order: { display_order: 'ASC' },
+      relations: ['values']
     });
 
     const transformedVariants = variants.map(variant => ({
@@ -79,7 +80,7 @@ export class VariantService {
   }
 
   async findOne(id: number) {
-    const variant = await this.variantRepository.findWithDeleted(id);
+    const variant = await this.variantRepository.findById(id);
     if (!variant) {
       throw new NotFoundException('Variant not found');
     }
@@ -167,6 +168,7 @@ export class VariantService {
 
     await this.variantRepository.update(id, { display_order: newDisplayOrder });
     const updatedVariant = await this.variantRepository.findById(id);
+    
     if (!updatedVariant) {
       throw new DomainException('Failed to retrieve updated variant', HttpStatus.INTERNAL_SERVER_ERROR);
     }

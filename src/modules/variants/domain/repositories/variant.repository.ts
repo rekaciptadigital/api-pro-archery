@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, IsNull } from 'typeorm';
+import { Repository, FindOptionsWhere } from 'typeorm';
 import { Variant } from '../entities/variant.entity';
 import { BaseRepository } from '@/common/repositories/base.repository';
 
@@ -16,14 +16,6 @@ export class VariantRepository extends BaseRepository<Variant> {
   async findWithDeleted(id: number): Promise<Variant | null> {
     return this.variantRepository.findOne({
       where: { id } as FindOptionsWhere<Variant>,
-      withDeleted: true,
-      relations: ['values']
-    });
-  }
-
-  async findAndCountWithDeleted(options: any = {}): Promise<[Variant[], number]> {
-    return this.variantRepository.findAndCount({
-      ...options,
       withDeleted: true,
       relations: ['values']
     });

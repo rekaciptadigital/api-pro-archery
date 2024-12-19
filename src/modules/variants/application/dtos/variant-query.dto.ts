@@ -14,16 +14,6 @@ export class VariantQueryDto extends PaginationQueryDto {
   @IsBoolean()
   status?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by deleted status' })
-  @IsOptional()
-  @Transform(({ value }) => {
-    if (value === 'true') return true;
-    if (value === 'false') return false;
-    return undefined;
-  })
-  @IsBoolean()
-  deleted?: boolean;
-
   @ApiPropertyOptional({ description: 'Search by name' })
   @IsOptional()
   @IsString()
@@ -32,7 +22,6 @@ export class VariantQueryDto extends PaginationQueryDto {
   toCustomParams(): Record<string, string> {
     return {
       ...(this.status !== undefined && { status: this.status ? '1' : '0' }),
-      ...(this.deleted !== undefined && { deleted: this.deleted ? '1' : '0' }),
       ...(this.search && { search: this.search }),
       page: (this.page || 1).toString(),
       limit: (this.limit || 10).toString()
