@@ -25,6 +25,7 @@ export class CreateVariantsTable1702432800002 implements MigrationInterface {
         "value" varchar(50) NOT NULL,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+        "deleted_at" TIMESTAMP,
         CONSTRAINT "fk_variant_values_variant" 
         FOREIGN KEY ("variant_id") 
         REFERENCES "variants"("id") 

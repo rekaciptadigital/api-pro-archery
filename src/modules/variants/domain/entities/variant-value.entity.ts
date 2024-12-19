@@ -10,7 +10,9 @@ export class VariantValue extends BaseEntity {
   @Column({ length: 50 })
   value: string;
 
-  @ManyToOne(() => Variant, variant => variant.values)
+  @ManyToOne(() => Variant, variant => variant.values, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'variant_id' })
   variant: Variant;
 }

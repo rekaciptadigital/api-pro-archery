@@ -21,6 +21,20 @@ export class VariantRepository extends BaseRepository<Variant> {
     });
   }
 
+  async findOneWithOptions(options: any): Promise<Variant | null> {
+    return this.variantRepository.findOne({
+      ...options,
+      relations: ['values']
+    });
+  }
+
+  async findAndCount(options: any = {}): Promise<[Variant[], number]> {
+    return this.variantRepository.findAndCount({
+      ...options,
+      relations: ['values']
+    });
+  }
+
   async restore(id: number): Promise<Variant | null> {
     await this.variantRepository.restore(id);
     return this.findById(id);

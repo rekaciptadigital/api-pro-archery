@@ -80,7 +80,11 @@ export class VariantService {
   }
 
   async findOne(id: number) {
-    const variant = await this.variantRepository.findById(id);
+    const variant = await this.variantRepository.findOneWithOptions({
+      where: { id },
+      relations: ['values']
+    });
+
     if (!variant) {
       throw new NotFoundException('Variant not found');
     }
@@ -168,7 +172,6 @@ export class VariantService {
 
     await this.variantRepository.update(id, { display_order: newDisplayOrder });
     const updatedVariant = await this.variantRepository.findById(id);
-    
     if (!updatedVariant) {
       throw new DomainException('Failed to retrieve updated variant', HttpStatus.INTERNAL_SERVER_ERROR);
     }
