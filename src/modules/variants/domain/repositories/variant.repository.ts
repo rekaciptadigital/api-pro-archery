@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere } from 'typeorm';
+import { Repository, FindOptionsWhere, DataSource } from 'typeorm';
 import { Variant } from '../entities/variant.entity';
 import { BaseRepository } from '@/common/repositories/base.repository';
 
@@ -8,7 +8,8 @@ import { BaseRepository } from '@/common/repositories/base.repository';
 export class VariantRepository extends BaseRepository<Variant> {
   constructor(
     @InjectRepository(Variant)
-    private readonly variantRepository: Repository<Variant>
+    private readonly variantRepository: Repository<Variant>,
+    private readonly dataSource: DataSource
   ) {
     super(variantRepository);
   }
@@ -57,28 +58,94 @@ export class VariantRepository extends BaseRepository<Variant> {
     return result?.max || 0;
   }
 
-  async shiftDisplayOrdersDown(fromOrder: number): Promise<void> {
-    await this.variantRepository
-      .createQueryBuilder()
-      .update(Variant)
-      .set({
-        display_order: () => 'display_order - 1'
-      })
-      .where('display_order > :fromOrder', { fromOrder })
-      .andWhere('deleted_at IS NULL')
-      .execute();
+  async createWithOrder(data: Partial<Variant>): Promise<Variant> {
+    const variant = await this.dataSource.transaction(async manager => {
+      // First shift up existing variants if needed
+      await manager.createQueryBuilder()
+        .update(Variant)
+        .set({
+          display_order: () => 'display_order + 1'
+        })
+        .where('display_order >= :order', { order: data.display_order })
+        .andWhere('deleted_at IS NULL')
+        .execute();
+
+      // Then create the new variant
+      const newVariant = manager.create(Variant, data);
+      return await manager.save(newVariant);
+    });
+
+    // Fetch the complete variant with relations
+    const completeVariant = await this.findById(variant.id);
+    if (!completeVariant) {
+      throw new Error('Failed to retrieve created variant');
+    }
+
+    return completeVariant;
   }
 
-  async shiftDisplayOrdersUp(fromOrder: number): Promise<void> {
-    await this.variantRepository
-      .createQueryBuilder()
-      .update(Variant)
-      .set({
-        display_order: () => 'display_order + 1'
-      })
-      .where('display_order >= :fromOrder', { fromOrder })
-      .andWhere('deleted_at IS NULL')
-      .execute();
+  async updateWithOrder(id: number, data: Partial<Variant>, oldDisplayOrder: number): Promise<Variant> {
+    await this.dataSource.transaction(async manager => {
+      const newDisplayOrder = data.display_order;
+      
+      if (newDisplayOrder && newDisplayOrder !== oldDisplayOrder) {
+        if (newDisplayOrder > oldDisplayOrder) {
+          // Moving down: shift others up
+          await manager.createQueryBuilder()
+            .update(Variant)
+            .set({
+              display_order: () => 'display_order - 1'
+            })
+            .where('display_order > :oldOrder AND display_order <= :newOrder', {
+              oldOrder: oldDisplayOrder,
+              newOrder: newDisplayOrder
+            })
+            .andWhere('deleted_at IS NULL')
+            .execute();
+        } else {
+          // Moving up: shift others down
+          await manager.createQueryBuilder()
+            .update(Variant)
+            .set({
+              display_order: () => 'display_order + 1'
+            })
+            .where('display_order >= :newOrder AND display_order < :oldOrder', {
+              oldOrder: oldDisplayOrder,
+              newOrder: newDisplayOrder
+            })
+            .andWhere('deleted_at IS NULL')
+            .execute();
+        }
+      }
+
+      // Update the variant
+      await manager.update(Variant, id, data);
+    });
+
+    // Fetch and return the updated variant with relations
+    const updatedVariant = await this.findById(id);
+    if (!updatedVariant) {
+      throw new Error('Failed to retrieve updated variant');
+    }
+
+    return updatedVariant;
+  }
+
+  async softDeleteWithOrder(id: number, displayOrder: number): Promise<void> {
+    await this.dataSource.transaction(async manager => {
+      // First soft delete the variant
+      await manager.softDelete(Variant, id);
+
+      // Then shift down the display orders
+      await manager.createQueryBuilder()
+        .update(Variant)
+        .set({
+          display_order: () => 'display_order - 1'
+        })
+        .where('display_order > :order', { order: displayOrder })
+        .andWhere('deleted_at IS NULL')
+        .execute();
+    });
   }
 
   async isDisplayOrderTaken(displayOrder: number, excludeId?: number): Promise<boolean> {
