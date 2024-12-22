@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, DataSource } from 'typeorm';
+import { Repository, FindOptionsWhere, DataSource, IsNull } from 'typeorm';
 import { Variant } from '../entities/variant.entity';
 import { BaseRepository } from '@/common/repositories/base.repository';
 
@@ -12,40 +12,6 @@ export class VariantRepository extends BaseRepository<Variant> {
     private readonly dataSource: DataSource
   ) {
     super(variantRepository);
-  }
-
-  async findWithDeleted(id: number): Promise<Variant | null> {
-    return this.variantRepository.findOne({
-      where: { id } as FindOptionsWhere<Variant>,
-      withDeleted: true,
-      relations: ['values']
-    });
-  }
-
-  async findOneWithOptions(options: any): Promise<Variant | null> {
-    return this.variantRepository.findOne({
-      ...options,
-      relations: ['values']
-    });
-  }
-
-  async findById(id: number): Promise<Variant | null> {
-    return this.variantRepository.findOne({
-      where: { id } as FindOptionsWhere<Variant>,
-      relations: ['values']
-    });
-  }
-
-  async findAndCount(options: any = {}): Promise<[Variant[], number]> {
-    return this.variantRepository.findAndCount({
-      ...options,
-      relations: ['values']
-    });
-  }
-
-  async restore(id: number): Promise<Variant | null> {
-    await this.variantRepository.restore(id);
-    return this.findById(id);
   }
 
   async getMaxDisplayOrder(): Promise<number> {
@@ -60,7 +26,6 @@ export class VariantRepository extends BaseRepository<Variant> {
 
   async createWithOrder(data: Partial<Variant>): Promise<Variant> {
     const variant = await this.dataSource.transaction(async manager => {
-      // First shift up existing variants if needed
       await manager.createQueryBuilder()
         .update(Variant)
         .set({
@@ -70,18 +35,11 @@ export class VariantRepository extends BaseRepository<Variant> {
         .andWhere('deleted_at IS NULL')
         .execute();
 
-      // Then create the new variant
       const newVariant = manager.create(Variant, data);
       return await manager.save(newVariant);
     });
 
-    // Fetch the complete variant with relations
-    const completeVariant = await this.findById(variant.id);
-    if (!completeVariant) {
-      throw new Error('Failed to retrieve created variant');
-    }
-
-    return completeVariant;
+    return this.findById(variant.id) as Promise<Variant>;
   }
 
   async updateWithOrder(id: number, data: Partial<Variant>, oldDisplayOrder: number): Promise<Variant> {
@@ -90,7 +48,6 @@ export class VariantRepository extends BaseRepository<Variant> {
       
       if (newDisplayOrder && newDisplayOrder !== oldDisplayOrder) {
         if (newDisplayOrder > oldDisplayOrder) {
-          // Moving down: shift others up
           await manager.createQueryBuilder()
             .update(Variant)
             .set({
@@ -103,7 +60,6 @@ export class VariantRepository extends BaseRepository<Variant> {
             .andWhere('deleted_at IS NULL')
             .execute();
         } else {
-          // Moving up: shift others down
           await manager.createQueryBuilder()
             .update(Variant)
             .set({
@@ -118,25 +74,16 @@ export class VariantRepository extends BaseRepository<Variant> {
         }
       }
 
-      // Update the variant
       await manager.update(Variant, id, data);
     });
 
-    // Fetch and return the updated variant with relations
-    const updatedVariant = await this.findById(id);
-    if (!updatedVariant) {
-      throw new Error('Failed to retrieve updated variant');
-    }
-
-    return updatedVariant;
+    return this.findById(id) as Promise<Variant>;
   }
 
   async softDeleteWithOrder(id: number, displayOrder: number): Promise<void> {
     await this.dataSource.transaction(async manager => {
-      // First soft delete the variant
       await manager.softDelete(Variant, id);
 
-      // Then shift down the display orders
       await manager.createQueryBuilder()
         .update(Variant)
         .set({
