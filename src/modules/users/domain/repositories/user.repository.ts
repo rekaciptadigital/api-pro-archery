@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, FindManyOptions } from 'typeorm';
+import { Repository, FindOptionsWhere, IsNull } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -14,28 +14,41 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: { email } as FindOptionsWhere<User>,
+    return this.repository.findOne({
+      where: { 
+        email,
+        deleted_at: IsNull()
+      } as FindOptionsWhere<User>,
     });
   }
 
   async findByNip(nip: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: { nip } as FindOptionsWhere<User>,
+    return this.repository.findOne({
+      where: { 
+        nip,
+        deleted_at: IsNull()
+      } as FindOptionsWhere<User>,
     });
   }
 
   async findByNik(nik: string): Promise<User | null> {
-    return this.userRepository.findOne({
-      where: { nik } as FindOptionsWhere<User>,
+    return this.repository.findOne({
+      where: { 
+        nik,
+        deleted_at: IsNull()
+      } as FindOptionsWhere<User>,
     });
   }
 
-  async findAndCount(options?: FindManyOptions<User>): Promise<[User[], number]> {
-    return this.userRepository.findAndCount(options);
+  async findWithDeleted(id: number): Promise<User | null> {
+    return this.repository.findOne({
+      where: { id } as any,
+      withDeleted: true
+    });
   }
 
-  getRepository(): Repository<User> {
-    return this.userRepository;
+  async restore(id: number): Promise<User | null> {
+    await this.repository.restore(id);
+    return this.findById(id);
   }
 }
