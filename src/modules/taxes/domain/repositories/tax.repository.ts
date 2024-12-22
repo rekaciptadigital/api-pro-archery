@@ -13,22 +13,27 @@ export class TaxRepository extends BaseRepository<Tax> {
     super(taxRepository);
   }
 
-  async findWithDeleted(id: number): Promise<Tax | null> {
-    return this.taxRepository.findOne({
-      where: { id } as FindOptionsWhere<Tax>,
-      withDeleted: true
-    });
+  async findByName(name: string, excludeId?: number): Promise<Tax | null> {
+    const query = this.taxRepository.createQueryBuilder('tax')
+      .where('LOWER(tax.name) = LOWER(:name)', { name })
+      .andWhere('tax.deleted_at IS NULL');
+
+    if (excludeId) {
+      query.andWhere('tax.id != :id', { id: excludeId });
+    }
+
+    return query.getOne();
   }
 
-  async findAndCountWithDeleted(options: any = {}): Promise<[Tax[], number]> {
-    return this.taxRepository.findAndCount({
-      ...options,
-      withDeleted: true
-    });
-  }
+  async findByPercentage(percentage: number, excludeId?: number): Promise<Tax | null> {
+    const query = this.taxRepository.createQueryBuilder('tax')
+      .where('tax.percentage = :percentage', { percentage })
+      .andWhere('tax.deleted_at IS NULL');
 
-  async restore(id: number): Promise<Tax | null> {
-    await this.taxRepository.restore(id);
-    return this.findById(id);
+    if (excludeId) {
+      query.andWhere('tax.id != :id', { id: excludeId });
+    }
+
+    return query.getOne();
   }
 }
