@@ -43,11 +43,11 @@ export class TaxService {
       where.name = ILike(`%${query.search}%`);
     }
 
-    const [taxes, total] = await this.taxRepository.findAndCountWithDeleted({
+    const [taxes, total] = await this.taxRepository.findAndCount({
       where,
       skip,
       take,
-      order: { created_at: 'DESC' },
+      order: { created_at: 'DESC' }
     });
 
     const paginationData = this.paginationHelper.generatePaginationData({
@@ -68,7 +68,7 @@ export class TaxService {
   }
 
   async findOne(id: number) {
-    const tax = await this.taxRepository.findWithDeleted(id);
+    const tax = await this.taxRepository.findById(id);
     if (!tax) {
       throw new NotFoundException('Tax not found');
     }
