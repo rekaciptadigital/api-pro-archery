@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, ILike } from 'typeorm';
+import { Repository, FindOptionsWhere } from 'typeorm';
 import { Brand } from '../entities/brand.entity';
 import { BaseRepository } from '@/common/repositories/base.repository';
 
@@ -15,31 +15,13 @@ export class BrandRepository extends BaseRepository<Brand> {
 
   async findByCode(code: string, excludeId?: number): Promise<Brand | null> {
     const query = this.brandRepository.createQueryBuilder('brand')
-      .where('LOWER(brand.code) = LOWER(:code)', { code });
+      .where('LOWER(brand.code) = LOWER(:code)', { code })
+      .andWhere('brand.deleted_at IS NULL');
 
     if (excludeId) {
       query.andWhere('brand.id != :id', { id: excludeId });
     }
 
     return query.getOne();
-  }
-
-  async restore(id: number): Promise<Brand | null> {
-    await this.brandRepository.restore(id);
-    return this.findById(id);
-  }
-
-  async findWithDeleted(id: number): Promise<Brand | null> {
-    return this.brandRepository.findOne({
-      where: { id } as FindOptionsWhere<Brand>,
-      withDeleted: true
-    });
-  }
-
-  async findAndCountWithDeleted(options: any = {}): Promise<[Brand[], number]> {
-    return this.brandRepository.findAndCount({
-      ...options,
-      withDeleted: true
-    });
   }
 }
