@@ -4,8 +4,9 @@ import { CreateFeatureDto, UpdateFeatureDto, UpdateFeatureStatusDto } from '../d
 import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
-import { IsNull } from 'typeorm';
 import { FeatureValidator } from '../../domain/validators/feature.validator';
+import { DomainException } from '@/common/exceptions/domain.exception';
+import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class FeatureService {
@@ -29,8 +30,8 @@ export class FeatureService {
 
   async findAll(query: PaginationQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
+    
     const [features, total] = await this.featureRepository.findAndCount({
-      where: { deleted_at: IsNull() },
       skip,
       take,
       order: { created_at: 'DESC' },
@@ -66,7 +67,6 @@ export class FeatureService {
       throw new NotFoundException('Feature not found');
     }
 
-    // Only validate name if it's being updated and different from current name
     if (updateFeatureDto.name && updateFeatureDto.name.toLowerCase() !== feature.name.toLowerCase()) {
       await this.featureValidator.validateForOperation(updateFeatureDto.name, id);
     }
@@ -80,6 +80,7 @@ export class FeatureService {
     if (!feature) {
       throw new NotFoundException('Feature not found');
     }
+
     await this.featureRepository.update(id, updateStatusDto);
     return this.responseTransformer.transform({ message: 'Feature status updated successfully' });
   }
@@ -89,7 +90,26 @@ export class FeatureService {
     if (!feature) {
       throw new NotFoundException('Feature not found');
     }
+
     await this.featureRepository.softDelete(id);
-    return this.responseTransformer.transformDelete('Feature');
+    return this.responseTransformer.transform({ message: 'Feature deleted successfully' });
+  }
+
+  async restore(id: number) {
+    const feature = await this.featureRepository.findWithDeleted(id);
+    if (!feature) {
+      throw new NotFoundException('Feature not found');
+    }
+
+    if (!feature.deleted_at) {
+      throw new DomainException('Feature is not deleted', HttpStatus.BAD_REQUEST);
+    }
+
+    const restored = await this.featureRepository.restore(id);
+    if (!restored) {
+      throw new DomainException('Failed to restore feature', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return this.responseTransformer.transform(restored);
   }
 }
