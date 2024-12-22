@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Feature } from '../entities/feature.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -8,13 +8,9 @@ import { BaseRepository } from '../../../common/repositories/base.repository';
 export class FeatureRepository extends BaseRepository<Feature> {
   constructor(
     @InjectRepository(Feature)
-    private readonly featureRepository: Repository<Feature>,
+    private readonly featureRepository: Repository<Feature>
   ) {
     super(featureRepository);
-  }
-
-  async findAndCount(options?: FindManyOptions<Feature>): Promise<[Feature[], number]> {
-    return this.featureRepository.findAndCount(options);
   }
 
   async findByNameCaseInsensitive(name: string, excludeId?: number): Promise<Feature | null> {
@@ -27,5 +23,17 @@ export class FeatureRepository extends BaseRepository<Feature> {
     }
 
     return query.getOne();
+  }
+
+  async findWithDeleted(id: number): Promise<Feature | null> {
+    return this.repository.findOne({
+      where: { id } as any,
+      withDeleted: true
+    });
+  }
+
+  async restore(id: number): Promise<Feature | null> {
+    await this.repository.restore(id);
+    return this.findById(id);
   }
 }
