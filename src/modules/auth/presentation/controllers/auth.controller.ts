@@ -64,17 +64,6 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Post("logout")
-  @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "User logout" })
-  @ApiResponse({ status: HttpStatus.OK, description: "Logout successful" })
-  async logout(@Req() request: FastifyRequest) {
-    const token = RequestUtil.getAuthToken(request);
-    return this.authService.logout(token || "");
-  }
-
   @Public()
   @Post("refresh-token")
   @HttpCode(HttpStatus.OK)
@@ -85,6 +74,17 @@ export class AuthController {
   })
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto.refresh_token);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post("logout")
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "User logout" })
+  @ApiResponse({ status: HttpStatus.OK, description: "Logout successful" })
+  async logout(@Req() request: FastifyRequest) {
+    const token = RequestUtil.getAuthToken(request);
+    return this.authService.logout(token || "");
   }
 
   @UseGuards(JwtAuthGuard)

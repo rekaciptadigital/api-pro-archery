@@ -9,7 +9,6 @@ import { BrandQueryDto } from "../dtos/brand-query.dto";
 import { BrandValidator } from "../../domain/validators/brand.validator";
 import { PaginationHelper } from "@/common/pagination/helpers/pagination.helper";
 import { ResponseTransformer } from "@/common/transformers/response.transformer";
-import { ILike } from "typeorm";
 import { DomainException } from "@/common/exceptions/domain.exception";
 import { HttpStatus } from "@nestjs/common";
 
@@ -23,9 +22,33 @@ export class BrandService {
   ) {}
 
   async create(createBrandDto: CreateBrandDto) {
-    await this.brandValidator.validateCode(createBrandDto.code);
     await this.brandValidator.validateName(createBrandDto.name);
 
+    // Check if brand with same code exists (including deleted)
+    const existingBrand = await this.brandRepository.findByCodeIncludingDeleted(
+      createBrandDto.code
+    );
+
+    if (existingBrand) {
+      // If brand exists and is not deleted, return conflict error
+      if (!existingBrand.deleted_at) {
+        throw new DomainException(
+          "Brand code already exists",
+          HttpStatus.CONFLICT
+        );
+      }
+
+      // If brand exists but is deleted, restore and update it
+      await this.brandRepository.restore(existingBrand.id);
+      const updated = await this.brandRepository.update(existingBrand.id, {
+        ...createBrandDto,
+        status: createBrandDto.status ?? true,
+      });
+
+      return this.responseTransformer.transform(updated);
+    }
+
+    // If brand doesn't exist, create new one
     const brand = await this.brandRepository.create({
       ...createBrandDto,
       status: createBrandDto.status ?? true,
@@ -40,22 +63,12 @@ export class BrandService {
       query.limit
     );
 
-    const where: any = {};
-
-    if (query.status !== undefined) {
-      where.status = query.status;
-    }
-
-    if (query.search) {
-      where.name = ILike(`%${query.search}%`);
-    }
-
-    const [brands, total] = await this.brandRepository.findAndCountWithDeleted({
-      where,
+    const [brands, total] = await this.brandRepository.findActiveBrands(
       skip,
       take,
-      order: { created_at: "DESC" },
-    });
+      query.sort,
+      query.order
+    );
 
     const paginationData = this.paginationHelper.generatePaginationData({
       serviceName: "brands",
@@ -75,9 +88,9 @@ export class BrandService {
   }
 
   async findOne(id: number) {
-    const brand = await this.brandRepository.findWithDeleted(id);
+    const brand = await this.brandRepository.findActiveById(id);
     if (!brand) {
-      throw new NotFoundException("Brand not found");
+      throw new NotFoundException("Brand not found or inactive");
     }
     return this.responseTransformer.transform(brand);
   }
@@ -88,12 +101,22 @@ export class BrandService {
       throw new NotFoundException("Brand not found");
     }
 
-    if (updateBrandDto.code && updateBrandDto.code !== brand.code) {
-      await this.brandValidator.validateCode(updateBrandDto.code, id);
-    }
-
     if (updateBrandDto.name) {
       await this.brandValidator.validateName(updateBrandDto.name);
+    }
+
+    if (updateBrandDto.code && updateBrandDto.code !== brand.code) {
+      // Check if brand code exists (regardless of deleted_at status)
+      const existingBrand =
+        await this.brandRepository.findByCodeIncludingDeleted(
+          updateBrandDto.code
+        );
+      if (existingBrand && existingBrand.id !== id) {
+        throw new DomainException(
+          "Brand code already exists",
+          HttpStatus.CONFLICT
+        );
+      }
     }
 
     const updated = await this.brandRepository.update(id, updateBrandDto);
@@ -110,6 +133,7 @@ export class BrandService {
     return this.responseTransformer.transform({
       id,
       status: updateStatusDto.status,
+      updated_at: new Date(),
     });
   }
 

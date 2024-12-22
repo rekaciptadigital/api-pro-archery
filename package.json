@@ -19,7 +19,8 @@
     "typeorm": "node -r ts-node/register/transpile-only -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "npm run typeorm -- migration:generate -d src/config/data-source.ts",
     "migration:run": "npm run typeorm -- migration:run -d src/config/data-source.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/config/data-source.ts"
+    "migration:revert": "npm run typeorm -- migration:revert -d src/config/data-source.ts",
+    "seed:run": "ts-node -r tsconfig-paths/register src/database/seeders/seed.ts"
   },
   "dependencies": {
     "@fastify/cors": "^8.4.1",
