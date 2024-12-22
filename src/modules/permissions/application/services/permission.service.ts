@@ -4,10 +4,9 @@ import { CreatePermissionDto, UpdatePermissionDto, UpdatePermissionStatusDto } f
 import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
-import { FindOptionsWhere, IsNull } from 'typeorm';
-import { RoleFeaturePermission } from '../../domain/entities/role-feature-permission.entity';
 import { PermissionValidator } from '../../domain/validators/permission.validator';
-import { DomainException } from '../../../common/exceptions/domain.exception';
+import { DomainException } from '@/common/exceptions/domain.exception';
+import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class PermissionService {
@@ -34,8 +33,8 @@ export class PermissionService {
 
   async findAll(query: PaginationQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
+    
     const [permissions, total] = await this.permissionRepository.findAndCount({
-      where: { deleted_at: IsNull() } as FindOptionsWhere<RoleFeaturePermission>,
       relations: ['role', 'feature'],
       skip,
       take,
@@ -77,17 +76,8 @@ export class PermissionService {
       updatePermissionDto.feature_id
     );
 
-    const updated = await this.permissionRepository.update(id, {
-      role_id: updatePermissionDto.role_id,
-      feature_id: updatePermissionDto.feature_id,
-      methods: updatePermissionDto.methods,
-      status: updatePermissionDto.status,
-    });
-
-    return this.responseTransformer.transform({
-      message: 'Permission updated successfully',
-      data: updated
-    });
+    const updated = await this.permissionRepository.update(id, updatePermissionDto);
+    return this.responseTransformer.transform(updated);
   }
 
   async updateStatus(id: number, updateStatusDto: UpdatePermissionStatusDto) {
@@ -95,7 +85,8 @@ export class PermissionService {
     if (!permission) {
       throw new NotFoundException('Permission not found');
     }
-    await this.permissionRepository.update(id, { status: updateStatusDto.status });
+
+    await this.permissionRepository.update(id, updateStatusDto);
     return this.responseTransformer.transform({ message: 'Permission status updated successfully' });
   }
 
@@ -104,7 +95,26 @@ export class PermissionService {
     if (!permission) {
       throw new NotFoundException('Permission not found');
     }
+
     await this.permissionRepository.softDelete(id);
-    return this.responseTransformer.transformDelete('Permission');
+    return this.responseTransformer.transform({ message: 'Permission deleted successfully' });
+  }
+
+  async restore(id: number) {
+    const permission = await this.permissionRepository.findWithDeleted(id);
+    if (!permission) {
+      throw new NotFoundException('Permission not found');
+    }
+
+    if (!permission.deleted_at) {
+      throw new DomainException('Permission is not deleted', HttpStatus.BAD_REQUEST);
+    }
+
+    const restored = await this.permissionRepository.restore(id);
+    if (!restored) {
+      throw new DomainException('Failed to restore permission', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return this.responseTransformer.transform(restored);
   }
 }
