@@ -5,8 +5,8 @@ import { PaginationHelper } from '../../../../common/pagination/helpers/paginati
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
 import { RoleValidator } from '../../domain/validators/role.validator';
-import { FindOptionsWhere, IsNull } from 'typeorm';
-import { Role } from '../../domain/entities/role.entity';
+import { DomainException } from '@/common/exceptions/domain.exception';
+import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class RoleService {
@@ -30,12 +30,7 @@ export class RoleService {
   async findAll(query: PaginationQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
     
-    const where: FindOptionsWhere<Role> = {
-      deleted_at: IsNull()
-    };
-
     const [roles, total] = await this.roleRepository.findAndCount({
-      where,
       skip,
       take,
       order: { created_at: 'DESC' },
@@ -71,7 +66,6 @@ export class RoleService {
       throw new NotFoundException('Role not found');
     }
 
-    // Only validate name if it's being updated and different from current name
     if (updateRoleDto.name && updateRoleDto.name.toLowerCase() !== role.name.toLowerCase()) {
       await this.roleValidator.validateForOperation(updateRoleDto.name, id);
     }
@@ -85,6 +79,7 @@ export class RoleService {
     if (!role) {
       throw new NotFoundException('Role not found');
     }
+
     await this.roleRepository.update(id, updateStatusDto);
     return this.responseTransformer.transform({ message: 'Role status updated successfully' });
   }
@@ -94,7 +89,26 @@ export class RoleService {
     if (!role) {
       throw new NotFoundException('Role not found');
     }
+
     await this.roleRepository.softDelete(id);
-    return this.responseTransformer.transformDelete('Role');
+    return this.responseTransformer.transform({ message: 'Role deleted successfully' });
+  }
+
+  async restore(id: number) {
+    const role = await this.roleRepository.findWithDeleted(id);
+    if (!role) {
+      throw new NotFoundException('Role not found');
+    }
+
+    if (!role.deleted_at) {
+      throw new DomainException('Role is not deleted', HttpStatus.BAD_REQUEST);
+    }
+
+    const restored = await this.roleRepository.restore(id);
+    if (!restored) {
+      throw new DomainException('Failed to restore role', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return this.responseTransformer.transform(restored);
   }
 }
