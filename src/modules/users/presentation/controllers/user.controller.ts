@@ -23,6 +23,14 @@ import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create new user' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Successfully created user' })
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved users' })
@@ -36,14 +44,6 @@ export class UserController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
-  }
-
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create new user' })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Successfully created user' })
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
   }
 
   @Put(':id')
@@ -75,5 +75,14 @@ export class UserController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.userService.remove(id);
+  }
+
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore deleted user' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'User restored successfully' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'User is not deleted' })
+  restore(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.restore(id);
   }
 }
