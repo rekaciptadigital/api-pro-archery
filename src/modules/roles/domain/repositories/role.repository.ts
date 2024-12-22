@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions, ILike, IsNull } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Role } from '../entities/role.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -13,10 +13,6 @@ export class RoleRepository extends BaseRepository<Role> {
     super(roleRepository);
   }
 
-  async findAndCount(options?: FindManyOptions<Role>): Promise<[Role[], number]> {
-    return this.roleRepository.findAndCount(options);
-  }
-
   async findByNameCaseInsensitive(name: string, excludeId?: number): Promise<Role | null> {
     const query = this.roleRepository.createQueryBuilder('role')
       .where('LOWER(role.name) = LOWER(:name)', { name })
@@ -27,5 +23,17 @@ export class RoleRepository extends BaseRepository<Role> {
     }
 
     return query.getOne();
+  }
+
+  async findWithDeleted(id: number): Promise<Role | null> {
+    return this.repository.findOne({
+      where: { id } as any,
+      withDeleted: true
+    });
+  }
+
+  async restore(id: number): Promise<Role | null> {
+    await this.repository.restore(id);
+    return this.findById(id);
   }
 }
