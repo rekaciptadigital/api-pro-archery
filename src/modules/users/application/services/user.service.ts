@@ -6,7 +6,8 @@ import { UpdateUserStatusDto } from '../dtos/user-status.dto';
 import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
 import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
 import { PasswordService } from '../../../auth/application/services/password.service';
-import { IsNull } from 'typeorm';
+import { DomainException } from '@/common/exceptions/domain.exception';
+import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
@@ -26,7 +27,6 @@ export class UserService {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
 
     const [users, total] = await this.userRepository.findAndCount({
-      where: { deleted_at: IsNull() },
       relations: ['user_roles', 'user_roles.role'],
       skip,
       take,
@@ -114,5 +114,23 @@ export class UserService {
 
     await this.userRepository.softDelete(id);
     return this.responseTransformer.transform({ message: 'User deleted successfully' });
+  }
+
+  async restore(id: number) {
+    const user = await this.userRepository.findWithDeleted(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.deleted_at) {
+      throw new DomainException('User is not deleted', HttpStatus.BAD_REQUEST);
+    }
+
+    const restored = await this.userRepository.restore(id);
+    if (!restored) {
+      throw new DomainException('Failed to restore user', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    return this.responseTransformer.transform(this.excludePasswordField(restored));
   }
 }
