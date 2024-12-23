@@ -40,11 +40,11 @@ export class BrandRepository extends BaseRepository<Brand> {
     skip: number,
     take: number,
     sort: string = "created_at",
-    order: "ASC" | "DESC" = "DESC"
+    order: "ASC" | "DESC" = "DESC",
+    search?: string
   ): Promise<[Brand[], number]> {
-    const queryBuilder = BrandQueryBuilder.createActiveOnly(
-      this.brandRepository
-    )
+    const queryBuilder = BrandQueryBuilder.createActiveOnly(this.brandRepository)
+      .addSearch(search)
       .addPagination(skip, take)
       .addOrderBy(sort, order)
       .build();
@@ -56,9 +56,11 @@ export class BrandRepository extends BaseRepository<Brand> {
     skip: number,
     take: number,
     sort: string = "created_at",
-    order: "ASC" | "DESC" = "DESC"
+    order: "ASC" | "DESC" = "DESC",
+    search?: string
   ): Promise<[Brand[], number]> {
     const queryBuilder = BrandQueryBuilder.create(this.brandRepository)
+      .addSearch(search)
       .addPagination(skip, take)
       .addOrderBy(sort, order)
       .build();

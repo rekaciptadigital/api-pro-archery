@@ -1,5 +1,6 @@
 import { SelectQueryBuilder, Repository } from "typeorm";
 import { Brand } from "../entities/brand.entity";
+import { ILike } from "typeorm";
 
 export class BrandQueryBuilder {
   private constructor(
@@ -21,6 +22,15 @@ export class BrandQueryBuilder {
       .andWhere("brand.status = :status", { status: true });
 
     return new BrandQueryBuilder(queryBuilder);
+  }
+
+  addSearch(search: string | undefined): this {
+    if (search) {
+      this.queryBuilder.andWhere("LOWER(brand.name) LIKE LOWER(:search)", {
+        search: `%${search}%`,
+      });
+    }
+    return this;
   }
 
   addPagination(skip: number, take: number): this {

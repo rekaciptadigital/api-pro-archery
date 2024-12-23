@@ -1,10 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { BrandRepository } from "../../domain/repositories/brand.repository";
-import {
-  CreateBrandDto,
-  UpdateBrandDto,
-  UpdateBrandStatusDto,
-} from "../dtos/brand.dto";
+import { CreateBrandDto, UpdateBrandDto, UpdateBrandStatusDto } from "../dtos/brand.dto";
 import { BrandQueryDto } from "../dtos/brand-query.dto";
 import { BrandValidator } from "../../domain/validators/brand.validator";
 import { PaginationHelper } from "@/common/pagination/helpers/pagination.helper";
@@ -67,7 +63,8 @@ export class BrandService {
       skip,
       take,
       query.sort,
-      query.order
+      query.order,
+      query.search
     );
 
     const paginationData = this.paginationHelper.generatePaginationData({
