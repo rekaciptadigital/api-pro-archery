@@ -4,12 +4,12 @@ export class CreateVariantsTable1702432800002 implements MigrationInterface {
   name = 'CreateVariantsTable1702432800002';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create variants table
+    // Create variants table with nullable display_order
     await queryRunner.query(`
       CREATE TABLE "variants" (
         "id" BIGSERIAL PRIMARY KEY,
         "name" varchar(255) NOT NULL,
-        "display_order" int NOT NULL,
+        "display_order" integer,
         "status" boolean NOT NULL DEFAULT true,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
@@ -40,17 +40,9 @@ export class CreateVariantsTable1702432800002 implements MigrationInterface {
       CREATE INDEX "idx_variants_status" ON "variants" ("status");
       CREATE INDEX "idx_variant_values_variant_id" ON "variant_values" ("variant_id");
     `);
-
-    // Create unique constraint for display_order
-    await queryRunner.query(`
-      CREATE UNIQUE INDEX "idx_variants_display_order_unique" 
-      ON "variants" ("display_order") 
-      WHERE deleted_at IS NULL;
-    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_variants_display_order_unique"`);
     await queryRunner.query(`DROP INDEX IF EXISTS "idx_variant_values_variant_id"`);
     await queryRunner.query(`DROP INDEX IF EXISTS "idx_variants_status"`);
     await queryRunner.query(`DROP INDEX IF EXISTS "idx_variants_display_order"`);

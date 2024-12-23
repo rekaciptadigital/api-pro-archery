@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, DataSource, IsNull } from 'typeorm';
+import { Repository, DataSource, IsNull } from 'typeorm';
 import { Variant } from '../entities/variant.entity';
+import { VariantValue } from '../entities/variant-value.entity';
 import { BaseRepository } from '@/common/repositories/base.repository';
 
 @Injectable()
@@ -9,103 +10,98 @@ export class VariantRepository extends BaseRepository<Variant> {
   constructor(
     @InjectRepository(Variant)
     private readonly variantRepository: Repository<Variant>,
+    @InjectRepository(VariantValue)
+    private readonly variantValueRepository: Repository<VariantValue>,
     private readonly dataSource: DataSource
   ) {
     super(variantRepository);
   }
 
-  async getMaxDisplayOrder(): Promise<number> {
-    const result = await this.variantRepository
-      .createQueryBuilder('variant')
-      .select('MAX(variant.display_order)', 'max')
-      .where('variant.deleted_at IS NULL')
-      .getRawOne();
-    
-    return result?.max || 0;
-  }
-
-  async createWithOrder(data: Partial<Variant>): Promise<Variant> {
-    const variant = await this.dataSource.transaction(async manager => {
-      await manager.createQueryBuilder()
-        .update(Variant)
-        .set({
-          display_order: () => 'display_order + 1'
-        })
-        .where('display_order >= :order', { order: data.display_order })
-        .andWhere('deleted_at IS NULL')
-        .execute();
-
-      const newVariant = manager.create(Variant, data);
-      return await manager.save(newVariant);
+  async getActiveVariantsCount(): Promise<number> {
+    return this.variantRepository.count({
+      where: { deleted_at: IsNull() }
     });
-
-    return this.findById(variant.id) as Promise<Variant>;
   }
 
-  async updateWithOrder(id: number, data: Partial<Variant>, oldDisplayOrder: number): Promise<Variant> {
+  async swapDisplayOrder(
+    id: number,
+    currentOrder: number,
+    newOrder: number
+  ): Promise<void> {
     await this.dataSource.transaction(async manager => {
-      const newDisplayOrder = data.display_order;
-      
-      if (newDisplayOrder && newDisplayOrder !== oldDisplayOrder) {
-        if (newDisplayOrder > oldDisplayOrder) {
-          await manager.createQueryBuilder()
-            .update(Variant)
-            .set({
-              display_order: () => 'display_order - 1'
-            })
-            .where('display_order > :oldOrder AND display_order <= :newOrder', {
-              oldOrder: oldDisplayOrder,
-              newOrder: newDisplayOrder
-            })
-            .andWhere('deleted_at IS NULL')
-            .execute();
-        } else {
-          await manager.createQueryBuilder()
-            .update(Variant)
-            .set({
-              display_order: () => 'display_order + 1'
-            })
-            .where('display_order >= :newOrder AND display_order < :oldOrder', {
-              oldOrder: oldDisplayOrder,
-              newOrder: newDisplayOrder
-            })
-            .andWhere('deleted_at IS NULL')
-            .execute();
-        }
+      // Find variant with target display order
+      const targetVariant = await manager.findOne(Variant, {
+        where: { display_order: newOrder, deleted_at: IsNull() }
+      });
+
+      if (targetVariant) {
+        // Update target variant's display order
+        await manager.update(Variant, targetVariant.id, {
+          display_order: currentOrder
+        });
       }
 
-      await manager.update(Variant, id, data);
+      // Update current variant's display order
+      await manager.update(Variant, id, {
+        display_order: newOrder
+      });
     });
-
-    return this.findById(id) as Promise<Variant>;
   }
 
-  async softDeleteWithOrder(id: number, displayOrder: number): Promise<void> {
-    await this.dataSource.transaction(async manager => {
-      await manager.softDelete(Variant, id);
+  async updateWithValues(id: number, data: Partial<Variant>, values?: string[]): Promise<Variant> {
+    return this.dataSource.transaction(async manager => {
+      // Update variant basic info
+      await manager.update(Variant, id, {
+        name: data.name,
+        status: data.status,
+        display_order: data.display_order
+      });
 
-      await manager.createQueryBuilder()
+      if (values) {
+        // Delete existing values
+        await manager.delete(VariantValue, { variant_id: id });
+
+        // Create new values
+        const variantValues = values.map(value => ({
+          variant_id: id,
+          value: value
+        }));
+
+        await manager.insert(VariantValue, variantValues);
+      }
+
+      // Return updated variant with values
+      return manager.findOne(Variant, {
+        where: { id },
+        relations: ['values']
+      }) as Promise<Variant>;
+    });
+  }
+
+  async reorderAfterDelete(displayOrder: number): Promise<void> {
+    await this.dataSource.transaction(async manager => {
+      await manager
+        .createQueryBuilder()
         .update(Variant)
         .set({
           display_order: () => 'display_order - 1'
         })
-        .where('display_order > :order', { order: displayOrder })
+        .where('display_order > :displayOrder', { displayOrder })
         .andWhere('deleted_at IS NULL')
         .execute();
     });
   }
 
-  async isDisplayOrderTaken(displayOrder: number, excludeId?: number): Promise<boolean> {
-    const query = this.variantRepository
-      .createQueryBuilder('variant')
-      .where('variant.display_order = :displayOrder', { displayOrder })
-      .andWhere('variant.deleted_at IS NULL');
-
-    if (excludeId) {
-      query.andWhere('variant.id != :id', { id: excludeId });
-    }
-
-    const count = await query.getCount();
-    return count > 0;
+  async findActiveVariants(
+    skip: number,
+    take: number
+  ): Promise<[Variant[], number]> {
+    return this.variantRepository.findAndCount({
+      where: { deleted_at: IsNull() },
+      order: { display_order: 'ASC' },
+      skip,
+      take,
+      relations: ['values']
+    });
   }
 }

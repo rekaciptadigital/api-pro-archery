@@ -7,8 +7,8 @@ export class Variant extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
-  display_order: number;
+  @Column({ type: 'integer', nullable: true })
+  display_order: number | null;
 
   @Column({ type: 'boolean', default: true })
   status: boolean;

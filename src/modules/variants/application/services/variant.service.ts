@@ -5,10 +5,8 @@ import { VariantQueryDto } from '../dtos/variant-query.dto';
 import { VariantValidator } from '../../domain/validators/variant.validator';
 import { PaginationHelper } from '@/common/pagination/helpers/pagination.helper';
 import { ResponseTransformer } from '@/common/transformers/response.transformer';
-import { ILike } from 'typeorm';
 import { DomainException } from '@/common/exceptions/domain.exception';
 import { HttpStatus } from '@nestjs/common';
-import { VariantValue } from '../../domain/entities/variant-value.entity';
 
 @Injectable()
 export class VariantService {
@@ -22,17 +20,18 @@ export class VariantService {
   async create(createVariantDto: CreateVariantDto) {
     await this.variantValidator.validateName(createVariantDto.name);
     await this.variantValidator.validateValues(createVariantDto.values);
-    await this.variantValidator.validateDisplayOrder(createVariantDto.display_order);
 
-    const variant = await this.variantRepository.createWithOrder({
+    // Get next display order
+    const count = await this.variantRepository.getActiveVariantsCount();
+    const nextOrder = count + 1;
+
+    const variant = await this.variantRepository.create({
       name: createVariantDto.name,
-      display_order: createVariantDto.display_order,
+      display_order: nextOrder,
       status: createVariantDto.status ?? true,
-      values: createVariantDto.values.map(value => {
-        const variantValue = new VariantValue();
-        variantValue.value = value;
-        return variantValue;
-      })
+      values: createVariantDto.values.map(value => ({
+        value: value
+      }))
     });
 
     return this.responseTransformer.transform({
@@ -43,24 +42,8 @@ export class VariantService {
 
   async findAll(query: VariantQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
-
-    const where: any = {};
     
-    if (query.status !== undefined) {
-      where.status = query.status;
-    }
-
-    if (query.search) {
-      where.name = ILike(`%${query.search}%`);
-    }
-
-    const [variants, total] = await this.variantRepository.findAndCount({
-      where,
-      skip,
-      take,
-      order: { display_order: 'ASC' },
-      relations: ['values']
-    });
+    const [variants, total] = await this.variantRepository.findActiveVariants(skip, take);
 
     const transformedVariants = variants.map(variant => ({
       ...variant,
@@ -114,21 +97,33 @@ export class VariantService {
       await this.variantValidator.validateValues(updateVariantDto.values);
     }
 
-    if (updateVariantDto.display_order) {
-      await this.variantValidator.validateDisplayOrder(updateVariantDto.display_order);
+    // Validate display_order
+    const totalVariants = await this.variantRepository.getActiveVariantsCount();
+    if (updateVariantDto.display_order > totalVariants) {
+      throw new DomainException(
+        `Display order cannot exceed total number of variants (${totalVariants})`,
+        HttpStatus.BAD_REQUEST
+      );
     }
 
-    const updated = await this.variantRepository.updateWithOrder(
+    // Handle display order update
+    if (updateVariantDto.display_order !== variant.display_order) {
+      await this.variantRepository.swapDisplayOrder(
+        id,
+        variant.display_order!,
+        updateVariantDto.display_order
+      );
+    }
+
+    // Update variant with values
+    const updated = await this.variantRepository.updateWithValues(
       id,
       {
-        ...updateVariantDto,
-        values: updateVariantDto.values?.map(value => {
-          const variantValue = new VariantValue();
-          variantValue.value = value;
-          return variantValue;
-        })
+        name: updateVariantDto.name,
+        status: updateVariantDto.status,
+        display_order: updateVariantDto.display_order
       },
-      variant.display_order
+      updateVariantDto.values
     );
 
     return this.responseTransformer.transform({
@@ -157,7 +152,14 @@ export class VariantService {
       throw new NotFoundException('Variant not found');
     }
 
-    await this.variantRepository.softDeleteWithOrder(id, variant.display_order);
+    // Set display_order to null before soft delete
+    await this.variantRepository.update(id, { display_order: null });
+    await this.variantRepository.softDelete(id);
+
+    // Reorder remaining variants
+    if (variant.display_order) {
+      await this.variantRepository.reorderAfterDelete(variant.display_order);
+    }
     
     return this.responseTransformer.transform({ 
       message: 'Variant deleted successfully' 
@@ -174,20 +176,22 @@ export class VariantService {
       throw new DomainException('Variant is not deleted', HttpStatus.BAD_REQUEST);
     }
 
-    const maxDisplayOrder = await this.variantRepository.getMaxDisplayOrder();
-    const newDisplayOrder = maxDisplayOrder + 1;
+    // Get new display order (count + 1)
+    const count = await this.variantRepository.getActiveVariantsCount();
+    const newDisplayOrder = count + 1;
 
+    // Restore variant with new display order
     await this.variantRepository.restore(id);
     await this.variantRepository.update(id, { display_order: newDisplayOrder });
-    
-    const updatedVariant = await this.variantRepository.findById(id);
-    if (!updatedVariant) {
-      throw new DomainException('Failed to retrieve updated variant', HttpStatus.INTERNAL_SERVER_ERROR);
+
+    const restored = await this.variantRepository.findById(id);
+    if (!restored) {
+      throw new DomainException('Failed to restore variant', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return this.responseTransformer.transform({
-      ...updatedVariant,
-      values: updatedVariant.values.map(v => v.value)
+      ...restored,
+      values: restored.values.map(v => v.value)
     });
   }
 }

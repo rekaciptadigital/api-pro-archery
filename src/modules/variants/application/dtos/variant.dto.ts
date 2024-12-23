@@ -7,12 +7,6 @@ export class CreateVariantDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: 'Display order' })
-  @IsNumber()
-  @Min(1)
-  @Type(() => Number)
-  display_order: number;
-
   @ApiPropertyOptional({ description: 'Variant status' })
   @IsOptional()
   @IsBoolean()
@@ -30,12 +24,11 @@ export class UpdateVariantDto {
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Display order' })
-  @IsOptional()
+  @ApiProperty({ description: 'Display order' })
   @IsNumber()
   @Min(1)
   @Type(() => Number)
-  display_order?: number;
+  display_order: number;
 
   @ApiPropertyOptional({ description: 'Variant status' })
   @IsOptional()

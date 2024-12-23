@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, FindOptionsWhere, IsNull, Not } from "typeorm";
-import { Brand } from "../entities/brand.entity";
-import { BaseRepository } from "@/common/repositories/base.repository";
-import { BrandQueryBuilder } from "../builders/brand-query.builder";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, FindOptionsWhere, IsNull, Not } from 'typeorm';
+import { Brand } from '../entities/brand.entity';
+import { BaseRepository } from '@/common/repositories/base.repository';
+import { BrandQueryBuilder } from '../builders/brand-query.builder';
 
 @Injectable()
 export class BrandRepository extends BaseRepository<Brand> {
@@ -15,13 +15,12 @@ export class BrandRepository extends BaseRepository<Brand> {
   }
 
   async findByCode(code: string, excludeId?: number): Promise<Brand | null> {
-    const query = this.brandRepository
-      .createQueryBuilder("brand")
-      .where("LOWER(brand.code) = LOWER(:code)", { code })
-      .andWhere("brand.deleted_at IS NULL");
+    const query = this.brandRepository.createQueryBuilder('brand')
+      .where('LOWER(brand.code) = LOWER(:code)', { code })
+      .andWhere('brand.deleted_at IS NULL');
 
     if (excludeId) {
-      query.andWhere("brand.id != :id", { id: excludeId });
+      query.andWhere('brand.id != :id', { id: excludeId });
     }
 
     return query.getOne();
@@ -32,15 +31,15 @@ export class BrandRepository extends BaseRepository<Brand> {
       where: {
         code: code,
       },
-      withDeleted: true,
+      withDeleted: true
     });
   }
 
   async findActiveBrands(
-    skip: number,
-    take: number,
-    sort: string = "created_at",
-    order: "ASC" | "DESC" = "DESC"
+    skip: number, 
+    take: number, 
+    sort: string = 'created_at', 
+    order: 'ASC' | 'DESC' = 'DESC'
   ): Promise<[Brand[], number]> {
     const queryBuilder = BrandQueryBuilder.create(this.brandRepository)
       .addPagination(skip, take)
@@ -55,8 +54,8 @@ export class BrandRepository extends BaseRepository<Brand> {
       where: {
         id,
         status: true,
-        deleted_at: IsNull(),
-      } as FindOptionsWhere<Brand>,
+        deleted_at: IsNull()
+      } as FindOptionsWhere<Brand>
     });
   }
 }
