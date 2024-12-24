@@ -21,6 +21,22 @@ export class UserValidator {
     }
   }
 
+  async validateEmailForCreation(email: string): Promise<{ existingUser: any | null, isDeleted: boolean }> {
+    if (!this.isValidEmailFormat(email)) {
+      throw new DomainException('Invalid email format', HttpStatus.BAD_REQUEST);
+    }
+
+    const existingUser = await this.userRepository.findByEmailIncludingDeleted(email);
+    if (!existingUser) {
+      return { existingUser: null, isDeleted: false };
+    }
+
+    return {
+      existingUser,
+      isDeleted: !!existingUser.deleted_at
+    };
+  }
+
   private isValidEmailFormat(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);

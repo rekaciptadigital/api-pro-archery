@@ -8,7 +8,7 @@ import { BaseRepository } from '../../../common/repositories/base.repository';
 export class UserRepository extends BaseRepository<User> {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {
     super(userRepository);
   }
@@ -19,6 +19,13 @@ export class UserRepository extends BaseRepository<User> {
         email,
         deleted_at: IsNull()
       } as FindOptionsWhere<User>,
+    });
+  }
+
+  async findByEmailIncludingDeleted(email: string): Promise<User | null> {
+    return this.repository.findOne({
+      where: { email },
+      withDeleted: true
     });
   }
 

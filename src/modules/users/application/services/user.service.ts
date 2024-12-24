@@ -8,6 +8,8 @@ import { PaginationHelper } from '../../../../common/pagination/helpers/paginati
 import { PasswordService } from '../../../auth/application/services/password.service';
 import { DomainException } from '@/common/exceptions/domain.exception';
 import { HttpStatus } from '@nestjs/common';
+import { UserValidator } from '../../domain/validators/user.validator';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -15,12 +17,60 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly responseTransformer: ResponseTransformer,
     private readonly paginationHelper: PaginationHelper,
-    private readonly passwordService: PasswordService
+    private readonly passwordService: PasswordService,
+    private readonly userValidator: UserValidator,
+    private readonly dataSource: DataSource
   ) {}
 
   private excludePasswordField<T extends Record<string, any>>(data: T): Omit<T, 'password'> {
     const { password, ...rest } = data;
     return rest;
+  }
+
+  async create(createUserDto: CreateUserDto) {
+    const { existingUser, isDeleted } = await this.userValidator.validateEmailForCreation(
+      createUserDto.email
+    );
+
+    // Start transaction
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      let user;
+      const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
+
+      if (existingUser && isDeleted) {
+        // Restore and update the soft-deleted user
+        await this.userRepository.restore(existingUser.id);
+        user = await this.userRepository.update(existingUser.id, {
+          ...createUserDto,
+          password: hashedPassword,
+          status: createUserDto.status ?? true
+        });
+      } else if (existingUser) {
+        throw new DomainException(
+          'Email is already registered',
+          HttpStatus.CONFLICT
+        );
+      } else {
+        // Create new user
+        user = await this.userRepository.create({
+          ...createUserDto,
+          password: hashedPassword,
+          status: createUserDto.status ?? true
+        });
+      }
+
+      await queryRunner.commitTransaction();
+      return this.responseTransformer.transform(this.excludePasswordField(user));
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async findAll(query: PaginationQueryDto) {
@@ -64,18 +114,6 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    return this.responseTransformer.transform(this.excludePasswordField(user));
-  }
-
-  async create(createUserDto: CreateUserDto) {
-    const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
-    
-    const user = await this.userRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-      status: createUserDto.status ?? true
-    });
 
     return this.responseTransformer.transform(this.excludePasswordField(user));
   }
