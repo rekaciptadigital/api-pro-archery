@@ -37,6 +37,20 @@ export class UserValidator {
     };
   }
 
+  async validateEmailForUpdate(email: string, userId: number): Promise<void> {
+    if (!this.isValidEmailFormat(email)) {
+      throw new DomainException('Invalid email format', HttpStatus.BAD_REQUEST);
+    }
+
+    const existingUser = await this.userRepository.findByEmail(email);
+    if (existingUser && existingUser.id !== userId) {
+      throw new DomainException(
+        'Email is already in use by another user',
+        HttpStatus.CONFLICT
+      );
+    }
+  }
+
   private isValidEmailFormat(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);

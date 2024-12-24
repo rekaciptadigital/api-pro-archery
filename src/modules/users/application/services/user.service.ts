@@ -124,6 +124,11 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
+    // Validate email if it's being updated
+    if (updateUserDto.email) {
+      await this.userValidator.validateEmailForUpdate(updateUserDto.email, id);
+    }
+
     const dataToUpdate = { ...updateUserDto };
 
     if (updateUserDto.password) {
