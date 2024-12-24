@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, IsNull } from 'typeorm';
+import { Repository, FindOptionsWhere, IsNull, Not } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
 
@@ -26,6 +26,16 @@ export class UserRepository extends BaseRepository<User> {
     return this.repository.findOne({
       where: { email },
       withDeleted: true
+    });
+  }
+
+  async findByEmailExcludingUser(email: string, userId: number): Promise<User | null> {
+    return this.repository.findOne({
+      where: {
+        email,
+        id: Not(userId),
+        deleted_at: IsNull()
+      } as FindOptionsWhere<User>
     });
   }
 

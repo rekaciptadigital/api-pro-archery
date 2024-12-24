@@ -7,17 +7,31 @@ import { HttpStatus } from '@nestjs/common';
 export class UserValidator {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async validateEmail(email: string, userId?: number): Promise<void> {
+  async validateEmailForUpdate(email: string, userId: number): Promise<void> {
+    // Validate email format
     if (!this.isValidEmailFormat(email)) {
       throw new DomainException('Invalid email format', HttpStatus.BAD_REQUEST);
     }
 
-    const existingUser = await this.userRepository.findByEmail(email);
-    if (existingUser && existingUser.id !== userId) {
-      throw new DomainException(
-        'Email is already in use by another user',
-        HttpStatus.CONFLICT
-      );
+    // Check if email exists for another user (including deleted)
+    const existingUser = await this.userRepository.findByEmailIncludingDeleted(email);
+    
+    if (existingUser) {
+      // If email belongs to another user
+      if (existingUser.id !== userId) {
+        throw new DomainException(
+          'Email is already registered to another user',
+          HttpStatus.CONFLICT
+        );
+      }
+      
+      // If email belongs to same user but account is deleted
+      if (existingUser.deleted_at) {
+        throw new DomainException(
+          'Cannot update to this email as it belongs to a deleted account',
+          HttpStatus.CONFLICT
+        );
+      }
     }
   }
 
@@ -35,20 +49,6 @@ export class UserValidator {
       existingUser,
       isDeleted: !!existingUser.deleted_at
     };
-  }
-
-  async validateEmailForUpdate(email: string, userId: number): Promise<void> {
-    if (!this.isValidEmailFormat(email)) {
-      throw new DomainException('Invalid email format', HttpStatus.BAD_REQUEST);
-    }
-
-    const existingUser = await this.userRepository.findByEmail(email);
-    if (existingUser && existingUser.id !== userId) {
-      throw new DomainException(
-        'Email is already in use by another user',
-        HttpStatus.CONFLICT
-      );
-    }
   }
 
   private isValidEmailFormat(email: string): boolean {
