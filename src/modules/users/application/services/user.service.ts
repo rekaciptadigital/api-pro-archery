@@ -3,7 +3,7 @@ import { UserRepository } from '../../domain/repositories/user.repository';
 import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UpdateUserStatusDto } from '../dtos/user-status.dto';
-import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
+import { UserListQueryDto } from '../dtos/user-list.dto';
 import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
 import { PasswordService } from '../../../auth/application/services/password.service';
 import { DomainException } from '@/common/exceptions/domain.exception';
@@ -32,7 +32,6 @@ export class UserService {
       createUserDto.email
     );
 
-    // Start transaction
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -42,7 +41,6 @@ export class UserService {
       const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
 
       if (existingUser && isDeleted) {
-        // Restore and update the soft-deleted user
         await this.userRepository.restore(existingUser.id);
         user = await this.userRepository.update(existingUser.id, {
           ...createUserDto,
@@ -55,7 +53,6 @@ export class UserService {
           HttpStatus.CONFLICT
         );
       } else {
-        // Create new user
         user = await this.userRepository.create({
           ...createUserDto,
           password: hashedPassword,
@@ -73,15 +70,16 @@ export class UserService {
     }
   }
 
-  async findAll(query: PaginationQueryDto) {
+  async findAll(query: UserListQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
-
-    const [users, total] = await this.userRepository.findAndCount({
-      relations: ['user_roles', 'user_roles.role'],
+    
+    const [users, total] = await this.userRepository.findUsers(
       skip,
       take,
-      order: { created_at: 'DESC' }
-    });
+      query.sort,
+      query.order,
+      query.search
+    );
 
     const usersWithoutPassword = users.map(user => this.excludePasswordField(user));
 
@@ -90,10 +88,7 @@ export class UserService {
       totalItems: total,
       page: query.page,
       limit: query.limit,
-      customParams: {
-        page: query.page?.toString() || '1',
-        limit: query.limit?.toString() || '10'
-      }
+      customParams: query.toCustomParams()
     });
 
     return this.responseTransformer.transformPaginated(
@@ -124,7 +119,6 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    // Validate email if it's being updated
     if (updateUserDto.email) {
       await this.userValidator.validateEmailForUpdate(updateUserDto.email, id);
     }

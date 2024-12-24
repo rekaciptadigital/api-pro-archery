@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, IsNull, Not } from 'typeorm';
+import { Repository, FindOptionsWhere, IsNull, Not, ILike } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { BaseRepository } from '../../../common/repositories/base.repository';
+import { UserSortField, SortOrder } from '../../application/dtos/user-list.dto';
 
 @Injectable()
 export class UserRepository extends BaseRepository<User> {
@@ -39,24 +40,6 @@ export class UserRepository extends BaseRepository<User> {
     });
   }
 
-  async findByNip(nip: string): Promise<User | null> {
-    return this.repository.findOne({
-      where: { 
-        nip,
-        deleted_at: IsNull()
-      } as FindOptionsWhere<User>,
-    });
-  }
-
-  async findByNik(nik: string): Promise<User | null> {
-    return this.repository.findOne({
-      where: { 
-        nik,
-        deleted_at: IsNull()
-      } as FindOptionsWhere<User>,
-    });
-  }
-
   async findWithDeleted(id: number): Promise<User | null> {
     return this.repository.findOne({
       where: { id } as any,
@@ -67,5 +50,33 @@ export class UserRepository extends BaseRepository<User> {
   async restore(id: number): Promise<User | null> {
     await this.repository.restore(id);
     return this.findById(id);
+  }
+
+  async findUsers(
+    skip: number,
+    take: number,
+    sort: UserSortField = UserSortField.CREATED_AT,
+    order: SortOrder = SortOrder.DESC,
+    search?: string
+  ): Promise<[User[], number]> {
+    const query = this.repository.createQueryBuilder('user')
+      .leftJoinAndSelect('user.user_roles', 'user_roles')
+      .leftJoinAndSelect('user_roles.role', 'role')
+      .where('user.deleted_at IS NULL');
+
+    if (search) {
+      query.andWhere(
+        '(LOWER(user.first_name) LIKE LOWER(:search) OR ' +
+        'LOWER(user.last_name) LIKE LOWER(:search) OR ' +
+        'LOWER(user.email) LIKE LOWER(:search))',
+        { search: `%${search}%` }
+      );
+    }
+
+    query.orderBy(`user.${sort}`, order)
+      .skip(skip)
+      .take(take);
+
+    return query.getManyAndCount();
   }
 }

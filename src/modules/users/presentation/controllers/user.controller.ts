@@ -16,7 +16,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UserService } from '../../application/services/user.service';
 import { CreateUserDto, UpdateUserDto } from '../../application/dtos/user.dto';
 import { UpdateUserStatusDto } from '../../application/dtos/user-status.dto';
-import { PaginationQueryDto } from '../../../../common/pagination/dto/pagination-query.dto';
+import { UserListQueryDto } from '../../application/dtos/user-list.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -27,14 +27,16 @@ export class UserController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create new user' })
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Successfully created user' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input data' })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Email already exists' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all users' })
+  @ApiOperation({ summary: 'Get all users with sorting and searching' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved users' })
-  findAll(@Query() query: PaginationQueryDto) {
+  findAll(@Query() query: UserListQueryDto) {
     return this.userService.findAll(query);
   }
 
@@ -50,6 +52,7 @@ export class UserController {
   @ApiOperation({ summary: 'Update user' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Successfully updated user' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Email already exists' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -61,7 +64,6 @@ export class UserController {
   @ApiOperation({ summary: 'Update user status' })
   @ApiResponse({ status: HttpStatus.OK, description: 'User status updated successfully' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid status value' })
   updateStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateStatusDto: UpdateUserStatusDto,
