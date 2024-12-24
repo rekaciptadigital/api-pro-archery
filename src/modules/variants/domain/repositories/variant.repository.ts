@@ -4,6 +4,8 @@ import { Repository, DataSource, IsNull } from 'typeorm';
 import { Variant } from '../entities/variant.entity';
 import { VariantValue } from '../entities/variant-value.entity';
 import { BaseRepository } from '@/common/repositories/base.repository';
+import { VariantQueryBuilder } from '../builders/variant-query.builder';
+import { VariantSortField, SortOrder } from '../../application/dtos/variant-query.dto';
 
 @Injectable()
 export class VariantRepository extends BaseRepository<Variant> {
@@ -21,6 +23,22 @@ export class VariantRepository extends BaseRepository<Variant> {
     return this.variantRepository.count({
       where: { deleted_at: IsNull() }
     });
+  }
+
+  async findVariants(
+    skip: number,
+    take: number,
+    sort: VariantSortField = VariantSortField.ID,
+    order: SortOrder = SortOrder.DESC,
+    search?: string
+  ): Promise<[Variant[], number]> {
+    const queryBuilder = VariantQueryBuilder.create(this.variantRepository)
+      .addSearch(search)
+      .addPagination(skip, take)
+      .addOrderBy(sort, order)
+      .build();
+
+    return queryBuilder.getManyAndCount();
   }
 
   async swapDisplayOrder(
@@ -48,14 +66,14 @@ export class VariantRepository extends BaseRepository<Variant> {
     });
   }
 
-  async updateWithValues(id: number, data: Partial<Variant>, values?: string[]): Promise<Variant> {
+  async updateWithValues(
+    id: number, 
+    data: Partial<Variant>, 
+    values?: string[]
+  ): Promise<Variant> {
     return this.dataSource.transaction(async manager => {
       // Update variant basic info
-      await manager.update(Variant, id, {
-        name: data.name,
-        status: data.status,
-        display_order: data.display_order
-      });
+      await manager.update(Variant, id, data);
 
       if (values) {
         // Delete existing values
@@ -92,16 +110,16 @@ export class VariantRepository extends BaseRepository<Variant> {
     });
   }
 
-  async findActiveVariants(
-    skip: number,
-    take: number
-  ): Promise<[Variant[], number]> {
-    return this.variantRepository.findAndCount({
-      where: { deleted_at: IsNull() },
-      order: { display_order: 'ASC' },
-      skip,
-      take,
+  async findWithDeleted(id: number): Promise<Variant | null> {
+    return this.repository.findOne({
+      where: { id } as any,
+      withDeleted: true,
       relations: ['values']
     });
+  }
+
+  async restore(id: number): Promise<Variant | null> {
+    await this.repository.restore(id);
+    return this.findById(id);
   }
 }

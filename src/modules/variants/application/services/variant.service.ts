@@ -43,7 +43,13 @@ export class VariantService {
   async findAll(query: VariantQueryDto) {
     const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
     
-    const [variants, total] = await this.variantRepository.findActiveVariants(skip, take);
+    const [variants, total] = await this.variantRepository.findVariants(
+      skip,
+      take,
+      query.sort,
+      query.order,
+      query.search
+    );
 
     const transformedVariants = variants.map(variant => ({
       ...variant,
