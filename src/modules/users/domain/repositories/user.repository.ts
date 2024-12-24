@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, IsNull, Not, ILike } from 'typeorm';
+import { Repository, IsNull, Not, ILike } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { BaseRepository } from '../../../common/repositories/base.repository';
+import { BaseRepository } from '@/common/repositories/base.repository';
 import { UserSortField, SortOrder } from '../../application/dtos/user-list.dto';
 
 @Injectable()
@@ -15,41 +15,19 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.repository.findOne({
+    return this.userRepository.findOne({
       where: { 
         email,
         deleted_at: IsNull()
-      } as FindOptionsWhere<User>,
+      }
     });
   }
 
   async findByEmailIncludingDeleted(email: string): Promise<User | null> {
-    return this.repository.findOne({
+    return this.userRepository.findOne({
       where: { email },
       withDeleted: true
     });
-  }
-
-  async findByEmailExcludingUser(email: string, userId: number): Promise<User | null> {
-    return this.repository.findOne({
-      where: {
-        email,
-        id: Not(userId),
-        deleted_at: IsNull()
-      } as FindOptionsWhere<User>
-    });
-  }
-
-  async findWithDeleted(id: number): Promise<User | null> {
-    return this.repository.findOne({
-      where: { id } as any,
-      withDeleted: true
-    });
-  }
-
-  async restore(id: number): Promise<User | null> {
-    await this.repository.restore(id);
-    return this.findById(id);
   }
 
   async findUsers(
@@ -59,7 +37,7 @@ export class UserRepository extends BaseRepository<User> {
     order: SortOrder = SortOrder.DESC,
     search?: string
   ): Promise<[User[], number]> {
-    const query = this.repository.createQueryBuilder('user')
+    const query = this.userRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.user_roles', 'user_roles')
       .leftJoinAndSelect('user_roles.role', 'role')
       .where('user.deleted_at IS NULL');
@@ -78,5 +56,17 @@ export class UserRepository extends BaseRepository<User> {
       .take(take);
 
     return query.getManyAndCount();
+  }
+
+  async findWithDeleted(id: number): Promise<User | null> {
+    return this.repository.findOne({
+      where: { id } as any,
+      withDeleted: true
+    });
+  }
+
+  async restore(id: number): Promise<User | null> {
+    await this.repository.restore(id);
+    return this.findById(id);
   }
 }

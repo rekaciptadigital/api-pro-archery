@@ -1,73 +1,47 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from '../../domain/repositories/user.repository';
-import { ResponseTransformer } from '../../../../common/transformers/response.transformer';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UpdateUserStatusDto } from '../dtos/user-status.dto';
 import { UserListQueryDto } from '../dtos/user-list.dto';
-import { PaginationHelper } from '../../../../common/pagination/helpers/pagination.helper';
-import { PasswordService } from '../../../auth/application/services/password.service';
+import { UserValidator } from '../../domain/validators/user.validator';
+import { ResponseTransformer } from '@/common/transformers/response.transformer';
+import { PaginationHelper } from '@/common/pagination/helpers/pagination.helper';
+import { PasswordService } from '@/modules/auth/application/services/password.service';
 import { DomainException } from '@/common/exceptions/domain.exception';
 import { HttpStatus } from '@nestjs/common';
-import { UserValidator } from '../../domain/validators/user.validator';
-import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly userValidator: UserValidator,
     private readonly responseTransformer: ResponseTransformer,
     private readonly paginationHelper: PaginationHelper,
-    private readonly passwordService: PasswordService,
-    private readonly userValidator: UserValidator,
-    private readonly dataSource: DataSource
+    private readonly passwordService: PasswordService
   ) {}
 
-  private excludePasswordField<T extends Record<string, any>>(data: T): Omit<T, 'password'> {
-    const { password, ...rest } = data;
-    return rest;
-  }
-
   async create(createUserDto: CreateUserDto) {
-    const { existingUser, isDeleted } = await this.userValidator.validateEmailForCreation(
-      createUserDto.email
-    );
-
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      let user;
-      const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
-
-      if (existingUser && isDeleted) {
-        await this.userRepository.restore(existingUser.id);
-        user = await this.userRepository.update(existingUser.id, {
-          ...createUserDto,
-          password: hashedPassword,
-          status: createUserDto.status ?? true
-        });
-      } else if (existingUser) {
-        throw new DomainException(
-          'Email is already registered',
-          HttpStatus.CONFLICT
-        );
-      } else {
-        user = await this.userRepository.create({
-          ...createUserDto,
-          password: hashedPassword,
-          status: createUserDto.status ?? true
-        });
-      }
-
-      await queryRunner.commitTransaction();
-      return this.responseTransformer.transform(this.excludePasswordField(user));
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
+    // Validate email
+    const existingUser = await this.userRepository.findByEmail(createUserDto.email);
+    if (existingUser) {
+      throw new DomainException('Email already exists', HttpStatus.CONFLICT);
     }
+
+    // Hash password
+    const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
+
+    // Create user
+    const user = await this.userRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+      status: createUserDto.status ?? true
+    });
+
+    // Return response without password
+    return this.responseTransformer.transform({
+      ...user,
+      password: undefined
+    });
   }
 
   async findAll(query: UserListQueryDto) {
@@ -81,8 +55,6 @@ export class UserService {
       query.search
     );
 
-    const usersWithoutPassword = users.map(user => this.excludePasswordField(user));
-
     const paginationData = this.paginationHelper.generatePaginationData({
       serviceName: 'users',
       totalItems: total,
@@ -92,7 +64,7 @@ export class UserService {
     });
 
     return this.responseTransformer.transformPaginated(
-      usersWithoutPassword,
+      users.map(user => ({ ...user, password: undefined })),
       total,
       query.page || 1,
       query.limit || 10,
@@ -110,7 +82,10 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    return this.responseTransformer.transform(this.excludePasswordField(user));
+    return this.responseTransformer.transform({
+      ...user,
+      password: undefined
+    });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -123,14 +98,15 @@ export class UserService {
       await this.userValidator.validateEmailForUpdate(updateUserDto.email, id);
     }
 
-    const dataToUpdate = { ...updateUserDto };
-
     if (updateUserDto.password) {
-      dataToUpdate.password = await this.passwordService.hashPassword(updateUserDto.password);
+      updateUserDto.password = await this.passwordService.hashPassword(updateUserDto.password);
     }
 
-    const updated = await this.userRepository.update(id, dataToUpdate);
-    return this.responseTransformer.transform(this.excludePasswordField(updated));
+    const updated = await this.userRepository.update(id, updateUserDto);
+    return this.responseTransformer.transform({
+      ...updated,
+      password: undefined
+    });
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateUserStatusDto) {
@@ -140,7 +116,9 @@ export class UserService {
     }
 
     await this.userRepository.update(id, updateStatusDto);
-    return this.responseTransformer.transform({ message: 'User status updated successfully' });
+    return this.responseTransformer.transform({
+      message: 'User status updated successfully'
+    });
   }
 
   async remove(id: number) {
@@ -150,7 +128,9 @@ export class UserService {
     }
 
     await this.userRepository.softDelete(id);
-    return this.responseTransformer.transform({ message: 'User deleted successfully' });
+    return this.responseTransformer.transform({
+      message: 'User deleted successfully'
+    });
   }
 
   async restore(id: number) {
@@ -168,6 +148,9 @@ export class UserService {
       throw new DomainException('Failed to restore user', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    return this.responseTransformer.transform(this.excludePasswordField(restored));
+    return this.responseTransformer.transform({
+      ...restored,
+      password: undefined
+    });
   }
 }

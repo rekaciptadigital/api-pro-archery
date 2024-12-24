@@ -1,54 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repository';
-import { DomainException } from '../../../common/exceptions/domain.exception';
+import { DomainException } from '@/common/exceptions/domain.exception';
 import { HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class UserValidator {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async validateEmailForUpdate(email: string, userId: number): Promise<void> {
+  async validateEmailForUpdate(newEmail: string, userId: number): Promise<void> {
     // Validate email format
-    if (!this.isValidEmailFormat(email)) {
+    if (!this.isValidEmailFormat(newEmail)) {
       throw new DomainException('Invalid email format', HttpStatus.BAD_REQUEST);
     }
 
-    // Check if email exists for another user (including deleted)
-    const existingUser = await this.userRepository.findByEmailIncludingDeleted(email);
-    
+    // Get current user to check if it's the same email
+    const currentUser = await this.userRepository.findById(userId);
+    if (!currentUser) {
+      throw new DomainException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    // If email hasn't changed, allow the update
+    if (currentUser.email.toLowerCase() === newEmail.toLowerCase()) {
+      return;
+    }
+
+    // Check if email exists (including soft-deleted users)
+    const existingUser = await this.userRepository.findByEmailIncludingDeleted(newEmail);
     if (existingUser) {
-      // If email belongs to another user
-      if (existingUser.id !== userId) {
-        throw new DomainException(
-          'Email is already registered to another user',
-          HttpStatus.CONFLICT
-        );
-      }
-      
-      // If email belongs to same user but account is deleted
-      if (existingUser.deleted_at) {
-        throw new DomainException(
-          'Cannot update to this email as it belongs to a deleted account',
-          HttpStatus.CONFLICT
-        );
-      }
+      throw new DomainException(
+        'Email is already registered to another user',
+        HttpStatus.CONFLICT
+      );
     }
-  }
-
-  async validateEmailForCreation(email: string): Promise<{ existingUser: any | null, isDeleted: boolean }> {
-    if (!this.isValidEmailFormat(email)) {
-      throw new DomainException('Invalid email format', HttpStatus.BAD_REQUEST);
-    }
-
-    const existingUser = await this.userRepository.findByEmailIncludingDeleted(email);
-    if (!existingUser) {
-      return { existingUser: null, isDeleted: false };
-    }
-
-    return {
-      existingUser,
-      isDeleted: !!existingUser.deleted_at
-    };
   }
 
   private isValidEmailFormat(email: string): boolean {
