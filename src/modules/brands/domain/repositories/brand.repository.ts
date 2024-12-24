@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, FindOptionsWhere, IsNull, Not } from "typeorm";
+import { Repository, IsNull } from "typeorm";
 import { Brand } from "../entities/brand.entity";
 import { BaseRepository } from "@/common/repositories/base.repository";
 import { BrandQueryBuilder } from "../builders/brand-query.builder";
+import { BrandSortField, SortOrder } from "../../application/dtos/brand-query.dto";
 
 @Injectable()
 export class BrandRepository extends BaseRepository<Brand> {
@@ -15,48 +16,22 @@ export class BrandRepository extends BaseRepository<Brand> {
   }
 
   async findByCode(code: string, excludeId?: number): Promise<Brand | null> {
-    const query = this.brandRepository
-      .createQueryBuilder("brand")
-      .where("LOWER(brand.code) = LOWER(:code)", { code })
-      .andWhere("brand.deleted_at IS NULL");
+    const query = this.brandRepository.createQueryBuilder('brand')
+      .where('LOWER(brand.code) = LOWER(:code)', { code })
+      .andWhere('brand.deleted_at IS NULL');
 
     if (excludeId) {
-      query.andWhere("brand.id != :id", { id: excludeId });
+      query.andWhere('brand.id != :id', { id: excludeId });
     }
 
     return query.getOne();
   }
 
-  async findByCodeIncludingDeleted(code: string): Promise<Brand | null> {
-    return this.brandRepository.findOne({
-      where: {
-        code: code,
-      },
-      withDeleted: true,
-    });
-  }
-
-  async findActiveBrands(
-    skip: number,
-    take: number,
-    sort: string = "created_at",
-    order: "ASC" | "DESC" = "DESC",
-    search?: string
-  ): Promise<[Brand[], number]> {
-    const queryBuilder = BrandQueryBuilder.createActiveOnly(this.brandRepository)
-      .addSearch(search)
-      .addPagination(skip, take)
-      .addOrderBy(sort, order)
-      .build();
-
-    return queryBuilder.getManyAndCount();
-  }
-
   async findBrands(
     skip: number,
     take: number,
-    sort: string = "created_at",
-    order: "ASC" | "DESC" = "DESC",
+    sort: BrandSortField = BrandSortField.CREATED_AT,
+    order: SortOrder = SortOrder.DESC,
     search?: string
   ): Promise<[Brand[], number]> {
     const queryBuilder = BrandQueryBuilder.create(this.brandRepository)
@@ -68,22 +43,15 @@ export class BrandRepository extends BaseRepository<Brand> {
     return queryBuilder.getManyAndCount();
   }
 
-  async findById(id: number): Promise<Brand | null> {
-    return this.brandRepository.findOne({
-      where: {
-        id,
-        deleted_at: IsNull(),
-      } as FindOptionsWhere<Brand>,
+  async findWithDeleted(id: number): Promise<Brand | null> {
+    return this.repository.findOne({
+      where: { id } as any,
+      withDeleted: true
     });
   }
 
-  async findActiveById(id: number): Promise<Brand | null> {
-    return this.brandRepository.findOne({
-      where: {
-        id,
-        status: true,
-        deleted_at: IsNull(),
-      } as FindOptionsWhere<Brand>,
-    });
+  async restore(id: number): Promise<Brand | null> {
+    await this.repository.restore(id);
+    return this.findById(id);
   }
 }

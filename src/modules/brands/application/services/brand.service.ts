@@ -20,31 +20,11 @@ export class BrandService {
   async create(createBrandDto: CreateBrandDto) {
     await this.brandValidator.validateName(createBrandDto.name);
 
-    // Check if brand with same code exists (including deleted)
-    const existingBrand = await this.brandRepository.findByCodeIncludingDeleted(
-      createBrandDto.code
-    );
-
+    const existingBrand = await this.brandRepository.findByCode(createBrandDto.code);
     if (existingBrand) {
-      // If brand exists and is not deleted, return conflict error
-      if (!existingBrand.deleted_at) {
-        throw new DomainException(
-          "Brand code already exists",
-          HttpStatus.CONFLICT
-        );
-      }
-
-      // If brand exists but is deleted, restore and update it
-      await this.brandRepository.restore(existingBrand.id);
-      const updated = await this.brandRepository.update(existingBrand.id, {
-        ...createBrandDto,
-        status: createBrandDto.status ?? true,
-      });
-
-      return this.responseTransformer.transform(updated);
+      throw new DomainException('Brand code already exists', HttpStatus.CONFLICT);
     }
 
-    // If brand doesn't exist, create new one
     const brand = await this.brandRepository.create({
       ...createBrandDto,
       status: createBrandDto.status ?? true,
@@ -72,7 +52,7 @@ export class BrandService {
       totalItems: total,
       page: query.page,
       limit: query.limit,
-      customParams: query.toCustomParams(),
+      customParams: query.toCustomParams()
     });
 
     return this.responseTransformer.transformPaginated(
@@ -87,7 +67,7 @@ export class BrandService {
   async findOne(id: number) {
     const brand = await this.brandRepository.findById(id);
     if (!brand) {
-      throw new NotFoundException("Brand not found");
+      throw new NotFoundException('Brand not found');
     }
     return this.responseTransformer.transform(brand);
   }
@@ -95,7 +75,7 @@ export class BrandService {
   async update(id: number, updateBrandDto: UpdateBrandDto) {
     const brand = await this.brandRepository.findById(id);
     if (!brand) {
-      throw new NotFoundException("Brand not found");
+      throw new NotFoundException('Brand not found');
     }
 
     if (updateBrandDto.name) {
@@ -103,16 +83,9 @@ export class BrandService {
     }
 
     if (updateBrandDto.code && updateBrandDto.code !== brand.code) {
-      // Check if brand code exists (regardless of deleted_at status)
-      const existingBrand =
-        await this.brandRepository.findByCodeIncludingDeleted(
-          updateBrandDto.code
-        );
-      if (existingBrand && existingBrand.id !== id) {
-        throw new DomainException(
-          "Brand code already exists",
-          HttpStatus.CONFLICT
-        );
+      const existingBrand = await this.brandRepository.findByCode(updateBrandDto.code, id);
+      if (existingBrand) {
+        throw new DomainException('Brand code already exists', HttpStatus.CONFLICT);
       }
     }
 
@@ -123,45 +96,40 @@ export class BrandService {
   async updateStatus(id: number, updateStatusDto: UpdateBrandStatusDto) {
     const brand = await this.brandRepository.findById(id);
     if (!brand) {
-      throw new NotFoundException("Brand not found");
+      throw new NotFoundException('Brand not found');
     }
 
     await this.brandRepository.update(id, updateStatusDto);
     return this.responseTransformer.transform({
       id,
       status: updateStatusDto.status,
-      updated_at: new Date(),
+      updated_at: new Date()
     });
   }
 
   async remove(id: number) {
     const brand = await this.brandRepository.findById(id);
     if (!brand) {
-      throw new NotFoundException("Brand not found");
+      throw new NotFoundException('Brand not found');
     }
 
     await this.brandRepository.softDelete(id);
-    return this.responseTransformer.transform({
-      message: "Brand deleted successfully",
-    });
+    return this.responseTransformer.transform({ message: 'Brand deleted successfully' });
   }
 
   async restore(id: number) {
     const brand = await this.brandRepository.findWithDeleted(id);
     if (!brand) {
-      throw new NotFoundException("Brand not found");
+      throw new NotFoundException('Brand not found');
     }
 
     if (!brand.deleted_at) {
-      throw new DomainException("Brand is not deleted", HttpStatus.BAD_REQUEST);
+      throw new DomainException('Brand is not deleted', HttpStatus.BAD_REQUEST);
     }
 
     const restored = await this.brandRepository.restore(id);
     if (!restored) {
-      throw new DomainException(
-        "Failed to restore brand",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      throw new DomainException('Failed to restore brand', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return this.responseTransformer.transform(restored);

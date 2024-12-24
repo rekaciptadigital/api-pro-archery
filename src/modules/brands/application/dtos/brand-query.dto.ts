@@ -3,30 +3,40 @@ import { Transform } from "class-transformer";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { PaginationQueryDto } from "@/common/pagination/dto/pagination-query.dto";
 
+export enum BrandSortField {
+  ID = "id",
+  NAME = "name",
+  CREATED_AT = "created_at"
+}
+
 export enum SortOrder {
   ASC = "ASC",
-  DESC = "DESC",
+  DESC = "DESC"
 }
 
 export class BrandQueryDto extends PaginationQueryDto {
-  @ApiPropertyOptional({ description: "Search by name" })
+  @ApiPropertyOptional({ 
+    enum: BrandSortField,
+    description: 'Field to sort by',
+    default: BrandSortField.CREATED_AT
+  })
   @IsOptional()
-  @IsString()
-  search?: string;
+  @IsEnum(BrandSortField)
+  sort?: BrandSortField = BrandSortField.CREATED_AT;
 
-  @ApiPropertyOptional({ description: "Sort field", default: "created_at" })
-  @IsOptional()
-  @IsString()
-  sort?: string = "created_at";
-
-  @ApiPropertyOptional({
-    description: "Sort order",
+  @ApiPropertyOptional({ 
     enum: SortOrder,
-    default: SortOrder.DESC,
+    description: 'Sort direction',
+    default: SortOrder.DESC
   })
   @IsOptional()
   @IsEnum(SortOrder)
   order?: SortOrder = SortOrder.DESC;
+
+  @ApiPropertyOptional({ description: 'Search by name or code' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 
   toCustomParams(): Record<string, string> {
     return {
@@ -34,7 +44,7 @@ export class BrandQueryDto extends PaginationQueryDto {
       ...(this.sort && { sort: this.sort }),
       ...(this.order && { order: this.order }),
       page: (this.page || 1).toString(),
-      limit: (this.limit || 10).toString(),
+      limit: (this.limit || 10).toString()
     };
   }
 }

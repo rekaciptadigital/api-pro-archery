@@ -1,24 +1,24 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Patch,
   Post,
+  Body,
   Put,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
   Query,
+  HttpStatus,
 } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { BrandQueryDto } from "../../application/dtos/brand-query.dto";
+import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { BrandService } from "../../application/services/brand.service";
 import {
   CreateBrandDto,
   UpdateBrandDto,
   UpdateBrandStatusDto,
 } from "../../application/dtos/brand.dto";
-import { BrandService } from "../../application/services/brand.service";
+import { BrandQueryDto } from "../../application/dtos/brand-query.dto";
 
 @ApiTags("brands")
 @Controller("brands")
@@ -44,7 +44,7 @@ export class BrandController {
   }
 
   @Get()
-  @ApiOperation({ summary: "Get all brands" })
+  @ApiOperation({ summary: "Get all brands with sorting and searching" })
   @ApiResponse({ status: HttpStatus.OK, description: "Return all brands" })
   findAll(@Query() query: BrandQueryDto) {
     return this.brandService.findAll(query);
@@ -108,9 +108,9 @@ export class BrandController {
     description: "Brand restored successfully",
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Brand not found" })
-  @ApiResponse({ 
-    status: HttpStatus.BAD_REQUEST, 
-    description: "Brand is not deleted" 
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "Brand is not deleted",
   })
   restore(@Param("id", ParseIntPipe) id: number) {
     return this.brandService.restore(id);

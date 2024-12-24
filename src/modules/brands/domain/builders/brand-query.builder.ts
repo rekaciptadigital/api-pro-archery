@@ -15,20 +15,12 @@ export class BrandQueryBuilder {
     return new BrandQueryBuilder(queryBuilder);
   }
 
-  static createActiveOnly(repository: Repository<Brand>): BrandQueryBuilder {
-    const queryBuilder = repository
-      .createQueryBuilder("brand")
-      .where("brand.deleted_at IS NULL")
-      .andWhere("brand.status = :status", { status: true });
-
-    return new BrandQueryBuilder(queryBuilder);
-  }
-
   addSearch(search: string | undefined): this {
     if (search) {
-      this.queryBuilder.andWhere("LOWER(brand.name) LIKE LOWER(:search)", {
-        search: `%${search}%`,
-      });
+      this.queryBuilder.andWhere(
+        "(LOWER(brand.name) LIKE LOWER(:search) OR LOWER(brand.code) LIKE LOWER(:search))",
+        { search: `%${search}%` }
+      );
     }
     return this;
   }
