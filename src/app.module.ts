@@ -14,7 +14,6 @@ import { AuthModule } from "@/modules/auth/auth.module";
 import { BrandsModule } from "@/modules/brands/brands.module";
 import { TaxesModule } from "@/modules/taxes/taxes.module";
 import { VariantsModule } from "@/modules/variants/variants.module";
-import { ProductTypesModule } from "@/modules/product-types/product-types.module";
 
 // Common Modules
 import { CommonModule } from "@/common/common.module";
@@ -71,7 +70,6 @@ import { validate } from "@/config/env.validation";
     BrandsModule,
     TaxesModule,
     VariantsModule,
-    ProductTypesModule,
 
     // Common Modules
     CommonModule,
