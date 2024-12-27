@@ -1,35 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { BrandRepository } from '../../domain/repositories/brand.repository';
-import { CreateBrandDto, UpdateBrandDto, UpdateBrandStatusDto } from '../dtos/brand.dto';
-import { BrandQueryDto } from '../dtos/brand-query.dto';
-import { BrandValidator } from '../../domain/validators/brand.validator';
-import { BrandManagementService } from '../../domain/services/brand-management.service';
-import { PaginationHelper } from '@/common/pagination/helpers/pagination.helper';
-import { ResponseTransformer } from '@/common/transformers/response.transformer';
-import { DomainException } from '@/common/exceptions/domain.exception';
-import { HttpStatus } from '@nestjs/common';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { BrandRepository } from "../../domain/repositories/brand.repository";
+import { CreateBrandDto, UpdateBrandDto, UpdateBrandStatusDto } from "../dtos/brand.dto";
+import { BrandQueryDto } from "../dtos/brand-query.dto";
+import { BrandValidator } from "../../domain/validators/brand.validator";
+import { PaginationHelper } from "@/common/pagination/helpers/pagination.helper";
+import { ResponseTransformer } from "@/common/transformers/response.transformer";
+import { DomainException } from "@/common/exceptions/domain.exception";
+import { HttpStatus } from "@nestjs/common";
 
 @Injectable()
 export class BrandService {
   constructor(
     private readonly brandRepository: BrandRepository,
     private readonly brandValidator: BrandValidator,
-    private readonly brandManagementService: BrandManagementService,
     private readonly paginationHelper: PaginationHelper,
     private readonly responseTransformer: ResponseTransformer
   ) {}
 
   async create(createBrandDto: CreateBrandDto) {
     await this.brandValidator.validateName(createBrandDto.name);
-    
-    const { restored, brand } = await this.brandManagementService.handleBrandCreation(
-      createBrandDto
-    );
 
-    return this.responseTransformer.transform({
-      ...brand,
-      message: restored ? 'Brand restored and updated successfully' : 'Brand created successfully'
+    const existingBrand = await this.brandRepository.findByCode(createBrandDto.code);
+    if (existingBrand) {
+      throw new DomainException('Brand code already exists', HttpStatus.CONFLICT);
+    }
+
+    const brand = await this.brandRepository.create({
+      ...createBrandDto,
+      status: createBrandDto.status ?? true,
     });
+
+    return this.responseTransformer.transform(brand);
   }
 
   async findAll(query: BrandQueryDto) {
@@ -47,7 +48,7 @@ export class BrandService {
     );
 
     const paginationData = this.paginationHelper.generatePaginationData({
-      serviceName: 'brands',
+      serviceName: "brands",
       totalItems: total,
       page: query.page,
       limit: query.limit,
@@ -82,10 +83,10 @@ export class BrandService {
     }
 
     if (updateBrandDto.code && updateBrandDto.code !== brand.code) {
-      await this.brandManagementService.validateBrandCodeForUpdate(
-        updateBrandDto.code,
-        id
-      );
+      const existingBrand = await this.brandRepository.findByCode(updateBrandDto.code, id);
+      if (existingBrand) {
+        throw new DomainException('Brand code already exists', HttpStatus.CONFLICT);
+      }
     }
 
     const updated = await this.brandRepository.update(id, updateBrandDto);
@@ -113,9 +114,7 @@ export class BrandService {
     }
 
     await this.brandRepository.softDelete(id);
-    return this.responseTransformer.transform({ 
-      message: 'Brand deleted successfully' 
-    });
+    return this.responseTransformer.transform({ message: 'Brand deleted successfully' });
   }
 
   async restore(id: number) {

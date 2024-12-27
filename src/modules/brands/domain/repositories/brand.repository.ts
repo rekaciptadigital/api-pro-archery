@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Brand } from '../entities/brand.entity';
-import { BaseRepository } from '@/common/repositories/base.repository';
-import { BrandQueryBuilder } from '../builders/brand-query.builder';
-import { BrandSortField, SortOrder } from '../../application/dtos/brand-query.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, IsNull } from "typeorm";
+import { Brand } from "../entities/brand.entity";
+import { BaseRepository } from "@/common/repositories/base.repository";
+import { BrandQueryBuilder } from "../builders/brand-query.builder";
+import { BrandSortField, SortOrder } from "../../application/dtos/brand-query.dto";
 
 @Injectable()
 export class BrandRepository extends BaseRepository<Brand> {
@@ -27,13 +27,6 @@ export class BrandRepository extends BaseRepository<Brand> {
     return query.getOne();
   }
 
-  async findByCodeIncludingDeleted(code: string): Promise<Brand | null> {
-    return this.brandRepository.findOne({
-      where: { code },
-      withDeleted: true
-    });
-  }
-
   async findBrands(
     skip: number,
     take: number,
@@ -48,5 +41,17 @@ export class BrandRepository extends BaseRepository<Brand> {
       .build();
 
     return queryBuilder.getManyAndCount();
+  }
+
+  async findWithDeleted(id: number): Promise<Brand | null> {
+    return this.repository.findOne({
+      where: { id } as any,
+      withDeleted: true
+    });
+  }
+
+  async restore(id: number): Promise<Brand | null> {
+    await this.repository.restore(id);
+    return this.findById(id);
   }
 }

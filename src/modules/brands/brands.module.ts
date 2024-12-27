@@ -1,26 +1,20 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Brand } from './domain/entities/brand.entity';
-import { BrandRepository } from './domain/repositories/brand.repository';
-import { BrandService } from './application/services/brand.service';
-import { BrandController } from './presentation/controllers/brand.controller';
-import { BrandValidator } from './domain/validators/brand.validator';
-import { BrandManagementService } from './domain/services/brand-management.service';
-import { PaginationModule } from '@/common/pagination/pagination.module';
-import { TransformersModule } from '@/common/transformers/transformers.module';
+import { PaginationModule } from "@/common/pagination/pagination.module";
+import { TransformersModule } from "@/common/transformers/transformers.module";
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { BrandService } from "./application/services/brand.service";
+import { Brand } from "./domain/entities/brand.entity";
+import { BrandRepository } from "./domain/repositories/brand.repository";
+import { BrandValidator } from "./domain/validators/brand.validator";
+import { BrandController } from "./presentation/controllers/brand.controller";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Brand]),
     PaginationModule,
-    TransformersModule
+    TransformersModule,
   ],
-  providers: [
-    BrandRepository,
-    BrandValidator,
-    BrandManagementService,
-    BrandService
-  ],
+  providers: [BrandRepository, BrandValidator, BrandService],
   controllers: [BrandController],
   exports: [BrandRepository],
 })
