@@ -56,7 +56,7 @@ import { validate } from "@/config/env.validation";
         synchronize: false,
         ssl: false,
         migrations: [__dirname + "/migrations/**/*{.ts,.js}"],
-        migrationsRun: true,
+        migrationsRun: false, // Changed from true to false to prevent auto-running migrations
       }),
       inject: [ConfigService],
     }),

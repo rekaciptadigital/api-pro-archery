@@ -1,3 +1,24 @@
+/*
+  # Create Product Types Table
+
+  1. New Tables
+    - `product_types`
+      - `id` (bigint, primary key, auto-increment)
+      - `name` (varchar, not null)
+      - `code` (varchar, unique, not null)
+      - `description` (text, nullable)
+      - `status` (boolean, default true)
+      - `created_at` (timestamp)
+      - `updated_at` (timestamp)
+      - `deleted_at` (timestamp, nullable)
+
+  2. Indexes
+    - Index on `name` for faster searches
+    - Index on `code` for unique constraint lookups
+    - Index on `status` for filtering
+    - Index on `deleted_at` for soft delete queries
+*/
+
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class CreateProductTypesTable1702432800004 implements MigrationInterface {
