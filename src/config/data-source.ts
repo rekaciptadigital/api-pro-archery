@@ -7,6 +7,7 @@ import { CreateAuthEntities1701234567893 } from "../migrations/1701234567893-Cre
 import { CreateBrandsTable1702432800000 } from "../migrations/1702432800000-CreateBrandsTable";
 import { CreateTaxesTable1702432800001 } from "../migrations/1702432800001-CreateTaxesTable";
 import { CreateVariantsTable1702432800002 } from "../migrations/1702432800002-CreateVariantsTable";
+import { CreateProductTypesTable1702432800004 } from "../migrations/1702432800004-CreateProductTypesTable";
 import { Feature } from "../modules/features/domain/entities/feature.entity";
 import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
 import { Role } from "../modules/roles/domain/entities/role.entity";
@@ -20,6 +21,7 @@ import { Brand } from "../modules/brands/domain/entities/brand.entity";
 import { Tax } from "../modules/taxes/domain/entities/tax.entity";
 import { Variant } from "../modules/variants/domain/entities/variant.entity";
 import { VariantValue } from "../modules/variants/domain/entities/variant-value.entity";
+import { ProductType } from "../modules/product-types/domain/entities/product-type.entity";
 
 config();
 
@@ -43,7 +45,8 @@ const options: DataSourceOptions = {
     Brand,
     Tax,
     Variant,
-    VariantValue
+    VariantValue,
+    ProductType
   ],
   migrations: [
     CreateInitialSchema1701234567890,
@@ -52,7 +55,8 @@ const options: DataSourceOptions = {
     CreateAuthEntities1701234567893,
     CreateBrandsTable1702432800000,
     CreateTaxesTable1702432800001,
-    CreateVariantsTable1702432800002
+    CreateVariantsTable1702432800002,
+    CreateProductTypesTable1702432800004
   ],
   synchronize: false,
 };
