@@ -1,49 +1,61 @@
-import { IsOptional, IsBoolean, IsString, IsEnum } from 'class-validator';
-import { Transform } from 'class-transformer';
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { PaginationQueryDto } from '@/common/pagination/dto/pagination-query.dto';
+import { IsOptional, IsBoolean, IsString, IsEnum } from "class-validator";
+import { Transform } from "class-transformer";
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { PaginationQueryDto } from "@/common/pagination/dto/pagination-query.dto";
 
 export enum ProductTypeSortField {
-  ID = 'id',
-  NAME = 'name',
-  CODE = 'code',
-  CREATED_AT = 'created_at'
+  ID = "id",
+  NAME = "name",
+  CODE = "code",
+  CREATED_AT = "created_at",
 }
 
 export enum SortOrder {
-  ASC = 'ASC',
-  DESC = 'DESC'
+  ASC = "ASC",
+  DESC = "DESC",
 }
 
 export class ProductTypeQueryDto extends PaginationQueryDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     enum: ProductTypeSortField,
-    description: 'Field to sort by',
-    default: ProductTypeSortField.CREATED_AT
+    description: "Field to sort by",
+    default: ProductTypeSortField.CREATED_AT,
   })
   @IsOptional()
   @IsEnum(ProductTypeSortField)
+  @Transform(({ value }) => {
+    // Return default value if empty or invalid
+    return value && Object.values(ProductTypeSortField).includes(value)
+      ? value
+      : ProductTypeSortField.CREATED_AT;
+  })
   sort?: ProductTypeSortField = ProductTypeSortField.CREATED_AT;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     enum: SortOrder,
-    description: 'Sort direction',
-    default: SortOrder.DESC
+    description: "Sort direction",
+    default: SortOrder.DESC,
   })
   @IsOptional()
   @IsEnum(SortOrder)
+  @Transform(({ value }) => {
+    // Return default value if empty or invalid
+    return value && Object.values(SortOrder).includes(value)
+      ? value
+      : SortOrder.DESC;
+  })
   order?: SortOrder = SortOrder.DESC;
 
-  @ApiPropertyOptional({ description: 'Search by name or code' })
+  @ApiPropertyOptional({ description: "Search by name or code" })
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by status' })
+  @ApiPropertyOptional({ description: "Filter by status" })
   @IsOptional()
   @Transform(({ value }) => {
-    if (value === 'true') return true;
-    if (value === 'false') return false;
+    if (value === "true") return true;
+    if (value === "false") return false;
     return undefined;
   })
   @IsBoolean()
@@ -52,11 +64,11 @@ export class ProductTypeQueryDto extends PaginationQueryDto {
   toCustomParams(): Record<string, string> {
     return {
       ...(this.search && { search: this.search }),
-      ...(this.status !== undefined && { status: this.status ? '1' : '0' }),
+      ...(this.status !== undefined && { status: this.status ? "1" : "0" }),
       ...(this.sort && { sort: this.sort }),
       ...(this.order && { order: this.order }),
       page: (this.page || 1).toString(),
-      limit: (this.limit || 10).toString()
+      limit: (this.limit || 10).toString(),
     };
   }
 }

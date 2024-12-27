@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { ProductType } from '../entities/product-type.entity';
-import { BaseRepository } from '@/common/repositories/base.repository';
-import { ProductTypeSortField, SortOrder } from '../../application/dtos/product-type-query.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, IsNull } from "typeorm";
+import { ProductType } from "../entities/product-type.entity";
+import { BaseRepository } from "@/common/repositories/base.repository";
+import {
+  ProductTypeSortField,
+  SortOrder,
+} from "../../application/dtos/product-type-query.dto";
 
 @Injectable()
 export class ProductTypeRepository extends BaseRepository<ProductType> {
@@ -14,16 +17,28 @@ export class ProductTypeRepository extends BaseRepository<ProductType> {
     super(productTypeRepository);
   }
 
-  async findByCode(code: string, excludeId?: number): Promise<ProductType | null> {
-    const query = this.productTypeRepository.createQueryBuilder('productType')
-      .where('LOWER(productType.code) = LOWER(:code)', { code })
-      .andWhere('productType.deleted_at IS NULL');
+  async findByCode(
+    code: string,
+    excludeId?: number
+  ): Promise<ProductType | null> {
+    const query = this.productTypeRepository
+      .createQueryBuilder("productType")
+      .where("LOWER(productType.code) = LOWER(:code)", { code })
+      .andWhere("productType.deleted_at IS NULL");
 
     if (excludeId) {
-      query.andWhere('productType.id != :id', { id: excludeId });
+      query.andWhere("productType.id != :id", { id: excludeId });
     }
 
     return query.getOne();
+  }
+
+  async findByCodeWithDeleted(code: string): Promise<ProductType | null> {
+    return this.productTypeRepository
+      .createQueryBuilder("productType")
+      .where("LOWER(productType.code) = LOWER(:code)", { code })
+      .withDeleted()
+      .getOne();
   }
 
   async findProductTypes(
@@ -34,23 +49,22 @@ export class ProductTypeRepository extends BaseRepository<ProductType> {
     search?: string,
     status?: boolean
   ): Promise<[ProductType[], number]> {
-    const query = this.productTypeRepository.createQueryBuilder('productType')
-      .where('productType.deleted_at IS NULL');
+    const query = this.productTypeRepository
+      .createQueryBuilder("productType")
+      .where("productType.deleted_at IS NULL");
 
     if (search) {
       query.andWhere(
-        '(LOWER(productType.name) LIKE LOWER(:search) OR LOWER(productType.code) LIKE LOWER(:search))',
+        "(LOWER(productType.name) LIKE LOWER(:search) OR LOWER(productType.code) LIKE LOWER(:search))",
         { search: `%${search}%` }
       );
     }
 
     if (status !== undefined) {
-      query.andWhere('productType.status = :status', { status });
+      query.andWhere("productType.status = :status", { status });
     }
 
-    query.orderBy(`productType.${sort}`, order)
-      .skip(skip)
-      .take(take);
+    query.orderBy(`productType.${sort}`, order).skip(skip).take(take);
 
     return query.getManyAndCount();
   }
@@ -58,7 +72,7 @@ export class ProductTypeRepository extends BaseRepository<ProductType> {
   async findWithDeleted(id: number): Promise<ProductType | null> {
     return this.repository.findOne({
       where: { id } as any,
-      withDeleted: true
+      withDeleted: true,
     });
   }
 
