@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { PriceCategoryRepository } from '../../domain/repositories/price-category.repository';
-import { CreatePriceCategoryDto, BatchPriceCategoryDto } from '../dtos/price-category.dto';
-import { ResponseTransformer } from '@/common/transformers/response.transformer';
-import { DomainException } from '@/common/exceptions/domain.exception';
-import { HttpStatus } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { GroupedPriceCategories } from '../../domain/interfaces/grouped-price-categories.interface';
+import { Injectable } from "@nestjs/common";
+import { PriceCategoryRepository } from "../../domain/repositories/price-category.repository";
+import {
+  CreatePriceCategoryDto,
+  BatchPriceCategoryDto,
+} from "../dtos/price-category.dto";
+import { ResponseTransformer } from "@/common/transformers/response.transformer";
+import { DomainException } from "@/common/exceptions/domain.exception";
+import { HttpStatus } from "@nestjs/common";
+import { DataSource } from "typeorm";
+import { GroupedPriceCategories } from "../../domain/interfaces/grouped-price-categories.interface";
 
 @Injectable()
 export class PriceCategoryService {
@@ -16,21 +19,24 @@ export class PriceCategoryService {
   ) {}
 
   async findAll(search?: string) {
-    const groupedCategories = await this.priceCategoryRepository.findAllGroupedByType(search);
-    
+    const groupedCategories =
+      await this.priceCategoryRepository.findAllGroupedByType(search);
+
     // Transform the grouped data into an array format
-    const result = Object.entries(groupedCategories).map(([type, categories]) => ({
-      type,
-      categories: categories.map(category => ({
-        id: category.id,
-        name: category.name,
-        formula: category.formula,
-        percentage: category.percentage,
-        status: category.status,
-        created_at: category.created_at,
-        updated_at: category.updated_at
-      }))
-    }));
+    const result = Object.entries(groupedCategories).map(
+      ([type, categories]) => ({
+        type,
+        categories: categories.map((category) => ({
+          id: category.id,
+          name: category.name,
+          formula: category.formula,
+          percentage: category.percentage,
+          status: category.status,
+          created_at: category.created_at,
+          updated_at: category.updated_at,
+        })),
+      })
+    );
 
     return this.responseTransformer.transform(result);
   }
@@ -45,6 +51,13 @@ export class PriceCategoryService {
       const updated: any[] = [];
 
       for (const item of items) {
+        // Normalize type to lowercase and process percentage
+        const processedItem = {
+          ...item,
+          type: item.type.toLowerCase(),
+          percentage: Number(item.percentage),
+        };
+
         if (item.id) {
           // Update existing
           const existing = await this.priceCategoryRepository.findById(item.id);
@@ -56,10 +69,11 @@ export class PriceCategoryService {
           }
 
           // Check unique constraint for type-name combination
-          const duplicate = await this.priceCategoryRepository.findByTypeAndName(
-            item.type,
-            item.name
-          );
+          const duplicate =
+            await this.priceCategoryRepository.findByTypeAndName(
+              item.type,
+              item.name
+            );
           if (duplicate && duplicate.id !== item.id) {
             throw new DomainException(
               `Price category with type "${item.type}" and name "${item.name}" already exists`,
@@ -67,17 +81,21 @@ export class PriceCategoryService {
             );
           }
 
-          const updated_item = await queryRunner.manager.save('price_categories', {
-            ...existing,
-            ...item
-          });
-          updated.push(updated_item);
+          const updatedItem = await queryRunner.manager.save(
+            "price_categories",
+            {
+              ...existing,
+              ...processedItem,
+            }
+          );
+          updated.push(updatedItem);
         } else {
           // Create new
-          const duplicate = await this.priceCategoryRepository.findByTypeAndName(
-            item.type,
-            item.name
-          );
+          const duplicate =
+            await this.priceCategoryRepository.findByTypeAndName(
+              processedItem.type,
+              item.name
+            );
           if (duplicate) {
             throw new DomainException(
               `Price category with type "${item.type}" and name "${item.name}" already exists`,
@@ -85,8 +103,11 @@ export class PriceCategoryService {
             );
           }
 
-          const created_item = await queryRunner.manager.save('price_categories', item);
-          created.push(created_item);
+          const createdItem = await queryRunner.manager.save(
+            "price_categories",
+            processedItem
+          );
+          created.push(createdItem);
         }
       }
 
@@ -94,7 +115,7 @@ export class PriceCategoryService {
 
       return this.responseTransformer.transform({
         created,
-        updated
+        updated,
       });
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -107,12 +128,15 @@ export class PriceCategoryService {
   async remove(id: number) {
     const category = await this.priceCategoryRepository.findById(id);
     if (!category) {
-      throw new DomainException('Price category not found', HttpStatus.NOT_FOUND);
+      throw new DomainException(
+        "Price category not found",
+        HttpStatus.NOT_FOUND
+      );
     }
 
     await this.priceCategoryRepository.softDelete(id);
     return this.responseTransformer.transform({
-      message: 'Price category deleted successfully'
+      message: "Price category deleted successfully",
     });
   }
 }

@@ -22,6 +22,7 @@ import { Tax } from "../modules/taxes/domain/entities/tax.entity";
 import { Variant } from "../modules/variants/domain/entities/variant.entity";
 import { VariantValue } from "../modules/variants/domain/entities/variant-value.entity";
 import { ProductType } from "../modules/product-types/domain/entities/product-type.entity";
+import { CreatePriceCategoriesTable1702432800005 } from "@/migrations/1702432800005-CreatePriceCategoriesTable";
 
 config();
 
@@ -33,10 +34,10 @@ const options: DataSourceOptions = {
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   entities: [
-    User, 
-    Role, 
-    Feature, 
-    RoleFeaturePermission, 
+    User,
+    Role,
+    Feature,
+    RoleFeaturePermission,
     UserRole,
     AuthToken,
     UserSession,
@@ -46,7 +47,7 @@ const options: DataSourceOptions = {
     Tax,
     Variant,
     VariantValue,
-    ProductType
+    ProductType,
   ],
   migrations: [
     CreateInitialSchema1701234567890,
@@ -56,7 +57,8 @@ const options: DataSourceOptions = {
     CreateBrandsTable1702432800000,
     CreateTaxesTable1702432800001,
     CreateVariantsTable1702432800002,
-    CreateProductTypesTable1702432800004
+    CreateProductTypesTable1702432800004,
+    CreatePriceCategoriesTable1702432800005,
   ],
   synchronize: false,
 };
