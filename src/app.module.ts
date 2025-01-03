@@ -15,6 +15,7 @@ import { BrandsModule } from "@/modules/brands/brands.module";
 import { TaxesModule } from "@/modules/taxes/taxes.module";
 import { VariantsModule } from "@/modules/variants/variants.module";
 import { ProductTypesModule } from "@/modules/product-types/product-types.module";
+import { PriceCategoriesModule } from "@/modules/price-categories/price-categories.module";
 
 // Common Modules
 import { CommonModule } from "@/common/common.module";
@@ -56,7 +57,7 @@ import { validate } from "@/config/env.validation";
         synchronize: false,
         ssl: false,
         migrations: [__dirname + "/migrations/**/*{.ts,.js}"],
-        migrationsRun: false, // Changed from true to false to prevent auto-running migrations
+        migrationsRun: false,
       }),
       inject: [ConfigService],
     }),
@@ -72,6 +73,7 @@ import { validate } from "@/config/env.validation";
     TaxesModule,
     VariantsModule,
     ProductTypesModule,
+    PriceCategoriesModule,
 
     // Common Modules
     CommonModule,
