@@ -1,6 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, IsNull } from "typeorm";
+import {
+  Repository,
+  IsNull,
+  DeepPartial,
+  SaveOptions,
+  Not,
+  QueryRunner,
+} from "typeorm";
 import { PriceCategory } from "../entities/price-category.entity";
 import { BaseRepository } from "@/common/repositories/base.repository";
 
@@ -23,6 +30,19 @@ export class PriceCategoryRepository extends BaseRepository<PriceCategory> {
         name,
         deleted_at: IsNull(),
       },
+    });
+  }
+
+  async findByTypeAndNameIncludingDeleted(
+    type: string,
+    name: string
+  ): Promise<PriceCategory | null> {
+    return this.priceCategoryRepository.findOne({
+      where: {
+        type: type.toLowerCase(),
+        name,
+      },
+      withDeleted: true,
     });
   }
 
@@ -57,5 +77,35 @@ export class PriceCategoryRepository extends BaseRepository<PriceCategory> {
       },
       {} as Record<string, PriceCategory[]>
     );
+  }
+
+  async restore(
+    id: number,
+    queryRunner?: QueryRunner
+  ): Promise<PriceCategory | null> {
+    const repository = queryRunner
+      ? queryRunner.manager.getRepository(PriceCategory)
+      : this.priceCategoryRepository;
+
+    await repository
+      .createQueryBuilder("price_category")
+      .update(PriceCategory)
+      .set({ deleted_at: null })
+      .where("id = :id", { id })
+      .execute();
+
+    return repository.findOne({
+      where: { id },
+    });
+  }
+
+  async save(
+    entityOrEntities: DeepPartial<PriceCategory> | DeepPartial<PriceCategory>[],
+    options?: SaveOptions
+  ): Promise<PriceCategory | PriceCategory[]> {
+    if (Array.isArray(entityOrEntities)) {
+      return this.priceCategoryRepository.save(entityOrEntities, options);
+    }
+    return this.priceCategoryRepository.save(entityOrEntities, options);
   }
 }
