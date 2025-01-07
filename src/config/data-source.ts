@@ -23,6 +23,9 @@ import { Variant } from "../modules/variants/domain/entities/variant.entity";
 import { VariantValue } from "../modules/variants/domain/entities/variant-value.entity";
 import { ProductType } from "../modules/product-types/domain/entities/product-type.entity";
 import { CreatePriceCategoriesTable1702432800005 } from "@/migrations/1702432800005-CreatePriceCategoriesTable";
+import { CreateProductCategoriesTable1702432800006 } from "@/migrations/1702432800006-CreateProductCategoriesTable";
+import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
+import { ProductCategory } from "@/modules/product-categories/domain/entities/product-category.entity";
 
 config();
 
@@ -48,6 +51,8 @@ const options: DataSourceOptions = {
     Variant,
     VariantValue,
     ProductType,
+    PriceCategory,
+    ProductCategory,
   ],
   migrations: [
     CreateInitialSchema1701234567890,
@@ -59,6 +64,7 @@ const options: DataSourceOptions = {
     CreateVariantsTable1702432800002,
     CreateProductTypesTable1702432800004,
     CreatePriceCategoriesTable1702432800005,
+    CreateProductCategoriesTable1702432800006,
   ],
   synchronize: false,
 };

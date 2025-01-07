@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { ProductCategory } from '../entities/product-category.entity';
-import { BaseRepository } from '@/common/repositories/base.repository';
-import { ProductCategorySortField, SortOrder } from '../../application/dtos/product-category-query.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, IsNull } from "typeorm";
+import { ProductCategory } from "../entities/product-category.entity";
+import { BaseRepository } from "@/common/repositories/base.repository";
+import {
+  ProductCategorySortField,
+  SortOrder,
+} from "../../application/dtos/product-category-query.dto";
 
 @Injectable()
 export class ProductCategoryRepository extends BaseRepository<ProductCategory> {
@@ -14,13 +17,17 @@ export class ProductCategoryRepository extends BaseRepository<ProductCategory> {
     super(productCategoryRepository);
   }
 
-  async findByCode(code: string, excludeId?: number): Promise<ProductCategory | null> {
-    const query = this.productCategoryRepository.createQueryBuilder('category')
-      .where('LOWER(category.code) = LOWER(:code)', { code })
-      .andWhere('category.deleted_at IS NULL');
+  async findByCode(
+    code: string,
+    excludeId?: number
+  ): Promise<ProductCategory | null> {
+    const query = this.productCategoryRepository
+      .createQueryBuilder("category")
+      .where("LOWER(category.code) = LOWER(:code)", { code })
+      .andWhere("category.deleted_at IS NULL");
 
     if (excludeId) {
-      query.andWhere('category.id != :id', { id: excludeId });
+      query.andWhere("category.id != :id", { id: excludeId });
     }
 
     return query.getOne();
@@ -29,7 +36,7 @@ export class ProductCategoryRepository extends BaseRepository<ProductCategory> {
   async findByCodeWithDeleted(code: string): Promise<ProductCategory | null> {
     return this.productCategoryRepository.findOne({
       where: { code },
-      withDeleted: true
+      withDeleted: true,
     });
   }
 
@@ -41,81 +48,136 @@ export class ProductCategoryRepository extends BaseRepository<ProductCategory> {
     search?: string,
     status?: boolean
   ): Promise<[ProductCategory[], number]> {
-    const query = this.productCategoryRepository.createQueryBuilder('category')
-      .leftJoinAndSelect('category.children', 'children', 'children.deleted_at IS NULL')
-      .where('category.deleted_at IS NULL')
-      .andWhere('category.parent_id IS NULL');
+    // Get root categories first
+    const query = this.productCategoryRepository
+      .createQueryBuilder("category")
+      .where("category.deleted_at IS NULL")
+      .andWhere("category.parent_id IS NULL");
 
     if (search) {
-      query.andWhere('LOWER(category.name) LIKE LOWER(:search)', { 
-        search: `%${search}%` 
+      query.andWhere("LOWER(category.name) LIKE LOWER(:search)", {
+        search: `%${search}%`,
       });
     }
 
     if (status !== undefined) {
-      query.andWhere('category.status = :status', { status });
+      query.andWhere("category.status = :status", { status });
     }
 
-    query.orderBy(`category.${sort}`, order)
-      .skip(skip)
-      .take(take);
+    query.orderBy(`category.${sort}`, order).skip(skip).take(take);
 
-    return query.getManyAndCount();
+    const [rootCategories, total] = await query.getManyAndCount();
+
+    // Load complete tree for each root category
+    const categoriesWithChildren = await Promise.all(
+      rootCategories.map(async (category) => {
+        return this.loadCategoryTreeRecursive(category);
+      })
+    );
+
+    return [categoriesWithChildren, total];
+  }
+
+  private async loadCategoryTreeRecursive(
+    category: ProductCategory
+  ): Promise<ProductCategory> {
+    // Load immediate children
+    const children = await this.productCategoryRepository.find({
+      where: {
+        parent_id: category.id,
+        deleted_at: IsNull(),
+      },
+      order: {
+        created_at: "DESC",
+      },
+    });
+
+    // Recursively load children for each child
+    const childrenWithSubChildren = await Promise.all(
+      children.map(async (child) => {
+        return this.loadCategoryTreeRecursive(child);
+      })
+    );
+
+    // Assign processed children back to category
+    category.children = childrenWithSubChildren;
+
+    return category;
   }
 
   async findOneWithHierarchy(id: number): Promise<ProductCategory | null> {
-    const query = this.productCategoryRepository.createQueryBuilder('category')
-      .where('category.id = :id', { id })
-      .andWhere('category.deleted_at IS NULL');
+    const query = this.productCategoryRepository
+      .createQueryBuilder("category")
+      .where("category.id = :id", { id })
+      .andWhere("category.deleted_at IS NULL");
 
-    // Load children if it's a parent category
-    const category = await query
-      .leftJoinAndSelect('category.children', 'children', 'children.deleted_at IS NULL')
-      .getOne();
+    // Load children for current category
+    query.leftJoinAndSelect(
+      "category.children",
+      "children",
+      "children.deleted_at IS NULL"
+    );
 
+    const category = await query.getOne();
     if (!category) {
       return null;
     }
 
-    // If it's a child category, load its parent hierarchy
+    // If it has parent_id, build the hierarchy
     if (category.parent_id) {
-      const parents = await this.getParentHierarchy(category.parent_id);
-      (category as any).parents = parents;
+      const parent = await this.buildParentHierarchy(category.parent_id);
+      if (parent) {
+        category.hierarchy = parent;
+      }
     }
 
     return category;
   }
 
-  private async getParentHierarchy(parentId: number): Promise<ProductCategory[]> {
-    const parents: ProductCategory[] = [];
-    let currentParentId = parentId;
+  private async buildParentHierarchy(
+    parentId: number
+  ): Promise<ProductCategory | null> {
+    const parent = await this.productCategoryRepository.findOne({
+      where: {
+        id: parentId,
+        deleted_at: IsNull(),
+      },
+      relations: ["children"],
+    });
 
-    while (currentParentId) {
-      const parent = await this.productCategoryRepository.findOne({
-        where: { 
-          id: currentParentId,
-          deleted_at: IsNull()
-        }
-      });
+    if (!parent) return null;
 
-      if (!parent) break;
-
-      parents.push(parent);
-      currentParentId = parent.parent_id || 0;
+    // Load next parent level if exists
+    if (parent.parent_id) {
+      const grandParent = await this.buildParentHierarchy(parent.parent_id);
+      if (grandParent) {
+        // Remove children from intermediate parents to avoid circular references
+        parent.children = [];
+        parent.hierarchy = grandParent;
+      }
     }
 
-    return parents;
+    return parent;
   }
 
   async findWithDeleted(id: number): Promise<ProductCategory | null> {
     return this.repository.findOne({
       where: { id } as any,
-      withDeleted: true
+      withDeleted: true,
     });
   }
 
   async restore(id: number): Promise<ProductCategory | null> {
     await this.repository.restore(id);
     return this.findById(id);
+  }
+
+  async findById(id: number): Promise<ProductCategory | null> {
+    return this.productCategoryRepository.findOne({
+      where: {
+        id,
+        deleted_at: IsNull(),
+      },
+    });
   }
 }
