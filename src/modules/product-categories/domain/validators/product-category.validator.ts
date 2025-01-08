@@ -77,29 +77,40 @@ export class ProductCategoryValidator {
   }
 
   async generateUniqueCode(name: string): Promise<string> {
-    const baseCode = this.generateBaseCode(name);
-    let code = baseCode;
+    const timestamp = new Date().getTime();
+
+    // Get last product category to determine next counter
+    const lastCategory =
+      await this.productCategoryRepository.findLastCategory();
     let counter = 1;
 
-    // Check if code exists and generate new one with counter
+    if (lastCategory) {
+      const match = lastCategory.code.match(/^PC(\d{4})/);
+      if (match) {
+        counter = parseInt(match[1]) + 1;
+      }
+    }
+
+    let code = this.formatCode(counter, timestamp);
+
+    // Ensure uniqueness in case of conflicts
     while (await this.productCategoryRepository.findByCodeWithDeleted(code)) {
-      code = `${baseCode}-${counter}`;
       counter++;
+      code = this.formatCode(counter, timestamp);
     }
 
     return code;
   }
 
-  private generateBaseCode(name: string): string {
-    return name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with dash
-      .replace(/^-+|-+$/g, ""); // Remove leading/trailing dashes
+  private formatCode(counter: number, timestamp: number): string {
+    // Format counter to 4 digits with leading zeros
+    const paddedCounter = counter.toString().padStart(4, "0");
+    return `PC${paddedCounter}-${timestamp}`;
   }
 
   private isValidCodeFormat(code: string): boolean {
-    const codeRegex = /^[a-zA-Z0-9-]+$/;
+    // Update regex to match new format: PC0001-1234567890
+    const codeRegex = /^PC\d{4}-\d+$/;
     return codeRegex.test(code);
   }
 }

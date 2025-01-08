@@ -180,4 +180,11 @@ export class ProductCategoryRepository extends BaseRepository<ProductCategory> {
       },
     });
   }
+
+  async findLastCategory(): Promise<ProductCategory | null> {
+    return this.productCategoryRepository
+      .createQueryBuilder("category")
+      .orderBy("category.code", "DESC")
+      .getOne();
+  }
 }
