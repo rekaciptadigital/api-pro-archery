@@ -8,6 +8,9 @@ import { CreateBrandsTable1702432800000 } from "../migrations/1702432800000-Crea
 import { CreateTaxesTable1702432800001 } from "../migrations/1702432800001-CreateTaxesTable";
 import { CreateVariantsTable1702432800002 } from "../migrations/1702432800002-CreateVariantsTable";
 import { CreateProductTypesTable1702432800004 } from "../migrations/1702432800004-CreateProductTypesTable";
+import { CreatePriceCategoriesTable1702432800005 } from "../migrations/1702432800005-CreatePriceCategoriesTable";
+import { CreateProductCategoriesTable1702432800006 } from "../migrations/1702432800006-CreateProductCategoriesTable";
+import { CreateInventoryProductTables1702432800007 } from "../migrations/1702432800007-CreateInventoryProductTables";
 import { Feature } from "../modules/features/domain/entities/feature.entity";
 import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
 import { Role } from "../modules/roles/domain/entities/role.entity";
@@ -22,10 +25,14 @@ import { Tax } from "../modules/taxes/domain/entities/tax.entity";
 import { Variant } from "../modules/variants/domain/entities/variant.entity";
 import { VariantValue } from "../modules/variants/domain/entities/variant-value.entity";
 import { ProductType } from "../modules/product-types/domain/entities/product-type.entity";
-import { CreatePriceCategoriesTable1702432800005 } from "@/migrations/1702432800005-CreatePriceCategoriesTable";
-import { CreateProductCategoriesTable1702432800006 } from "@/migrations/1702432800006-CreateProductCategoriesTable";
 import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
 import { ProductCategory } from "@/modules/product-categories/domain/entities/product-category.entity";
+import { InventoryProduct } from "@/modules/inventory/domain/entities/inventory-product.entity";
+import { InventoryProductCategory } from "@/modules/inventory/domain/entities/inventory-product-category.entity";
+import { InventoryProductSelectedVariant } from "@/modules/inventory/domain/entities/inventory-product-selected-variant.entity";
+import { InventoryProductSelectedVariantValue } from "@/modules/inventory/domain/entities/inventory-product-selected-variant-value.entity";
+import { InventoryProductByVariant } from "@/modules/inventory/domain/entities/inventory-product-by-variant.entity";
+import { InventoryProductByVariantHistory } from "@/modules/inventory/domain/entities/inventory-product-by-variant-history.entity";
 
 config();
 
@@ -53,6 +60,12 @@ const options: DataSourceOptions = {
     ProductType,
     PriceCategory,
     ProductCategory,
+    InventoryProduct,
+    InventoryProductCategory,
+    InventoryProductSelectedVariant,
+    InventoryProductSelectedVariantValue,
+    InventoryProductByVariant,
+    InventoryProductByVariantHistory
   ],
   migrations: [
     CreateInitialSchema1701234567890,
@@ -65,6 +78,7 @@ const options: DataSourceOptions = {
     CreateProductTypesTable1702432800004,
     CreatePriceCategoriesTable1702432800005,
     CreateProductCategoriesTable1702432800006,
+    CreateInventoryProductTables1702432800007
   ],
   synchronize: false,
 };

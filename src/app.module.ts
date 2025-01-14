@@ -17,6 +17,7 @@ import { VariantsModule } from "@/modules/variants/variants.module";
 import { ProductTypesModule } from "@/modules/product-types/product-types.module";
 import { PriceCategoriesModule } from "@/modules/price-categories/price-categories.module";
 import { ProductCategoriesModule } from "@/modules/product-categories/product-categories.module";
+import { InventoryModule } from "@/modules/inventory/inventory.module";
 
 // Common Modules
 import { CommonModule } from "@/common/common.module";
@@ -76,6 +77,7 @@ import { validate } from "@/config/env.validation";
     ProductTypesModule,
     PriceCategoriesModule,
     ProductCategoriesModule,
+    InventoryModule,
 
     // Common Modules
     CommonModule,
