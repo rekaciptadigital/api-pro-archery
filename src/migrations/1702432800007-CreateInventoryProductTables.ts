@@ -1,7 +1,9 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateInventoryProductTables1702432800007 implements MigrationInterface {
-  name = 'CreateInventoryProductTables1702432800007';
+export class CreateInventoryProductTables1702432800007
+  implements MigrationInterface
+{
+  name = "CreateInventoryProductTables1702432800007";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create inventory_products table
@@ -71,9 +73,9 @@ export class CreateInventoryProductTables1702432800007 implements MigrationInter
       CREATE TABLE "inventory_product_by_variants" (
         "id" varchar(255) PRIMARY KEY,
         "inventory_product_id" bigint NOT NULL,
-        "full_product_name" text NOT NULL,
+        "full_product_name" text NOT NULL UNIQUE,
         "sku_product_variant" text NOT NULL,
-        "sku_product_unique_code" integer NOT NULL,
+        "sku_product_unique_code" text NOT NULL,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         "deleted_at" TIMESTAMP,
@@ -121,26 +123,62 @@ export class CreateInventoryProductTables1702432800007 implements MigrationInter
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop indexes
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_product_histories_product_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_product_histories_variant_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_product_by_variants_product_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_product_variant_values_variant_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_product_variants_variant_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_product_variants_product_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_product_categories_category_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_product_categories_product_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_products_slug"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_products_sku"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_products_unique_code"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_products_product_type_id"`);
-    await queryRunner.query(`DROP INDEX IF EXISTS "idx_inventory_products_brand_id"`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_product_histories_product_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_product_histories_variant_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_product_by_variants_product_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_product_variant_values_variant_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_product_variants_variant_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_product_variants_product_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_product_categories_category_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_product_categories_product_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_products_slug"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_products_sku"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_products_unique_code"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_products_product_type_id"`
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "idx_inventory_products_brand_id"`
+    );
 
     // Drop tables
-    await queryRunner.query(`DROP TABLE IF EXISTS "inventory_product_by_variant_histories"`);
-    await queryRunner.query(`DROP TABLE IF EXISTS "inventory_product_by_variants"`);
-    await queryRunner.query(`DROP TABLE IF EXISTS "inventory_product_selected_variant_values"`);
-    await queryRunner.query(`DROP TABLE IF EXISTS "inventory_product_selected_variants"`);
-    await queryRunner.query(`DROP TABLE IF EXISTS "inventory_product_categories"`);
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "inventory_product_by_variant_histories"`
+    );
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "inventory_product_by_variants"`
+    );
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "inventory_product_selected_variant_values"`
+    );
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "inventory_product_selected_variants"`
+    );
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS "inventory_product_categories"`
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS "inventory_products"`);
   }
 }

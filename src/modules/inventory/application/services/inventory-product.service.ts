@@ -1,15 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InventoryProductRepository } from '../../domain/repositories/inventory-product.repository';
-import { CreateInventoryProductDto } from '../dtos/create-inventory-product.dto';
-import { UpdateInventoryProductDto } from '../dtos/update-inventory-product.dto';
-import { InventoryProductQueryDto } from '../dtos/inventory-product-query.dto';
-import { PaginationHelper } from '@/common/pagination/helpers/pagination.helper';
-import { ResponseTransformer } from '@/common/transformers/response.transformer';
-import { DomainException } from '@/common/exceptions/domain.exception';
-import { HttpStatus } from '@nestjs/common';
-import { ProductSlug } from '../../domain/value-objects/product-slug.value-object';
-import { SKU } from '../../domain/value-objects/sku.value-object';
-import { DataSource } from 'typeorm';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InventoryProductRepository } from "../../domain/repositories/inventory-product.repository";
+import { CreateInventoryProductDto } from "../dtos/create-inventory-product.dto";
+import { UpdateInventoryProductDto } from "../dtos/update-inventory-product.dto";
+import { InventoryProductQueryDto } from "../dtos/inventory-product-query.dto";
+import { PaginationHelper } from "@/common/pagination/helpers/pagination.helper";
+import { ResponseTransformer } from "@/common/transformers/response.transformer";
+import { DomainException } from "@/common/exceptions/domain.exception";
+import { HttpStatus } from "@nestjs/common";
+import { ProductSlug } from "../../domain/value-objects/product-slug.value-object";
+import { SKU } from "../../domain/value-objects/sku.value-object";
+import { DataSource, DeepPartial } from "typeorm";
+import { InventoryProduct } from "../../domain/entities/inventory-product.entity";
+import { InventoryProductSelectedVariant } from "../../domain/entities/inventory-product-selected-variant.entity";
+import { randomBytes } from "crypto";
 
 @Injectable()
 export class InventoryProductService {
@@ -23,21 +26,27 @@ export class InventoryProductService {
   async create(createInventoryProductDto: CreateInventoryProductDto) {
     // Validate SKU format
     if (!SKU.isValid(createInventoryProductDto.sku)) {
-      throw new DomainException('Invalid SKU format');
+      throw new DomainException("Invalid SKU format");
     }
 
     // Check for existing SKU or unique_code
-    const existingProduct = await this.inventoryProductRepository.findBySkuOrUniqueCode(
-      createInventoryProductDto.sku,
-      createInventoryProductDto.unique_code
-    );
+    const existingProduct =
+      await this.inventoryProductRepository.findBySkuOrUniqueCode(
+        createInventoryProductDto.sku,
+        createInventoryProductDto.unique_code
+      );
 
     if (existingProduct) {
-      throw new DomainException('SKU or unique code already exists', HttpStatus.CONFLICT);
+      throw new DomainException(
+        "SKU or unique code already exists",
+        HttpStatus.CONFLICT
+      );
     }
 
     // Generate slug from product name
-    const slug = ProductSlug.create(createInventoryProductDto.product_name).getValue();
+    const slug = ProductSlug.create(
+      createInventoryProductDto.product_name
+    ).getValue();
 
     // Create product with relationships in a transaction
     const queryRunner = this.dataSource.createQueryRunner();
@@ -45,51 +54,85 @@ export class InventoryProductService {
     await queryRunner.startTransaction();
 
     try {
-      const product = await queryRunner.manager.save('inventory_products', {
+      const productData: DeepPartial<InventoryProduct> = {
         ...createInventoryProductDto,
-        slug
-      });
+        slug,
+        categories: [],
+        variants: [],
+        product_by_variant: [],
+      };
+
+      const product = await queryRunner.manager.save(
+        InventoryProduct,
+        productData
+      );
 
       // Save categories
       if (createInventoryProductDto.categories?.length) {
-        const categories = createInventoryProductDto.categories.map(category => ({
-          inventory_product_id: product.id,
-          ...category
-        }));
-        await queryRunner.manager.save('inventory_product_categories', categories);
+        const categories = createInventoryProductDto.categories.map(
+          (category) => ({
+            inventory_product_id: product.id,
+            ...category,
+          })
+        );
+        await queryRunner.manager.save(
+          "inventory_product_categories",
+          categories
+        );
       }
 
       // Save variants and their values
       if (createInventoryProductDto.variants?.length) {
         for (const variant of createInventoryProductDto.variants) {
-          const savedVariant = await queryRunner.manager.save('inventory_product_selected_variants', {
+          const variantData: DeepPartial<InventoryProductSelectedVariant> = {
             inventory_product_id: product.id,
             variant_id: variant.variant_id,
-            variant_name: variant.variant_name
-          });
+            variant_name: variant.variant_name,
+            values: [],
+          };
+
+          const savedVariant = await queryRunner.manager.save(
+            InventoryProductSelectedVariant,
+            variantData
+          );
 
           if (variant.variant_values?.length) {
-            const variantValues = variant.variant_values.map(value => ({
+            const variantValues = variant.variant_values.map((value) => ({
               inventory_product_variant_id: savedVariant.id,
-              ...value
+              ...value,
             }));
-            await queryRunner.manager.save('inventory_product_selected_variant_values', variantValues);
+            await queryRunner.manager.save(
+              "inventory_product_selected_variant_values",
+              variantValues
+            );
           }
         }
       }
 
-      // Save product variants
+      // Save product variants with proper number conversion
       if (createInventoryProductDto.product_by_variant?.length) {
-        const productVariants = createInventoryProductDto.product_by_variant.map(variant => ({
-          inventory_product_id: product.id,
-          ...variant
-        }));
-        await queryRunner.manager.save('inventory_product_by_variants', productVariants);
+        const productVariants =
+          createInventoryProductDto.product_by_variant.map((variant) => ({
+            id: randomBytes(12).toString("hex"),
+            inventory_product_id: product.id,
+            full_product_name: variant.full_product_name,
+            sku_product_variant: variant.sku, // Map from DTO's sku to entity's sku_product_variant
+            sku_product_unique_code: variant.sku_product_unique_code,
+            deleted_at: null,
+          }));
+        await queryRunner.manager.save(
+          "inventory_product_by_variants",
+          productVariants
+        );
       }
 
       await queryRunner.commitTransaction();
 
-      const createdProduct = await this.inventoryProductRepository.findOneWithRelations(product.id);
+      const createdProduct =
+        await this.inventoryProductRepository.findOneWithRelations(product.id);
+      if (!createdProduct) {
+        throw new NotFoundException("Created product not found");
+      }
       return this.responseTransformer.transform(createdProduct);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -100,22 +143,26 @@ export class InventoryProductService {
   }
 
   async findAll(query: InventoryProductQueryDto) {
-    const { skip, take } = this.paginationHelper.getSkipTake(query.page, query.limit);
-    
-    const [products, total] = await this.inventoryProductRepository.findProducts(
-      skip,
-      take,
-      query.sort,
-      query.order,
-      query.search
+    const { skip, take } = this.paginationHelper.getSkipTake(
+      query.page,
+      query.limit
     );
 
+    const [products, total] =
+      await this.inventoryProductRepository.findProducts(
+        skip,
+        take,
+        query.sort,
+        query.order,
+        query.search
+      );
+
     const paginationData = this.paginationHelper.generatePaginationData({
-      serviceName: 'inventory',
+      serviceName: "inventory",
       totalItems: total,
       page: query.page,
       limit: query.limit,
-      customParams: query.toCustomParams()
+      customParams: query.toCustomParams(),
     });
 
     return this.responseTransformer.transformPaginated(
@@ -128,36 +175,47 @@ export class InventoryProductService {
   }
 
   async findOne(id: number) {
-    const product = await this.inventoryProductRepository.findOneWithRelations(id);
+    const product =
+      await this.inventoryProductRepository.findOneWithRelations(id);
     if (!product) {
-      throw new NotFoundException('Inventory product not found');
+      throw new NotFoundException("Inventory product not found");
     }
     return this.responseTransformer.transform(product);
   }
 
-  async update(id: number, updateInventoryProductDto: UpdateInventoryProductDto) {
+  async update(
+    id: number,
+    updateInventoryProductDto: UpdateInventoryProductDto
+  ) {
     const product = await this.inventoryProductRepository.findById(id);
     if (!product) {
-      throw new NotFoundException('Inventory product not found');
+      throw new NotFoundException("Inventory product not found");
     }
 
     // Check for existing soft-deleted product with same SKU/unique_code
-    if (updateInventoryProductDto.sku || updateInventoryProductDto.unique_code) {
-      const existingProduct = await this.inventoryProductRepository.findBySkuOrUniqueCodeWithDeleted(
-        updateInventoryProductDto.sku || product.sku,
-        updateInventoryProductDto.unique_code
-      );
+    if (
+      updateInventoryProductDto.sku ||
+      updateInventoryProductDto.unique_code
+    ) {
+      const existingProduct =
+        await this.inventoryProductRepository.findBySkuOrUniqueCodeWithDeleted(
+          updateInventoryProductDto.sku || product.sku,
+          updateInventoryProductDto.unique_code
+        );
 
       if (existingProduct && existingProduct.id !== id) {
         if (existingProduct.deleted_at) {
           // Restore the soft-deleted product
           await this.inventoryProductRepository.restore(existingProduct.id);
           throw new DomainException(
-            'Product with this SKU/unique code has been restored. Please try again with different values.',
+            "Product with this SKU/unique code has been restored. Please try again with different values.",
             HttpStatus.CONFLICT
           );
         } else {
-          throw new DomainException('SKU or unique code already exists', HttpStatus.CONFLICT);
+          throw new DomainException(
+            "SKU or unique code already exists",
+            HttpStatus.CONFLICT
+          );
         }
       }
     }
@@ -170,64 +228,110 @@ export class InventoryProductService {
     try {
       // Update main product
       if (updateInventoryProductDto.product_name) {
-        updateInventoryProductDto.slug = ProductSlug.create(updateInventoryProductDto.product_name).getValue();
+        updateInventoryProductDto.slug = ProductSlug.create(
+          updateInventoryProductDto.product_name
+        ).getValue();
       }
 
-      await queryRunner.manager.update('inventory_products', id, updateInventoryProductDto);
+      // Separate related data from main entity data
+      const { categories, variants, product_by_variant, ...mainProductData } =
+        updateInventoryProductDto;
 
-      // Update relationships if provided
-      if (updateInventoryProductDto.categories) {
-        await queryRunner.manager.delete('inventory_product_categories', { inventory_product_id: id });
-        const categories = updateInventoryProductDto.categories.map(category => ({
+      const updateData: DeepPartial<InventoryProduct> = {
+        ...mainProductData,
+      };
+
+      await queryRunner.manager.update(InventoryProduct, id, updateData);
+
+      // Handle relationships separately
+      if (categories) {
+        await queryRunner.manager.delete("inventory_product_categories", {
           inventory_product_id: id,
-          ...category
+        });
+        const categoryData = categories.map((category) => ({
+          inventory_product_id: id,
+          ...category,
         }));
-        await queryRunner.manager.save('inventory_product_categories', categories);
+        await queryRunner.manager.save(
+          "inventory_product_categories",
+          categoryData
+        );
       }
 
-      if (updateInventoryProductDto.variants) {
+      if (variants) {
         // Delete existing variants and their values
-        const existingVariants = await queryRunner.manager.find('inventory_product_selected_variants', {
-          where: { inventory_product_id: id }
-        });
-        
+        const existingVariants = await queryRunner.manager.find(
+          InventoryProductSelectedVariant,
+          {
+            where: { inventory_product_id: id },
+          }
+        );
+
         for (const variant of existingVariants) {
-          await queryRunner.manager.delete('inventory_product_selected_variant_values', {
-            inventory_product_variant_id: variant.id
-          });
+          await queryRunner.manager.delete(
+            "inventory_product_selected_variant_values",
+            {
+              inventory_product_variant_id: variant.id,
+            }
+          );
         }
-        await queryRunner.manager.delete('inventory_product_selected_variants', { inventory_product_id: id });
+        await queryRunner.manager.delete(InventoryProductSelectedVariant, {
+          inventory_product_id: id,
+        });
 
         // Create new variants and values
-        for (const variant of updateInventoryProductDto.variants) {
-          const savedVariant = await queryRunner.manager.save('inventory_product_selected_variants', {
+        for (const variant of variants) {
+          // Changed from updateInventoryProductDto.variants
+          const variantData: DeepPartial<InventoryProductSelectedVariant> = {
             inventory_product_id: id,
             variant_id: variant.variant_id,
-            variant_name: variant.variant_name
-          });
+            variant_name: variant.variant_name,
+            values: [],
+          };
+
+          const savedVariant = await queryRunner.manager.save(
+            InventoryProductSelectedVariant,
+            variantData
+          );
 
           if (variant.variant_values?.length) {
-            const variantValues = variant.variant_values.map(value => ({
+            const variantValues = variant.variant_values.map((value) => ({
               inventory_product_variant_id: savedVariant.id,
-              ...value
+              ...value,
             }));
-            await queryRunner.manager.save('inventory_product_selected_variant_values', variantValues);
+            await queryRunner.manager.save(
+              "inventory_product_selected_variant_values",
+              variantValues
+            );
           }
         }
       }
 
-      if (updateInventoryProductDto.product_by_variant) {
-        await queryRunner.manager.delete('inventory_product_by_variants', { inventory_product_id: id });
-        const productVariants = updateInventoryProductDto.product_by_variant.map(variant => ({
+      if (product_by_variant) {
+        await queryRunner.manager.delete("inventory_product_by_variants", {
           inventory_product_id: id,
-          ...variant
+        });
+        const productVariantsData = product_by_variant.map((variant) => ({
+          id: randomBytes(12).toString("hex"),
+          inventory_product_id: id,
+          full_product_name: variant.full_product_name,
+          sku_product_variant: variant.sku, // Map from DTO's sku to entity's sku_product_variant
+          sku_product_unique_code: Number(variant.sku_product_unique_code), // Ensure it's a number
+          deleted_at: null,
         }));
-        await queryRunner.manager.save('inventory_product_by_variants', productVariants);
+        await queryRunner.manager.save(
+          "inventory_product_by_variants",
+          productVariantsData
+        );
       }
 
       await queryRunner.commitTransaction();
 
-      const updatedProduct = await this.inventoryProductRepository.findOneWithRelations(id);
+      const updatedProduct =
+        await this.inventoryProductRepository.findOneWithRelations(id);
+      if (!updatedProduct) {
+        throw new NotFoundException("Updated product not found");
+      }
       return this.responseTransformer.transform(updatedProduct);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -240,10 +344,12 @@ export class InventoryProductService {
   async remove(id: number) {
     const product = await this.inventoryProductRepository.findById(id);
     if (!product) {
-      throw new NotFoundException('Inventory product not found');
+      throw new NotFoundException("Inventory product not found");
     }
 
     await this.inventoryProductRepository.softDelete(id);
-    return this.responseTransformer.transform({ message: 'Inventory product deleted successfully' });
+    return this.responseTransformer.transform({
+      message: "Inventory product deleted successfully",
+    });
   }
 }
