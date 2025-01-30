@@ -19,7 +19,7 @@ export class CreateProductCategoryDto {
   code?: string;
 
   @ApiPropertyOptional({ description: "Category description" })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   description?: string;
 

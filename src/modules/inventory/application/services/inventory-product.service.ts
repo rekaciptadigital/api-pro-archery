@@ -43,10 +43,8 @@ export class InventoryProductService {
       );
     }
 
-    // Generate slug from product name
-    const slug = ProductSlug.create(
-      createInventoryProductDto.product_name
-    ).getValue();
+    // Use slug from request body instead of generating it
+    const slug = createInventoryProductDto.slug;
 
     // Create product with relationships in a transaction
     const queryRunner = this.dataSource.createQueryRunner();
@@ -56,11 +54,12 @@ export class InventoryProductService {
     try {
       const productData: DeepPartial<InventoryProduct> = {
         ...createInventoryProductDto,
-        slug,
         categories: [],
         variants: [],
         product_by_variant: [],
       };
+
+      // Slug sudah termasuk dalam createInventoryProductDto, tidak perlu di-assign ulang
 
       const product = await queryRunner.manager.save(
         InventoryProduct,
@@ -187,9 +186,18 @@ export class InventoryProductService {
     id: number,
     updateInventoryProductDto: UpdateInventoryProductDto
   ) {
+    // Remove empty object validation since it's handled by DTO validation
     const product = await this.inventoryProductRepository.findById(id);
     if (!product) {
       throw new NotFoundException("Inventory product not found");
+    }
+
+    // Add SKU format validation
+    if (
+      updateInventoryProductDto.sku &&
+      !SKU.isValid(updateInventoryProductDto.sku)
+    ) {
+      throw new DomainException("Invalid SKU format");
     }
 
     // Check for existing soft-deleted product with same SKU/unique_code

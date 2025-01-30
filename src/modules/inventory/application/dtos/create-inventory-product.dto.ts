@@ -119,7 +119,6 @@ export class CreateInventoryProductDto {
   @ApiProperty({ description: "Product name" })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
   product_name: string;
 
   @ApiProperty({ description: "Full product name" })
@@ -146,7 +145,6 @@ export class CreateInventoryProductDto {
   @ApiProperty({ description: "Product slug" })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
   slug: string;
 
   @ApiProperty({ type: [CategoryDto], description: "Product categories" })
