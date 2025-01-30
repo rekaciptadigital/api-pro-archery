@@ -48,11 +48,9 @@ export class ProductCategoryRepository extends BaseRepository<ProductCategory> {
     search?: string,
     status?: boolean
   ): Promise<[ProductCategory[], number]> {
-    // Get root categories first
     const query = this.productCategoryRepository
       .createQueryBuilder("category")
-      .where("category.deleted_at IS NULL")
-      .andWhere("category.parent_id IS NULL");
+      .where("category.deleted_at IS NULL");
 
     if (search) {
       query.andWhere("LOWER(category.name) LIKE LOWER(:search)", {
@@ -60,17 +58,19 @@ export class ProductCategoryRepository extends BaseRepository<ProductCategory> {
       });
     }
 
-    if (status !== undefined) {
+    // Modified status filter to handle undefined/null cases
+    if (status !== undefined && status !== null) {
       query.andWhere("category.status = :status", { status });
     }
 
+    // Get all categories without parent_id filter
     query.orderBy(`category.${sort}`, order).skip(skip).take(take);
 
-    const [rootCategories, total] = await query.getManyAndCount();
+    const [categories, total] = await query.getManyAndCount();
 
-    // Load complete tree for each root category
+    // Load children for each category
     const categoriesWithChildren = await Promise.all(
-      rootCategories.map(async (category) => {
+      categories.map(async (category) => {
         return this.loadCategoryTreeRecursive(category);
       })
     );
