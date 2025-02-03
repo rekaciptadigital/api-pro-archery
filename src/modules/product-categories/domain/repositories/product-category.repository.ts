@@ -50,7 +50,8 @@ export class ProductCategoryRepository extends BaseRepository<ProductCategory> {
   ): Promise<[ProductCategory[], number]> {
     const query = this.productCategoryRepository
       .createQueryBuilder("category")
-      .where("category.deleted_at IS NULL");
+      .where("category.deleted_at IS NULL")
+      .andWhere("category.parent_id IS NULL");
 
     if (search) {
       query.andWhere("LOWER(category.name) LIKE LOWER(:search)", {
