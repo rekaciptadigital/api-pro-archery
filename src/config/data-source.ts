@@ -11,6 +11,7 @@ import { CreateProductTypesTable1702432800004 } from "../migrations/170243280000
 import { CreatePriceCategoriesTable1702432800005 } from "../migrations/1702432800005-CreatePriceCategoriesTable";
 import { CreateProductCategoriesTable1702432800006 } from "../migrations/1702432800006-CreateProductCategoriesTable";
 import { CreateInventoryProductTables1702432800007 } from "../migrations/1702432800007-CreateInventoryProductTables";
+import { AddSetDefaultToPriceCategories1702432800008 } from "../migrations/1702432800008-AddSetDefaultToPriceCategories";
 import { Feature } from "../modules/features/domain/entities/feature.entity";
 import { RoleFeaturePermission } from "../modules/permissions/domain/entities/role-feature-permission.entity";
 import { Role } from "../modules/roles/domain/entities/role.entity";
@@ -65,7 +66,7 @@ const options: DataSourceOptions = {
     InventoryProductSelectedVariant,
     InventoryProductSelectedVariantValue,
     InventoryProductByVariant,
-    InventoryProductByVariantHistory
+    InventoryProductByVariantHistory,
   ],
   migrations: [
     CreateInitialSchema1701234567890,
@@ -78,7 +79,8 @@ const options: DataSourceOptions = {
     CreateProductTypesTable1702432800004,
     CreatePriceCategoriesTable1702432800005,
     CreateProductCategoriesTable1702432800006,
-    CreateInventoryProductTables1702432800007
+    CreateInventoryProductTables1702432800007,
+    AddSetDefaultToPriceCategories1702432800008,
   ],
   synchronize: false,
 };

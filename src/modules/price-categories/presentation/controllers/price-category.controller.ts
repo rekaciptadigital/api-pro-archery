@@ -14,6 +14,7 @@ import { PriceCategoryService } from "../../application/services/price-category.
 import {
   BatchPriceCategoriesDto,
   BatchPriceCategoryDto,
+  SetDefaultPriceCategoryDto,
 } from "../../application/dtos/price-category.dto";
 
 @ApiTags("price-categories")
@@ -42,6 +43,23 @@ export class PriceCategoryController {
   @ApiResponse({ status: HttpStatus.CONFLICT, description: "Duplicate entry" })
   async batchProcess(@Body() batchDto: BatchPriceCategoriesDto) {
     return this.priceCategoryService.batchProcess(batchDto.data);
+  }
+
+  @Post(":id/set-default")
+  @ApiOperation({ summary: "Set price category as default" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Price category default status updated successfully",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "Price category not found",
+  })
+  setDefault(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() setDefaultDto: SetDefaultPriceCategoryDto
+  ) {
+    return this.priceCategoryService.setDefault(id, setDefaultDto);
   }
 
   @Delete(":id")

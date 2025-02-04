@@ -83,3 +83,8 @@ export class BatchPriceCategoriesDto {
   @ApiProperty({ type: [BatchPriceCategoryDto] })
   data: BatchPriceCategoryDto[];
 }
+
+export class SetDefaultPriceCategoryDto {
+  @IsBoolean()
+  set_default: boolean;
+}

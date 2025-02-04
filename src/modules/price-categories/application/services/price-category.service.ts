@@ -1,6 +1,9 @@
 import { Injectable, ConflictException } from "@nestjs/common";
 import { PriceCategoryRepository } from "../../domain/repositories/price-category.repository";
-import { BatchPriceCategoryDto } from "../dtos/price-category.dto";
+import {
+  BatchPriceCategoryDto,
+  SetDefaultPriceCategoryDto,
+} from "../dtos/price-category.dto";
 import { In, DataSource } from "typeorm";
 import { CreatePriceCategoryDto } from "../dtos/price-category.dto";
 import { ResponseTransformer } from "@/common/transformers/response.transformer";
@@ -154,5 +157,61 @@ export class PriceCategoryService {
     return this.responseTransformer.transform({
       message: "Price category deleted successfully",
     });
+  }
+
+  async setDefault(id: number, setDefaultDto: SetDefaultPriceCategoryDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const category = await this.priceCategoryRepository.findById(id);
+      if (!category) {
+        throw new DomainException(
+          "Price category not found",
+          HttpStatus.NOT_FOUND
+        );
+      }
+
+      // Check if trying to set to false when this is the only default record
+      if (!setDefaultDto.set_default) {
+        const defaultCount = await queryRunner.manager.count(PriceCategory, {
+          where: { set_default: true },
+        });
+
+        if (defaultCount <= 1) {
+          throw new DomainException(
+            "Cannot remove default status: At least one price category must be set as default",
+            HttpStatus.BAD_REQUEST
+          );
+        }
+      }
+
+      if (setDefaultDto.set_default) {
+        // Set all price categories set_default to false first
+        await queryRunner.manager
+          .createQueryBuilder()
+          .update(PriceCategory)
+          .set({ set_default: false })
+          .execute();
+      }
+
+      // Update the selected price category
+      await queryRunner.manager.save(PriceCategory, {
+        ...category,
+        set_default: setDefaultDto.set_default,
+      });
+
+      await queryRunner.commitTransaction();
+
+      return this.responseTransformer.transform({
+        message: "Price category default status updated successfully",
+      });
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

@@ -1,7 +1,7 @@
-import { Entity, Column } from 'typeorm';
-import { BaseEntity } from '@/common/entities/base.entity';
+import { Entity, Column } from "typeorm";
+import { BaseEntity } from "@/common/entities/base.entity";
 
-@Entity('price_categories')
+@Entity("price_categories")
 export class PriceCategory extends BaseEntity {
   @Column()
   type: string;
@@ -9,12 +9,15 @@ export class PriceCategory extends BaseEntity {
   @Column()
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   formula: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: "decimal", precision: 10, scale: 2 })
   percentage: number;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: "boolean", default: true })
   status: boolean;
+
+  @Column({ type: "boolean", default: false })
+  set_default: boolean;
 }
