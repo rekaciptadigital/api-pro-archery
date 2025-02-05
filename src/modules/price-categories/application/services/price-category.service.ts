@@ -34,6 +34,7 @@ export class PriceCategoryService {
           formula: category.formula,
           percentage: category.percentage,
           status: category.status,
+          set_default: category.set_default,
           created_at: category.created_at,
           updated_at: category.updated_at,
         })),
