@@ -34,6 +34,8 @@ import { InventoryProductSelectedVariant } from "@/modules/inventory/domain/enti
 import { InventoryProductSelectedVariantValue } from "@/modules/inventory/domain/entities/inventory-product-selected-variant-value.entity";
 import { InventoryProductByVariant } from "@/modules/inventory/domain/entities/inventory-product-by-variant.entity";
 import { InventoryProductByVariantHistory } from "@/modules/inventory/domain/entities/inventory-product-by-variant-history.entity";
+import { InventoryLocation } from "@/modules/inventory-locations/domain/entities/inventory-location.entity";
+import { CreateInventoryLocationsTable1702432800009 } from "../migrations/1702432800009-CreateInventoryLocationsTable";
 
 config();
 
@@ -67,6 +69,7 @@ const options: DataSourceOptions = {
     InventoryProductSelectedVariantValue,
     InventoryProductByVariant,
     InventoryProductByVariantHistory,
+    InventoryLocation,
   ],
   migrations: [
     CreateInitialSchema1701234567890,
@@ -81,6 +84,7 @@ const options: DataSourceOptions = {
     CreateProductCategoriesTable1702432800006,
     CreateInventoryProductTables1702432800007,
     AddSetDefaultToPriceCategories1702432800008,
+    CreateInventoryLocationsTable1702432800009,
   ],
   synchronize: false,
 };
