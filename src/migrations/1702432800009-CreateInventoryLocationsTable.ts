@@ -22,8 +22,10 @@
 
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateInventoryLocationsTable1702432800009 implements MigrationInterface {
-  name = 'CreateInventoryLocationsTable1702432800009';
+export class CreateInventoryLocationsTable1702432800009
+  implements MigrationInterface
+{
+  name = "CreateInventoryLocationsTable1702432800009";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
@@ -36,8 +38,7 @@ export class CreateInventoryLocationsTable1702432800009 implements MigrationInte
         "status" boolean NOT NULL DEFAULT true,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "deleted_at" TIMESTAMP,
-        CONSTRAINT "uq_inventory_locations_code" UNIQUE ("code")
+        "deleted_at" TIMESTAMP
       )
     `);
 
