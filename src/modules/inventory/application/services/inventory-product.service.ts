@@ -186,7 +186,6 @@ export class InventoryProductService {
     id: number,
     updateInventoryProductDto: UpdateInventoryProductDto
   ) {
-    // Remove empty object validation since it's handled by DTO validation
     const product = await this.inventoryProductRepository.findById(id);
     if (!product) {
       throw new NotFoundException("Inventory product not found");
@@ -200,31 +199,24 @@ export class InventoryProductService {
       throw new DomainException("Invalid SKU format");
     }
 
-    // Check for existing soft-deleted product with same SKU/unique_code
+    // Check for SKU/unique_code conflicts with other active products
     if (
       updateInventoryProductDto.sku ||
       updateInventoryProductDto.unique_code
     ) {
-      const existingProduct =
-        await this.inventoryProductRepository.findBySkuOrUniqueCodeWithDeleted(
+      // Cek apakah ada produk lain (id berbeda) yang menggunakan SKU/unique_code yang sama
+      const existingProducts =
+        await this.inventoryProductRepository.findBySkuOrUniqueCodeExcludingId(
           updateInventoryProductDto.sku || product.sku,
-          updateInventoryProductDto.unique_code
+          updateInventoryProductDto.unique_code,
+          id
         );
 
-      if (existingProduct && existingProduct.id !== id) {
-        if (existingProduct.deleted_at) {
-          // Restore the soft-deleted product
-          await this.inventoryProductRepository.restore(existingProduct.id);
-          throw new DomainException(
-            "Product with this SKU/unique code has been restored. Please try again with different values.",
-            HttpStatus.CONFLICT
-          );
-        } else {
-          throw new DomainException(
-            "SKU or unique code already exists",
-            HttpStatus.CONFLICT
-          );
-        }
+      if (existingProducts && existingProducts.length > 0) {
+        throw new DomainException(
+          "SKU or unique code already exists in another product",
+          HttpStatus.CONFLICT
+        );
       }
     }
 

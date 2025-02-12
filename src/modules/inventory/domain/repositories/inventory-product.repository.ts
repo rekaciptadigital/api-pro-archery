@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull, ILike } from 'typeorm';
-import { InventoryProduct } from '../entities/inventory-product.entity';
-import { BaseRepository } from '@/common/repositories/base.repository';
-import { InventoryProductSortField, SortOrder } from '../../application/dtos/inventory-product-query.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository, IsNull, ILike, Brackets } from "typeorm";
+import { InventoryProduct } from "../entities/inventory-product.entity";
+import { BaseRepository } from "@/common/repositories/base.repository";
+import {
+  InventoryProductSortField,
+  SortOrder,
+} from "../../application/dtos/inventory-product-query.dto";
 
 @Injectable()
 export class InventoryProductRepository extends BaseRepository<InventoryProduct> {
@@ -14,27 +17,56 @@ export class InventoryProductRepository extends BaseRepository<InventoryProduct>
     super(inventoryProductRepository);
   }
 
-  async findBySkuOrUniqueCode(sku: string, uniqueCode?: string): Promise<InventoryProduct | null> {
-    const query = this.inventoryProductRepository.createQueryBuilder('product')
-      .where('product.sku = :sku', { sku });
+  async findBySkuOrUniqueCode(
+    sku: string,
+    uniqueCode?: string
+  ): Promise<InventoryProduct | null> {
+    const query = this.inventoryProductRepository
+      .createQueryBuilder("product")
+      .where("product.sku = :sku", { sku });
 
     if (uniqueCode) {
-      query.orWhere('product.unique_code = :uniqueCode', { uniqueCode });
+      query.orWhere("product.unique_code = :uniqueCode", { uniqueCode });
     }
 
     return query.getOne();
   }
 
-  async findBySkuOrUniqueCodeWithDeleted(sku: string, uniqueCode?: string): Promise<InventoryProduct | null> {
-    const query = this.inventoryProductRepository.createQueryBuilder('product')
+  async findBySkuOrUniqueCodeWithDeleted(
+    sku: string,
+    uniqueCode?: string
+  ): Promise<InventoryProduct | null> {
+    const query = this.inventoryProductRepository
+      .createQueryBuilder("product")
       .withDeleted()
-      .where('product.sku = :sku', { sku });
+      .where("product.sku = :sku", { sku });
 
     if (uniqueCode) {
-      query.orWhere('product.unique_code = :uniqueCode', { uniqueCode });
+      query.orWhere("product.unique_code = :uniqueCode", { uniqueCode });
     }
 
     return query.getOne();
+  }
+
+  async findBySkuOrUniqueCodeExcludingId(
+    sku: string,
+    uniqueCode: string | undefined,
+    excludeId: number
+  ): Promise<InventoryProduct[]> {
+    const query = this.inventoryProductRepository
+      .createQueryBuilder("product")
+      .where("product.id != :excludeId", { excludeId })
+      .andWhere("product.deleted_at IS NULL")
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where("product.sku = :sku", { sku });
+          if (uniqueCode) {
+            qb.orWhere("product.unique_code = :uniqueCode", { uniqueCode });
+          }
+        })
+      );
+
+    return query.getMany();
   }
 
   async findProducts(
@@ -44,41 +76,40 @@ export class InventoryProductRepository extends BaseRepository<InventoryProduct>
     order: SortOrder = SortOrder.DESC,
     search?: string
   ): Promise<[InventoryProduct[], number]> {
-    const query = this.inventoryProductRepository.createQueryBuilder('product')
-      .leftJoinAndSelect('product.categories', 'categories')
-      .leftJoinAndSelect('product.variants', 'variants')
-      .leftJoinAndSelect('variants.values', 'variant_values')
-      .leftJoinAndSelect('product.product_by_variant', 'product_by_variant')
-      .where('product.deleted_at IS NULL');
+    const query = this.inventoryProductRepository
+      .createQueryBuilder("product")
+      .leftJoinAndSelect("product.categories", "categories")
+      .leftJoinAndSelect("product.variants", "variants")
+      .leftJoinAndSelect("variants.values", "variant_values")
+      .leftJoinAndSelect("product.product_by_variant", "product_by_variant")
+      .where("product.deleted_at IS NULL");
 
     if (search) {
       query.andWhere(
-        '(LOWER(product.product_name) LIKE LOWER(:search) OR ' +
-        'LOWER(product.sku) LIKE LOWER(:search) OR ' +
-        'LOWER(product.full_product_name) LIKE LOWER(:search))',
+        "(LOWER(product.product_name) LIKE LOWER(:search) OR " +
+          "LOWER(product.sku) LIKE LOWER(:search) OR " +
+          "LOWER(product.full_product_name) LIKE LOWER(:search))",
         { search: `%${search}%` }
       );
     }
 
-    query.orderBy(`product.${sort}`, order)
-      .skip(skip)
-      .take(take);
+    query.orderBy(`product.${sort}`, order).skip(skip).take(take);
 
     return query.getManyAndCount();
   }
 
   async findOneWithRelations(id: number): Promise<InventoryProduct | null> {
     return this.inventoryProductRepository.findOne({
-      where: { 
+      where: {
         id,
-        deleted_at: IsNull()
+        deleted_at: IsNull(),
       },
       relations: [
-        'categories',
-        'variants',
-        'variants.values',
-        'product_by_variant'
-      ]
+        "categories",
+        "variants",
+        "variants.values",
+        "product_by_variant",
+      ],
     });
   }
 
@@ -87,11 +118,11 @@ export class InventoryProductRepository extends BaseRepository<InventoryProduct>
       where: { id },
       withDeleted: true,
       relations: [
-        'categories',
-        'variants',
-        'variants.values',
-        'product_by_variant'
-      ]
+        "categories",
+        "variants",
+        "variants.values",
+        "product_by_variant",
+      ],
     });
   }
 

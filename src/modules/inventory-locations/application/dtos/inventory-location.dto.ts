@@ -20,7 +20,7 @@ export class CreateInventoryLocationDto {
 
   @ApiProperty({
     description:
-      "Location type (Warehouse, Store, Booth, Affiliate Store, Other)",
+      "Location type (Warehouse, Store, Popup Store, Affiliate Store, Other)",
   })
   @IsNotEmpty()
   @IsString()

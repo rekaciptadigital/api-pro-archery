@@ -84,12 +84,12 @@ export class InventoryLocationValidator {
       "Warehouse",
       "Store",
       "Affiliate Store",
-      "Booth",
+      "Popup Store",
       "Other",
     ];
     if (!validTypes.includes(type)) {
       throw new DomainException(
-        "Invalid location type. Must be either Warehouse, Store, Booth, Affiliate Store, Other only",
+        "Invalid location type. Must be either Warehouse, Store, Popup Store, Affiliate Store, Other only",
         HttpStatus.BAD_REQUEST
       );
     }
