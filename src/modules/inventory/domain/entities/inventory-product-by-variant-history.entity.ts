@@ -28,6 +28,9 @@ export class InventoryProductByVariantHistory extends VarPrimary {
   @Column("integer")
   sku_product_unique_code: number;
 
+  @Column("boolean", { default: true })
+  status: boolean;
+
   @ManyToOne(() => InventoryProductByVariant, (variant) => variant.histories, {
     onDelete: "CASCADE",
   })

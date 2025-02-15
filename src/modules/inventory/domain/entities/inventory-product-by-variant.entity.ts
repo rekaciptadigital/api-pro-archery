@@ -35,6 +35,9 @@ export class InventoryProductByVariant extends VarPrimary {
   @Column({ type: "timestamp", nullable: true })
   deleted_at: Date;
 
+  @Column("boolean", { default: true })
+  status: boolean;
+
   @ManyToOne(() => InventoryProduct, (product) => product.product_by_variant, {
     onDelete: "CASCADE",
   })
@@ -67,6 +70,7 @@ export class InventoryProductByVariant extends VarPrimary {
       full_product_name: this.full_product_name,
       sku_product_variant: this.sku_product_variant,
       sku_product_unique_code: this.sku_product_unique_code,
+      status: this.status,
     };
 
     await getManager()

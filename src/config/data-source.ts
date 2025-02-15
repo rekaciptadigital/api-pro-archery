@@ -36,6 +36,7 @@ import { InventoryProductByVariant } from "@/modules/inventory/domain/entities/i
 import { InventoryProductByVariantHistory } from "@/modules/inventory/domain/entities/inventory-product-by-variant-history.entity";
 import { InventoryLocation } from "@/modules/inventory-locations/domain/entities/inventory-location.entity";
 import { CreateInventoryLocationsTable1702432800009 } from "../migrations/1702432800009-CreateInventoryLocationsTable";
+import { AddStatusToInventoryVariants1702432800010 } from "@/migrations/1702432800010-add-status-to-inventory-variants";
 
 config();
 
@@ -85,6 +86,7 @@ const options: DataSourceOptions = {
     CreateInventoryProductTables1702432800007,
     AddSetDefaultToPriceCategories1702432800008,
     CreateInventoryLocationsTable1702432800009,
+    AddStatusToInventoryVariants1702432800010,
   ],
   synchronize: false,
 };

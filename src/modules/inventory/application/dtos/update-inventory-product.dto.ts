@@ -8,6 +8,7 @@ import {
   ValidateNested,
   IsNotEmpty,
   MaxLength,
+  IsBoolean,
 } from "class-validator";
 class CategoryDto {
   @ApiProperty({ description: "Product category ID" })
@@ -73,6 +74,15 @@ class ProductByVariantDto {
   @IsString()
   @IsNotEmpty()
   sku_product_unique_code: string;
+
+  @ApiProperty({
+    description: "Product variant status",
+    type: Boolean,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }: { value: any }) => value === "true" || value === true)
+  status?: boolean;
 }
 export class UpdateInventoryProductDto {
   @ApiProperty({ description: "Brand ID" })
@@ -165,4 +175,12 @@ export class UpdateInventoryProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductByVariantDto)
   product_by_variant: ProductByVariantDto[];
+
+  @ApiProperty({
+    description: "Product variant status",
+    required: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === "true" || value === true)
+  status?: boolean;
 }

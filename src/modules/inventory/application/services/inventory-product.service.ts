@@ -118,6 +118,7 @@ export class InventoryProductService {
             sku_product_variant: variant.sku, // Map from DTO's sku to entity's sku_product_variant
             sku_product_unique_code: variant.sku_product_unique_code,
             deleted_at: null,
+            status: variant.status ?? true, // Set default to true if not provided
           }));
         await queryRunner.manager.save(
           "inventory_product_by_variants",
@@ -142,6 +143,16 @@ export class InventoryProductService {
   }
 
   async findAll(query: InventoryProductQueryDto) {
+    const queryBuilder = this.inventoryProductRepository
+      .createQueryBuilder("product")
+      .leftJoinAndSelect("product.product_by_variant", "variants");
+
+    if (query.status !== undefined) {
+      queryBuilder.andWhere("variants.status = :status", {
+        status: query.status,
+      });
+    }
+
     const { skip, take } = this.paginationHelper.getSkipTake(
       query.page,
       query.limit
@@ -174,12 +185,17 @@ export class InventoryProductService {
   }
 
   async findOne(id: number) {
-    const product =
-      await this.inventoryProductRepository.findOneWithRelations(id);
+    const product = await this.inventoryProductRepository
+      .createQueryBuilder("product")
+      .leftJoinAndSelect("product.product_by_variant", "variants")
+      .where("product.id = :id", { id })
+      .getOne();
+
     if (!product) {
-      throw new NotFoundException("Inventory product not found");
+      throw new NotFoundException("Product not found");
     }
-    return this.responseTransformer.transform(product);
+
+    return product;
   }
 
   async update(
@@ -318,6 +334,7 @@ export class InventoryProductService {
           sku_product_variant: variant.sku, // Map from DTO's sku to entity's sku_product_variant
           sku_product_unique_code: Number(variant.sku_product_unique_code), // Ensure it's a number
           deleted_at: null,
+          status: variant.status ?? true, // Maintain existing status if not provided
         }));
         await queryRunner.manager.save(
           "inventory_product_by_variants",
