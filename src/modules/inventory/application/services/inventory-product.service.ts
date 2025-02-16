@@ -185,17 +185,12 @@ export class InventoryProductService {
   }
 
   async findOne(id: number) {
-    const product = await this.inventoryProductRepository
-      .createQueryBuilder("product")
-      .leftJoinAndSelect("product.product_by_variant", "variants")
-      .where("product.id = :id", { id })
-      .getOne();
-
+    const product =
+      await this.inventoryProductRepository.findOneWithRelations(id);
     if (!product) {
-      throw new NotFoundException("Product not found");
+      throw new NotFoundException("Inventory product not found");
     }
-
-    return product;
+    return this.responseTransformer.transform(product);
   }
 
   async update(
