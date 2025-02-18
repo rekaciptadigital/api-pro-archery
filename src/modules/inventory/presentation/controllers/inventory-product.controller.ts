@@ -15,6 +15,13 @@ import { InventoryProductService } from "../../application/services/inventory-pr
 import { CreateInventoryProductDto } from "../../application/dtos/create-inventory-product.dto";
 import { UpdateInventoryProductDto } from "../../application/dtos/update-inventory-product.dto";
 import { InventoryProductQueryDto } from "../../application/dtos/inventory-product-query.dto";
+import { User } from "@/common/decorators/user.decorator"; // tambahkan import decorator
+
+// Tambahkan interface untuk user
+interface RequestUser {
+  id: number;
+  [key: string]: any;
+}
 
 @ApiTags("inventory")
 @Controller("inventory")
@@ -37,8 +44,14 @@ export class InventoryProductController {
     status: HttpStatus.CONFLICT,
     description: "SKU or unique code already exists",
   })
-  create(@Body() createInventoryProductDto: CreateInventoryProductDto) {
-    return this.inventoryProductService.create(createInventoryProductDto);
+  create(
+    @Body() createInventoryProductDto: CreateInventoryProductDto,
+    @User() user: RequestUser // tambahkan user dari session
+  ) {
+    return this.inventoryProductService.create(
+      createInventoryProductDto,
+      user.id
+    );
   }
 
   @Get()
@@ -85,9 +98,14 @@ export class InventoryProductController {
   @ApiParam({ name: "id", type: "number" })
   update(
     @Param("id", ParseIntPipe) id: number,
-    @Body() updateInventoryProductDto: UpdateInventoryProductDto
+    @Body() updateInventoryProductDto: UpdateInventoryProductDto,
+    @User() user: RequestUser // tambahkan user dari session
   ) {
-    return this.inventoryProductService.update(id, updateInventoryProductDto);
+    return this.inventoryProductService.update(
+      id,
+      updateInventoryProductDto,
+      user.id
+    );
   }
 
   @Delete(":id")

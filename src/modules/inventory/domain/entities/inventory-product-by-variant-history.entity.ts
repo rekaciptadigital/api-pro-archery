@@ -1,23 +1,29 @@
+import { randomBytes } from "crypto";
 import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
   BeforeInsert,
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryColumn,
 } from "typeorm";
-import { VarPrimary } from "@/common/entities/varPrimary.entity";
-import { InventoryProduct } from "./inventory-product.entity";
 import { InventoryProductByVariant } from "./inventory-product-by-variant.entity";
-import { randomBytes } from "crypto";
+import { InventoryProduct } from "./inventory-product.entity";
 
 @Entity("inventory_product_by_variant_histories")
-export class InventoryProductByVariantHistory extends VarPrimary {
+export class InventoryProductByVariantHistory {
+  @PrimaryColumn("varchar")
+  id: string;
+
   @Column("varchar")
   inventory_product_by_variant_id: string;
 
   @Column("bigint")
   inventory_product_id: number;
+
+  @Column("bigint", { nullable: true })
+  user_id: number;
 
   @Column("text")
   full_product_name: string;
@@ -25,11 +31,14 @@ export class InventoryProductByVariantHistory extends VarPrimary {
   @Column("text")
   sku_product_variant: string;
 
-  @Column("integer")
-  sku_product_unique_code: number;
+  @Column("text")
+  sku_product_unique_code: string;
 
   @Column("boolean", { default: true })
   status: boolean;
+
+  @CreateDateColumn({ type: "timestamp" })
+  created_at: Date;
 
   @ManyToOne(() => InventoryProductByVariant, (variant) => variant.histories, {
     onDelete: "CASCADE",
@@ -45,7 +54,8 @@ export class InventoryProductByVariantHistory extends VarPrimary {
 
   @BeforeInsert()
   generateId() {
-    // Generate a random string ID (not UUID)
-    this.id = randomBytes(12).toString("hex");
+    const timestamp = Date.now().toString(20);
+    const randomStr = randomBytes(12).toString("hex");
+    this.id = `${randomStr}${timestamp}`;
   }
 }

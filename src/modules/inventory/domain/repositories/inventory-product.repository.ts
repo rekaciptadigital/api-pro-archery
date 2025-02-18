@@ -18,15 +18,23 @@ export class InventoryProductRepository extends BaseRepository<InventoryProduct>
   }
 
   async findBySkuOrUniqueCode(
-    sku: string,
+    sku?: string,
     uniqueCode?: string
   ): Promise<InventoryProduct | null> {
     const query = this.inventoryProductRepository
       .createQueryBuilder("product")
-      .where("product.sku = :sku", { sku });
+      .where("product.deleted_at IS NULL");
+
+    if (sku) {
+      query.andWhere("product.sku = :sku", { sku });
+    }
 
     if (uniqueCode) {
-      query.orWhere("product.unique_code = :uniqueCode", { uniqueCode });
+      query.andWhere("product.unique_code = :uniqueCode", { uniqueCode });
+    }
+
+    if (!sku && !uniqueCode) {
+      return null;
     }
 
     return query.getOne();

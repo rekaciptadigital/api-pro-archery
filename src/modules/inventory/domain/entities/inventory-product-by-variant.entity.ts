@@ -5,10 +5,7 @@ import {
   OneToMany,
   JoinColumn,
   BeforeInsert,
-  AfterInsert,
-  AfterUpdate,
-  AfterSoftRemove,
-  getManager,
+  DeleteDateColumn,
 } from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { InventoryProduct } from "./inventory-product.entity";
@@ -32,7 +29,7 @@ export class InventoryProductByVariant extends VarPrimary {
   @Column("text")
   sku_product_unique_code: string;
 
-  @Column({ type: "timestamp", nullable: true })
+  @DeleteDateColumn()
   deleted_at: Date;
 
   @Column("boolean", { default: true })
@@ -55,26 +52,8 @@ export class InventoryProductByVariant extends VarPrimary {
 
   @BeforeInsert()
   generateId() {
-    // Generate a random string ID (not UUID)
-    this.id = randomBytes(12).toString("hex");
-  }
-
-  @AfterInsert()
-  @AfterUpdate()
-  @AfterSoftRemove()
-  async createHistory() {
-    const history = {
-      id: randomBytes(12).toString("hex"),
-      inventory_product_by_variant_id: this.id,
-      inventory_product_id: this.inventory_product_id,
-      full_product_name: this.full_product_name,
-      sku_product_variant: this.sku_product_variant,
-      sku_product_unique_code: this.sku_product_unique_code,
-      status: this.status,
-    };
-
-    await getManager()
-      .getRepository("inventory_product_by_variant_histories")
-      .save(history);
+    const timestamp = Date.now().toString(20);
+    const randomStr = randomBytes(12).toString("hex");
+    this.id = `${randomStr}${timestamp}`;
   }
 }

@@ -20,38 +20,25 @@ export class TokenService {
 
   async verifyToken(token: string): Promise<any> {
     try {
-      // First verify JWT signature and expiration
       const payload = await this.jwtService.verifyAsync(token);
 
-      // Check if token exists in user_sessions and is not soft deleted
-      const sessionWhere: FindOptionsWhere<UserSession> = {
-        token,
-        deleted_at: IsNull(),
-      };
-
-      const session = await this.userSessionRepository.findOne(sessionWhere);
+      // Use findByToken from UserSessionRepository
+      const session = await this.userSessionRepository.findByToken(token);
 
       if (!session) {
         throw new UnauthorizedException("Token has been invalidated");
       }
 
-      // If it's a refresh token, verify it exists in auth_tokens and is not soft deleted
       if (payload.tokenType === "refresh") {
-        const authTokenWhere: FindOptionsWhere<AuthToken> = {
-          refresh_token: token,
-          deleted_at: IsNull(),
-        };
-
         const authToken =
-          await this.authTokenRepository.findOne(authTokenWhere);
+          await this.authTokenRepository.findByRefreshToken(token);
 
         if (!authToken) {
           throw new UnauthorizedException("Refresh token has been invalidated");
         }
 
-        // Check if refresh token has expired
         if (new Date() > authToken.expires_at) {
-          await this.authTokenRepository.softDelete(authToken.id);
+          await this.authTokenRepository.deleteById(authToken.id);
           throw new UnauthorizedException("Refresh token has expired");
         }
       }

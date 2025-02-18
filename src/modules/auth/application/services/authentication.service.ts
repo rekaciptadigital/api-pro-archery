@@ -1,13 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserRepository } from '../../../users/domain/repositories/user.repository';
-import { PasswordService } from './password.service';
-import { TokenService } from './token.service';
-import { AuthTokenRepository } from '../../domain/repositories/auth-token.repository';
-import { UserSessionRepository } from '../../domain/repositories/user-session.repository';
-import { User } from '../../../users/domain/entities/user.entity';
-import { RegisterDto, ChangePasswordDto } from '../dtos/auth.dto';
-import { DomainException } from '../../../common/exceptions/domain.exception';
-import { TokenResponse } from '../../domain/interfaces/auth.interface';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { UserRepository } from "../../../users/domain/repositories/user.repository";
+import { PasswordService } from "./password.service";
+import { TokenService } from "./token.service";
+import { AuthTokenRepository } from "../../domain/repositories/auth-token.repository";
+import { UserSessionRepository } from "../../domain/repositories/user-session.repository";
+import { User } from "../../../users/domain/entities/user.entity";
+import { RegisterDto, ChangePasswordDto } from "../dtos/auth.dto";
+import { DomainException } from "../../../common/exceptions/domain.exception";
+import { TokenResponse } from "../../domain/interfaces/auth.interface";
 
 @Injectable()
 export class AuthenticationService {
@@ -16,28 +16,38 @@ export class AuthenticationService {
     private readonly passwordService: PasswordService,
     private readonly tokenService: TokenService,
     private readonly authTokenRepository: AuthTokenRepository,
-    private readonly userSessionRepository: UserSessionRepository,
+    private readonly userSessionRepository: UserSessionRepository
   ) {}
 
   async validateUserAndGenerateTokens(
-    email: string, 
+    email: string,
     password: string,
     ipAddress: string,
     userAgent: string
   ): Promise<{ user: User; tokens: TokenResponse }> {
     const user = await this.validateUser(email, password);
-    const tokens = await this.generateAndStoreTokens(user, ipAddress, userAgent);
+    const tokens = await this.generateAndStoreTokens(
+      user,
+      ipAddress,
+      userAgent
+    );
     return { user, tokens };
   }
 
-  async registerUser(registerDto: RegisterDto): Promise<{ user: User; tokens: TokenResponse }> {
-    const existingUser = await this.userRepository.findByEmail(registerDto.email);
+  async registerUser(
+    registerDto: RegisterDto
+  ): Promise<{ user: User; tokens: TokenResponse }> {
+    const existingUser = await this.userRepository.findByEmail(
+      registerDto.email
+    );
     if (existingUser) {
-      throw new DomainException('Email already registered');
+      throw new DomainException("Email already registered");
     }
 
-    const hashedPassword = await this.passwordService.hashPassword(registerDto.password);
-    
+    const hashedPassword = await this.passwordService.hashPassword(
+      registerDto.password
+    );
+
     const user = await this.userRepository.create({
       ...registerDto,
       password: hashedPassword,
@@ -50,24 +60,27 @@ export class AuthenticationService {
     return { user, tokens };
   }
 
-  async refreshUserToken(refreshToken: string): Promise<{ user: User; tokens: TokenResponse }> {
-    const authToken = await this.authTokenRepository.findByRefreshToken(refreshToken);
+  async refreshUserToken(
+    refreshToken: string
+  ): Promise<{ user: User; tokens: TokenResponse }> {
+    const authToken =
+      await this.authTokenRepository.findByRefreshToken(refreshToken);
     if (!authToken) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException("Invalid refresh token");
     }
 
     if (new Date() > authToken.expires_at) {
-      await this.authTokenRepository.softDelete(authToken.id);
-      throw new UnauthorizedException('Refresh token has expired');
+      await this.authTokenRepository.deleteById(authToken.id);
+      throw new UnauthorizedException("Refresh token has expired");
     }
 
     const user = await this.userRepository.findOneWithOptions({
       where: { id: authToken.user_id },
-      relations: ['user_roles', 'user_roles.role']
+      relations: ["user_roles", "user_roles.role"],
     });
 
     if (!user || !user.status) {
-      throw new UnauthorizedException('User not found or inactive');
+      throw new UnauthorizedException("User not found or inactive");
     }
 
     const tokens = await this.tokenService.generateTokens(user);
@@ -82,18 +95,18 @@ export class AuthenticationService {
   async invalidateUserSessions(userId: number): Promise<void> {
     await Promise.all([
       this.authTokenRepository.deleteUserTokens(userId),
-      this.userSessionRepository.deleteUserSessions(userId)
+      this.userSessionRepository.deleteUserSessions(userId),
     ]);
   }
 
   private async validateUser(email: string, password: string): Promise<User> {
     const user = await this.userRepository.findOneWithOptions({
       where: { email },
-      relations: ['user_roles', 'user_roles.role']
+      relations: ["user_roles", "user_roles.role"],
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     const isPasswordValid = await this.passwordService.comparePassword(
@@ -102,24 +115,27 @@ export class AuthenticationService {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     if (!user.status) {
-      throw new UnauthorizedException('Account is inactive');
+      throw new UnauthorizedException("Account is inactive");
     }
 
     return user;
   }
 
-  async changeUserPassword(userId: number | undefined, changePasswordDto: ChangePasswordDto): Promise<void> {
+  async changeUserPassword(
+    userId: number | undefined,
+    changePasswordDto: ChangePasswordDto
+  ): Promise<void> {
     if (!userId) {
-      throw new UnauthorizedException('User ID is required');
+      throw new UnauthorizedException("User ID is required");
     }
 
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException("User not found");
     }
 
     const isCurrentPasswordValid = await this.passwordService.comparePassword(
@@ -128,7 +144,7 @@ export class AuthenticationService {
     );
 
     if (!isCurrentPasswordValid) {
-      throw new DomainException('Current password is incorrect');
+      throw new DomainException("Current password is incorrect");
     }
 
     const hashedPassword = await this.passwordService.hashPassword(
@@ -144,16 +160,19 @@ export class AuthenticationService {
     userAgent: string
   ): Promise<TokenResponse> {
     const tokens = await this.tokenService.generateTokens(user);
-    
+
     await Promise.all([
       this.storeRefreshToken(user.id, tokens.refresh_token),
-      this.storeUserSession(user.id, tokens.access_token, ipAddress, userAgent)
+      this.storeUserSession(user.id, tokens.access_token, ipAddress, userAgent),
     ]);
 
     return tokens;
   }
 
-  private async storeRefreshToken(userId: number, refreshToken: string): Promise<void> {
+  private async storeRefreshToken(
+    userId: number,
+    refreshToken: string
+  ): Promise<void> {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
     await this.authTokenRepository.create({
       user_id: userId,

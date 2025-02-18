@@ -37,6 +37,9 @@ import { InventoryProductByVariantHistory } from "@/modules/inventory/domain/ent
 import { InventoryLocation } from "@/modules/inventory-locations/domain/entities/inventory-location.entity";
 import { CreateInventoryLocationsTable1702432800009 } from "../migrations/1702432800009-CreateInventoryLocationsTable";
 import { AddStatusToInventoryVariants1702432800010 } from "@/migrations/1702432800010-add-status-to-inventory-variants";
+import { AddStatusAndUserIdToInventoryProductVariants1702432800011 } from "@/migrations/1702432800011-AddStatusAndUserIdToInventoryProductVariants";
+import { AlterUserSessionIdType1702432800012 } from "@/migrations/1702432800012-alter-user-session-id-type";
+import { AlterAuthTokenIdType1702432800013 } from "@/migrations/1702432800013-alter-auth-token-id-type";
 
 config();
 
@@ -87,6 +90,9 @@ const options: DataSourceOptions = {
     AddSetDefaultToPriceCategories1702432800008,
     CreateInventoryLocationsTable1702432800009,
     AddStatusToInventoryVariants1702432800010,
+    AddStatusAndUserIdToInventoryProductVariants1702432800011,
+    AlterUserSessionIdType1702432800012,
+    AlterAuthTokenIdType1702432800013,
   ],
   synchronize: false,
 };

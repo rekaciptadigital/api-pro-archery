@@ -9,10 +9,12 @@ import { DomainException } from "@/common/exceptions/domain.exception";
 import { HttpStatus } from "@nestjs/common";
 import { ProductSlug } from "../../domain/value-objects/product-slug.value-object";
 import { SKU } from "../../domain/value-objects/sku.value-object";
-import { DataSource, DeepPartial } from "typeorm";
+import { DataSource, DeepPartial, IsNull, EntityManager } from "typeorm";
 import { InventoryProduct } from "../../domain/entities/inventory-product.entity";
 import { InventoryProductSelectedVariant } from "../../domain/entities/inventory-product-selected-variant.entity";
 import { randomBytes } from "crypto";
+import { InventoryProductByVariant } from "../../domain/entities/inventory-product-by-variant.entity";
+import { InventoryProductByVariantHistory } from "../../domain/entities/inventory-product-by-variant-history.entity";
 
 @Injectable()
 export class InventoryProductService {
@@ -23,24 +25,62 @@ export class InventoryProductService {
     private readonly dataSource: DataSource
   ) {}
 
-  async create(createInventoryProductDto: CreateInventoryProductDto) {
+  // Add private helper method for creating history
+  private async createVariantHistory(
+    variant: InventoryProductByVariant,
+    manager: EntityManager,
+    userId: number // Remove null possibility
+  ): Promise<void> {
+    const historyEntity = new InventoryProductByVariantHistory();
+    historyEntity.id = randomBytes(12).toString("hex");
+    historyEntity.inventory_product_by_variant_id = variant.id;
+    historyEntity.inventory_product_id = variant.inventory_product_id;
+    historyEntity.full_product_name = variant.full_product_name;
+    historyEntity.sku_product_variant = variant.sku_product_variant;
+    historyEntity.sku_product_unique_code = variant.sku_product_unique_code;
+    historyEntity.status = variant.status;
+    historyEntity.user_id = userId; // Remove null possibility
+
+    await manager.save(InventoryProductByVariantHistory, historyEntity);
+  }
+
+  async create(
+    createInventoryProductDto: CreateInventoryProductDto,
+    userId: number
+  ) {
     // Validate SKU format
     if (!SKU.isValid(createInventoryProductDto.sku)) {
       throw new DomainException("Invalid SKU format");
     }
 
-    // Check for existing SKU or unique_code
-    const existingProduct =
+    // Check for existing SKU and unique_code separately
+    const existingBySku =
       await this.inventoryProductRepository.findBySkuOrUniqueCode(
         createInventoryProductDto.sku,
-        createInventoryProductDto.unique_code
+        undefined
       );
 
-    if (existingProduct) {
-      throw new DomainException(
-        "SKU or unique code already exists",
-        HttpStatus.CONFLICT
-      );
+    if (existingBySku) {
+      throw new DomainException("SKU already exists", HttpStatus.CONFLICT);
+    }
+
+    if (createInventoryProductDto.unique_code) {
+      const existingByUniqueCode =
+        await this.inventoryProductRepository.findBySkuOrUniqueCode(
+          undefined,
+          createInventoryProductDto.unique_code
+        );
+
+      // Allow same unique_code if SKU is different
+      if (
+        existingByUniqueCode &&
+        existingByUniqueCode.sku === createInventoryProductDto.sku
+      ) {
+        throw new DomainException(
+          "Combination of SKU and unique code already exists",
+          HttpStatus.CONFLICT
+        );
+      }
     }
 
     // Use slug from request body instead of generating it
@@ -110,20 +150,28 @@ export class InventoryProductService {
 
       // Save product variants with proper number conversion
       if (createInventoryProductDto.product_by_variant?.length) {
-        const productVariants =
-          createInventoryProductDto.product_by_variant.map((variant) => ({
+        const variantRepository = queryRunner.manager.getRepository(
+          InventoryProductByVariant
+        );
+
+        for (const variant of createInventoryProductDto.product_by_variant) {
+          const variantEntity = variantRepository.create({
             id: randomBytes(12).toString("hex"),
             inventory_product_id: product.id,
             full_product_name: variant.full_product_name,
-            sku_product_variant: variant.sku, // Map from DTO's sku to entity's sku_product_variant
+            sku_product_variant: variant.sku,
             sku_product_unique_code: variant.sku_product_unique_code,
-            deleted_at: null,
-            status: variant.status ?? true, // Set default to true if not provided
-          }));
-        await queryRunner.manager.save(
-          "inventory_product_by_variants",
-          productVariants
-        );
+            status: variant.status ?? true,
+          });
+
+          const savedVariant = await variantRepository.save(variantEntity);
+          // Create history using the helper method
+          await this.createVariantHistory(
+            savedVariant,
+            queryRunner.manager,
+            userId
+          );
+        }
       }
 
       await queryRunner.commitTransaction();
@@ -195,7 +243,8 @@ export class InventoryProductService {
 
   async update(
     id: number,
-    updateInventoryProductDto: UpdateInventoryProductDto
+    updateInventoryProductDto: UpdateInventoryProductDto,
+    userId: number
   ) {
     const product = await this.inventoryProductRepository.findById(id);
     if (!product) {
@@ -210,24 +259,36 @@ export class InventoryProductService {
       throw new DomainException("Invalid SKU format");
     }
 
-    // Check for SKU/unique_code conflicts with other active products
-    if (
-      updateInventoryProductDto.sku ||
-      updateInventoryProductDto.unique_code
-    ) {
-      // Cek apakah ada produk lain (id berbeda) yang menggunakan SKU/unique_code yang sama
-      const existingProducts =
-        await this.inventoryProductRepository.findBySkuOrUniqueCodeExcludingId(
-          updateInventoryProductDto.sku || product.sku,
-          updateInventoryProductDto.unique_code,
-          id
+    // Check for SKU conflicts
+    if (updateInventoryProductDto.sku) {
+      const existingBySku =
+        await this.inventoryProductRepository.findBySkuOrUniqueCode(
+          updateInventoryProductDto.sku,
+          undefined
         );
 
-      if (existingProducts && existingProducts.length > 0) {
-        throw new DomainException(
-          "SKU or unique code already exists in another product",
-          HttpStatus.CONFLICT
+      if (existingBySku && existingBySku.id !== id) {
+        throw new DomainException("SKU already exists", HttpStatus.CONFLICT);
+      }
+    }
+
+    // Check for unique_code conflicts only if it would result in duplicate SKU
+    if (updateInventoryProductDto.unique_code) {
+      const existingByUniqueCode =
+        await this.inventoryProductRepository.findBySkuOrUniqueCode(
+          undefined,
+          updateInventoryProductDto.unique_code
         );
+
+      if (existingByUniqueCode && existingByUniqueCode.id !== id) {
+        // Only throw conflict if the SKU would be the same
+        const newSku = updateInventoryProductDto.sku || product.sku;
+        if (existingByUniqueCode.sku === newSku) {
+          throw new DomainException(
+            "Combination of SKU and unique code already exists",
+            HttpStatus.CONFLICT
+          );
+        }
       }
     }
 
@@ -319,22 +380,66 @@ export class InventoryProductService {
       }
 
       if (product_by_variant) {
-        await queryRunner.manager.delete("inventory_product_by_variants", {
-          inventory_product_id: id,
-        });
-        const productVariantsData = product_by_variant.map((variant) => ({
-          id: randomBytes(12).toString("hex"),
-          inventory_product_id: id,
-          full_product_name: variant.full_product_name,
-          sku_product_variant: variant.sku, // Map from DTO's sku to entity's sku_product_variant
-          sku_product_unique_code: Number(variant.sku_product_unique_code), // Ensure it's a number
-          deleted_at: null,
-          status: variant.status ?? true, // Maintain existing status if not provided
-        }));
-        await queryRunner.manager.save(
-          "inventory_product_by_variants",
-          productVariantsData
+        const variantRepository = queryRunner.manager.getRepository(
+          InventoryProductByVariant
         );
+
+        const existingVariants = await variantRepository.find({
+          where: {
+            inventory_product_id: id,
+            deleted_at: IsNull(),
+          },
+        });
+
+        const existingVariantsMap = new Map(
+          existingVariants.map((variant) => [variant.id, variant])
+        );
+
+        // Process each variant
+        for (const variant of product_by_variant) {
+          if (variant.id && existingVariantsMap.has(variant.id)) {
+            // Update existing variant
+            const existingVariant = existingVariantsMap.get(variant.id)!;
+            variantRepository.merge(existingVariant, {
+              full_product_name: variant.full_product_name,
+              sku_product_variant: variant.sku,
+              sku_product_unique_code: variant.sku_product_unique_code,
+              status: variant.status ?? true,
+            });
+
+            const updatedVariant =
+              await variantRepository.save(existingVariant);
+            await this.createVariantHistory(
+              updatedVariant,
+              queryRunner.manager,
+              userId
+            );
+            existingVariantsMap.delete(variant.id);
+          } else {
+            // Create new variant
+            const newVariant = variantRepository.create({
+              id: randomBytes(12).toString("hex"),
+              inventory_product_id: id,
+              full_product_name: variant.full_product_name,
+              sku_product_variant: variant.sku,
+              sku_product_unique_code: variant.sku_product_unique_code,
+              status: variant.status ?? true,
+            });
+
+            const savedVariant = await variantRepository.save(newVariant);
+            await this.createVariantHistory(
+              savedVariant,
+              queryRunner.manager,
+              userId
+            );
+          }
+        }
+
+        // Soft delete variants that weren't included in the update
+        const variantsToDelete = Array.from(existingVariantsMap.values());
+        if (variantsToDelete.length > 0) {
+          await variantRepository.softRemove(variantsToDelete);
+        }
       }
 
       await queryRunner.commitTransaction();

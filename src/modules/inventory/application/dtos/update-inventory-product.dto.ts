@@ -60,6 +60,11 @@ class VariantDto {
 }
 
 class ProductByVariantDto {
+  @ApiPropertyOptional({ description: "Product variant ID" })
+  @IsOptional()
+  @IsString()
+  id?: string;
+
   @ApiProperty({ description: "Full product name with variant" })
   @IsString()
   @IsNotEmpty()
