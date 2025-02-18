@@ -40,6 +40,7 @@ import { AddStatusToInventoryVariants1702432800010 } from "@/migrations/17024328
 import { AddStatusAndUserIdToInventoryProductVariants1702432800011 } from "@/migrations/1702432800011-AddStatusAndUserIdToInventoryProductVariants";
 import { AlterUserSessionIdType1702432800012 } from "@/migrations/1702432800012-alter-user-session-id-type";
 import { AlterAuthTokenIdType1702432800013 } from "@/migrations/1702432800013-alter-auth-token-id-type";
+import { AddSkuVendorToInventoryProductVariants1702432800014 } from "@/migrations/1702432800014-AddSkuVendorToInventoryProductVariants";
 
 config();
 
@@ -93,6 +94,7 @@ const options: DataSourceOptions = {
     AddStatusAndUserIdToInventoryProductVariants1702432800011,
     AlterUserSessionIdType1702432800012,
     AlterAuthTokenIdType1702432800013,
+    AddSkuVendorToInventoryProductVariants1702432800014,
   ],
   synchronize: false,
 };

@@ -4,6 +4,12 @@ export class AddStatusAndUserIdToInventoryProductVariants1702432800011
   implements MigrationInterface
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Add user_id column
+    await queryRunner.query(`
+      ALTER TABLE "inventory_product_by_variant_histories"
+      ADD COLUMN IF NOT EXISTS "user_id" bigint NULL
+    `);
+
     // Alter sku_product_unique_code to match entity type (text)
     await queryRunner.query(`
       ALTER TABLE "inventory_product_by_variant_histories"
@@ -22,6 +28,11 @@ export class AddStatusAndUserIdToInventoryProductVariants1702432800011
     // Drop index if exists
     await queryRunner.query(`
       DROP INDEX IF EXISTS "idx_inventory_product_histories_user_id"
+    `);
+    // Drop user_id column
+    await queryRunner.query(`
+      ALTER TABLE "inventory_product_by_variant_histories"
+      DROP COLUMN IF EXISTS "user_id"
     `);
 
     // Revert sku_product_unique_code back to original type

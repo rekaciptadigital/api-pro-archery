@@ -29,6 +29,9 @@ export class InventoryProductByVariant extends VarPrimary {
   @Column("text")
   sku_product_unique_code: string;
 
+  @Column("text", { nullable: true })
+  sku_vendor: string;
+
   @DeleteDateColumn()
   deleted_at: Date;
 

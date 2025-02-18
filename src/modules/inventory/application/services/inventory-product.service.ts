@@ -38,6 +38,7 @@ export class InventoryProductService {
     historyEntity.full_product_name = variant.full_product_name;
     historyEntity.sku_product_variant = variant.sku_product_variant;
     historyEntity.sku_product_unique_code = variant.sku_product_unique_code;
+    historyEntity.sku_vendor = variant.sku_vendor;
     historyEntity.status = variant.status;
     historyEntity.user_id = userId; // Remove null possibility
 
@@ -161,6 +162,7 @@ export class InventoryProductService {
             full_product_name: variant.full_product_name,
             sku_product_variant: variant.sku,
             sku_product_unique_code: variant.sku_product_unique_code,
+            sku_vendor: variant.sku_vendor,
             status: variant.status ?? true,
           });
 
@@ -404,6 +406,7 @@ export class InventoryProductService {
               full_product_name: variant.full_product_name,
               sku_product_variant: variant.sku,
               sku_product_unique_code: variant.sku_product_unique_code,
+              sku_vendor: variant.sku_vendor,
               status: variant.status ?? true,
             });
 
@@ -423,6 +426,7 @@ export class InventoryProductService {
               full_product_name: variant.full_product_name,
               sku_product_variant: variant.sku,
               sku_product_unique_code: variant.sku_product_unique_code,
+              sku_vendor: variant.sku_vendor,
               status: variant.status ?? true,
             });
 

@@ -76,6 +76,11 @@ class ProductByVariantDto {
   @IsNotEmpty()
   sku_product_unique_code: string;
 
+  @ApiPropertyOptional({ description: "SKU vendor" })
+  @IsOptional()
+  @IsString()
+  sku_vendor?: string;
+
   @ApiProperty({
     description: "Product variant status",
     type: Boolean,

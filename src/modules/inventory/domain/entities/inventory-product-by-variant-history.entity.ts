@@ -34,6 +34,9 @@ export class InventoryProductByVariantHistory {
   @Column("text")
   sku_product_unique_code: string;
 
+  @Column("text", { nullable: true })
+  sku_vendor: string;
+
   @Column("boolean", { default: true })
   status: boolean;
 
