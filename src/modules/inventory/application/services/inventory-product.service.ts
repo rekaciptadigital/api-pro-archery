@@ -333,51 +333,110 @@ export class InventoryProductService {
       }
 
       if (variants) {
-        // Delete existing variants and their values
-        const existingVariants = await queryRunner.manager.find(
+        // Import Not operator
+        const { Not } = require("typeorm");
+
+        // Get all existing variants first
+        const existingVariant = await queryRunner.manager.findOne(
           InventoryProductSelectedVariant,
           {
-            where: { inventory_product_id: id },
+            where: {
+              inventory_product_id: id,
+              variant_id: variants[0].variant_id,
+            },
+            relations: ["values"],
           }
         );
 
-        for (const variant of existingVariants) {
-          await queryRunner.manager.delete(
-            "inventory_product_selected_variant_values",
+        // Consolidate all variant values from request
+        const allVariantValues = variants.reduce<
+          Array<{ variant_value_id: number; variant_value_name: string }>
+        >((acc, variant) => {
+          if (variant.variant_values) {
+            acc.push(...variant.variant_values);
+          }
+          return acc;
+        }, []);
+
+        // Remove duplicates from variant values
+        const uniqueVariantValues = Array.from(
+          new Map(
+            allVariantValues.map((value) => [value.variant_value_id, value])
+          ).values()
+        );
+
+        if (existingVariant) {
+          // Update variant name if needed
+          if (existingVariant.variant_name !== variants[0].variant_name) {
+            existingVariant.variant_name = variants[0].variant_name;
+            await queryRunner.manager.save(
+              InventoryProductSelectedVariant,
+              existingVariant
+            );
+          }
+
+          // For each unique variant value, try to insert only if it doesn't exist
+          for (const value of uniqueVariantValues) {
+            const exists = await queryRunner.manager
+              .createQueryBuilder()
+              .select("1")
+              .from(
+                "inventory_product_selected_variant_values",
+                "variant_values"
+              )
+              .where(
+                "variant_values.inventory_product_variant_id = :variantId AND variant_values.variant_value_id = :valueId",
+                {
+                  variantId: existingVariant.id,
+                  valueId: value.variant_value_id,
+                }
+              )
+              .getRawOne();
+
+            if (!exists) {
+              await queryRunner.manager.save(
+                "inventory_product_selected_variant_values",
+                {
+                  inventory_product_variant_id: existingVariant.id,
+                  variant_value_id: value.variant_value_id,
+                  variant_value_name: value.variant_value_name,
+                }
+              );
+            }
+          }
+        } else {
+          // Create new variant
+          const newVariant = await queryRunner.manager.save(
+            InventoryProductSelectedVariant,
             {
-              inventory_product_variant_id: variant.id,
+              inventory_product_id: id,
+              variant_id: variants[0].variant_id,
+              variant_name: variants[0].variant_name,
             }
           );
-        }
-        await queryRunner.manager.delete(InventoryProductSelectedVariant, {
-          inventory_product_id: id,
-        });
 
-        // Create new variants and values
-        for (const variant of variants) {
-          // Changed from updateInventoryProductDto.variants
-          const variantData: DeepPartial<InventoryProductSelectedVariant> = {
-            inventory_product_id: id,
-            variant_id: variant.variant_id,
-            variant_name: variant.variant_name,
-            values: [],
-          };
-
-          const savedVariant = await queryRunner.manager.save(
-            InventoryProductSelectedVariant,
-            variantData
-          );
-
-          if (variant.variant_values?.length) {
-            const variantValues = variant.variant_values.map((value) => ({
-              inventory_product_variant_id: savedVariant.id,
-              ...value,
+          // Add all variant values for new variant
+          if (uniqueVariantValues.length > 0) {
+            const variantValues = uniqueVariantValues.map((value) => ({
+              inventory_product_variant_id: newVariant.id,
+              variant_value_id: value.variant_value_id,
+              variant_value_name: value.variant_value_name,
             }));
+
             await queryRunner.manager.save(
               "inventory_product_selected_variant_values",
               variantValues
             );
           }
+        }
+
+        // Delete other variants with same variant_id
+        if (existingVariant) {
+          await queryRunner.manager.delete(InventoryProductSelectedVariant, {
+            inventory_product_id: id,
+            variant_id: variants[0].variant_id,
+            id: Not(existingVariant.id),
+          });
         }
       }
 
@@ -397,7 +456,7 @@ export class InventoryProductService {
           existingVariants.map((variant) => [variant.id, variant])
         );
 
-        // Process each variant
+        // Process each variant in the request
         for (const variant of product_by_variant) {
           if (variant.id && existingVariantsMap.has(variant.id)) {
             // Update existing variant
@@ -407,7 +466,7 @@ export class InventoryProductService {
               sku_product_variant: variant.sku,
               sku_product_unique_code: variant.sku_product_unique_code,
               sku_vendor: variant.sku_vendor,
-              status: variant.status ?? true,
+              status: variant.status ?? existingVariant.status,
             });
 
             const updatedVariant =
@@ -417,7 +476,6 @@ export class InventoryProductService {
               queryRunner.manager,
               userId
             );
-            existingVariantsMap.delete(variant.id);
           } else {
             // Create new variant
             const newVariant = variantRepository.create({
@@ -439,11 +497,7 @@ export class InventoryProductService {
           }
         }
 
-        // Soft delete variants that weren't included in the update
-        const variantsToDelete = Array.from(existingVariantsMap.values());
-        if (variantsToDelete.length > 0) {
-          await variantRepository.softRemove(variantsToDelete);
-        }
+        // Removed the code that deletes variants not included in the request
       }
 
       await queryRunner.commitTransaction();
