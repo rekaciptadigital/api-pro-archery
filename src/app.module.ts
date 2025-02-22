@@ -1,8 +1,8 @@
 import { Module, MiddlewareConsumer, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from "@nestjs/throttler";
+import { APP_GUARD } from "@nestjs/core";
 
 // Feature Modules
 import { UsersModule } from "@/modules/users/users.module";
@@ -34,6 +34,7 @@ import { JwtAuthGuard } from "@/modules/auth/domain/guards/jwt-auth.guard";
 // Config
 import configuration from "@/config/configuration";
 import { validate } from "@/config/env.validation";
+import { InventoryPriceModule } from "@/modules/inventory-price/inventory-price.module";
 
 @Module({
   imports: [
@@ -43,10 +44,12 @@ import { validate } from "@/config/env.validation";
       load: [configuration],
       validate,
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 100,
+      },
+    ]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -80,7 +83,7 @@ import { validate } from "@/config/env.validation";
     ProductCategoriesModule,
     InventoryModule,
     InventoryLocationsModule,
-
+    InventoryPriceModule,
     // Common Modules
     CommonModule,
     TransformersModule,
@@ -89,12 +92,14 @@ import { validate } from "@/config/env.validation";
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
-    }
+    },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(CorsMiddleware).forRoutes('*');
-    consumer.apply(SwaggerAuthMiddleware).forRoutes('api/docs', 'api/docs-json');
+    consumer.apply(CorsMiddleware).forRoutes("*");
+    consumer
+      .apply(SwaggerAuthMiddleware)
+      .forRoutes("api/docs", "api/docs-json");
   }
 }
