@@ -1,13 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { RoleFeaturePermission } from '../../modules/permissions/domain/entities/role-feature-permission.entity';
-import { Role } from '../../modules/roles/domain/entities/role.entity';
-import { Feature } from '../../modules/features/domain/entities/feature.entity';
-import { Logger } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { RoleFeaturePermission } from "../../modules/permissions/domain/entities/role-feature-permission.entity";
+import { Role } from "../../modules/roles/domain/entities/role.entity";
+import { Feature } from "../../modules/features/domain/entities/feature.entity";
+import { Logger } from "@nestjs/common";
+import { Seeder } from "./seeder.interface";
 
 @Injectable()
-export class PermissionSeeder {
+export class PermissionSeeder implements Seeder {
   private readonly logger = new Logger(PermissionSeeder.name);
 
   constructor(
@@ -23,11 +24,11 @@ export class PermissionSeeder {
     try {
       // Find super_admin role
       const superAdminRole = await this.roleRepository.findOne({
-        where: { name: 'super_admin' }
+        where: { name: "super_admin" },
       });
 
       if (!superAdminRole) {
-        throw new Error('Super admin role not found');
+        throw new Error("Super admin role not found");
       }
 
       // Get all features
@@ -38,8 +39,8 @@ export class PermissionSeeder {
         const existingPermission = await this.permissionRepository.findOne({
           where: {
             role_id: superAdminRole.id,
-            feature_id: feature.id
-          }
+            feature_id: feature.id,
+          },
         });
 
         if (!existingPermission) {
@@ -51,17 +52,19 @@ export class PermissionSeeder {
               post: true,
               put: true,
               patch: true,
-              delete: true
+              delete: true,
             },
-            status: true
+            status: true,
           });
           this.logger.log(`Created permission for feature: ${feature.name}`);
         } else {
-          this.logger.log(`Permission already exists for feature: ${feature.name}`);
+          this.logger.log(
+            `Permission already exists for feature: ${feature.name}`
+          );
         }
       }
     } catch (error) {
-      this.logger.error('Error seeding permissions:', error);
+      this.logger.error("Error seeding permissions:", error);
       throw error;
     }
   }

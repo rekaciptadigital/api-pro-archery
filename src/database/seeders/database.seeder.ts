@@ -1,45 +1,58 @@
-import { Injectable } from '@nestjs/common';
-import { RoleSeeder } from './role.seeder';
-import { UserSeeder } from './user.seeder';
-import { FeatureSeeder } from './feature.seeder';
-import { PermissionSeeder } from './permission.seeder';
-import { Logger } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
+import { RoleSeeder } from "./role.seeder";
+import { UserSeeder } from "./user.seeder";
+import { FeatureSeeder } from "./feature.seeder";
+import { PermissionSeeder } from "./permission.seeder";
+import { Logger } from "@nestjs/common";
+import { Seeder } from "./seeder.interface";
 
 @Injectable()
 export class DatabaseSeeder {
   private readonly logger = new Logger(DatabaseSeeder.name);
+  private readonly seeders: Map<string, Seeder>;
 
   constructor(
     private readonly roleSeeder: RoleSeeder,
     private readonly featureSeeder: FeatureSeeder,
     private readonly permissionSeeder: PermissionSeeder,
     private readonly userSeeder: UserSeeder
-  ) {}
+  ) {
+    this.seeders = new Map<string, Seeder>([
+      ["roles", roleSeeder],
+      ["features", featureSeeder],
+      ["permissions", permissionSeeder],
+      ["users", userSeeder],
+    ]);
+  }
 
-  async seed() {
+  async seed(seederName?: string) {
     try {
-      this.logger.log('Starting database seeding...');
+      this.logger.log("Starting database seeding...");
 
-      // Seed roles first
-      this.logger.log('Seeding roles...');
-      await this.roleSeeder.createMany();
+      if (seederName) {
+        // Run specific seeder
+        const seeder = this.seeders.get(seederName);
+        if (!seeder) {
+          throw new Error(`Seeder ${seederName} not found`);
+        }
+        this.logger.log(`Seeding ${seederName}...`);
+        await seeder.createMany();
+      } else {
+        // Run all seeders in sequence
+        await this.roleSeeder.createMany();
+        await this.featureSeeder.createMany();
+        await this.permissionSeeder.createMany();
+        await this.userSeeder.createMany();
+      }
 
-      // Then seed features
-      this.logger.log('Seeding features...');
-      await this.featureSeeder.createMany();
-
-      // Then seed permissions
-      this.logger.log('Seeding permissions...');
-      await this.permissionSeeder.createMany();
-
-      // Finally seed users
-      this.logger.log('Seeding users...');
-      await this.userSeeder.createMany();
-
-      this.logger.log('Database seeding completed successfully');
+      this.logger.log("Database seeding completed successfully");
     } catch (error) {
-      this.logger.error('Error during database seeding:', error);
+      this.logger.error("Error during database seeding:", error);
       throw error;
     }
+  }
+
+  getAvailableSeeders(): string[] {
+    return Array.from(this.seeders.keys());
   }
 }

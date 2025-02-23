@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Feature } from '../../modules/features/domain/entities/feature.entity';
-import { Logger } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Feature } from "../../modules/features/domain/entities/feature.entity";
+import { Logger } from "@nestjs/common";
+import { Seeder } from "./seeder.interface";
 
 @Injectable()
-export class FeatureSeeder {
+export class FeatureSeeder implements Seeder {
   private readonly logger = new Logger(FeatureSeeder.name);
 
   constructor(
@@ -17,25 +18,25 @@ export class FeatureSeeder {
     try {
       const features = [
         {
-          name: 'Brands Management',
-          description: 'Manage product brands',
-          status: true
+          name: "Brands Management",
+          description: "Manage product brands",
+          status: true,
         },
         {
-          name: 'Taxes Management',
-          description: 'Manage tax rates',
-          status: true
+          name: "Taxes Management",
+          description: "Manage tax rates",
+          status: true,
         },
         {
-          name: 'Variants Management',
-          description: 'Manage product variants',
-          status: true
-        }
+          name: "Variants Management",
+          description: "Manage product variants",
+          status: true,
+        },
       ];
 
       for (const feature of features) {
         const existingFeature = await this.featureRepository.findOne({
-          where: { name: feature.name }
+          where: { name: feature.name },
         });
 
         if (!existingFeature) {
@@ -46,7 +47,7 @@ export class FeatureSeeder {
         }
       }
     } catch (error) {
-      this.logger.error('Error seeding features:', error);
+      this.logger.error("Error seeding features:", error);
       throw error;
     }
   }
