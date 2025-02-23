@@ -4,9 +4,6 @@ import { randomBytes } from "crypto";
 
 @Entity("inventory_product_volume_discount_variant_histories")
 export class InventoryProductVolumeDiscountVariantHistory extends VarPrimary {
-  @Column("varchar", { primary: true })
-  id: string;
-
   @Column({ type: "varchar" })
   inventory_product_pricing_information_history_id: string;
 
@@ -27,9 +24,6 @@ export class InventoryProductVolumeDiscountVariantHistory extends VarPrimary {
 
   @Column({ type: "boolean", default: true })
   status: boolean;
-
-  @CreateDateColumn({ type: "timestamp" })
-  created_at: Date;
 
   @BeforeInsert()
   generateId() {

@@ -4,15 +4,16 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BeforeInsert,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
+import { InventoryProductGlobalDiscount } from "./inventory-product-global-discount.entity";
+import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
 
 @Entity("inventory_product_global_discount_price_categories")
 export class InventoryProductGlobalDiscountPriceCategory extends VarPrimary {
-  @Column("varchar", { primary: true })
-  id: string;
-
   @Column({ type: "varchar", length: 255 })
   inventory_product_global_discount_id: string;
 
@@ -31,11 +32,13 @@ export class InventoryProductGlobalDiscountPriceCategory extends VarPrimary {
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   price: number;
 
-  @CreateDateColumn({ type: "timestamp" })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: "timestamp" })
-  updated_at: Date;
+  @ManyToOne(
+    () => InventoryProductGlobalDiscount,
+    (discount) => discount.price_categories,
+    { onDelete: "CASCADE" }
+  )
+  @JoinColumn({ name: "inventory_product_global_discount_id" })
+  global_discount: InventoryProductGlobalDiscount;
 
   @BeforeInsert()
   generateId() {

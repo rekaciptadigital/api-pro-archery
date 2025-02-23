@@ -21,7 +21,8 @@ export class CreateInventoryPriceTables1702432900000
         "is_enable_volume_discount_by_product_variant" BOOLEAN NOT NULL DEFAULT false,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "deleted_at" TIMESTAMP
+        "deleted_at" TIMESTAMP,
+        CONSTRAINT "fk_inventory_product_pricing_informations_inventory_product" FOREIGN KEY ("inventory_product_id") REFERENCES "inventory_products"("id") ON DELETE CASCADE
       )
     `);
 
@@ -44,7 +45,8 @@ export class CreateInventoryPriceTables1702432900000
         "tax_percentage" NUMERIC(19,2) NOT NULL DEFAULT 0,
         "is_custom_tax_inclusive_price" BOOLEAN NOT NULL DEFAULT false,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMP NOT NULL DEFAULT now()
+        "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+        CONSTRAINT "fk_inventory_product_customer_category_prices_pricing" FOREIGN KEY ("inventory_product_pricing_information_id") REFERENCES "inventory_product_pricing_informations"("id") ON DELETE CASCADE
       )
     `);
 
@@ -77,7 +79,8 @@ export class CreateInventoryPriceTables1702432900000
         "quantity" INTEGER NOT NULL DEFAULT 0,
         "discount_percentage" NUMERIC(19,2) NOT NULL,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMP NOT NULL DEFAULT now()
+        "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+        CONSTRAINT "fk_inventory_product_global_discounts_pricing" FOREIGN KEY ("inventory_product_pricing_information_id") REFERENCES "inventory_product_pricing_informations"("id") ON DELETE CASCADE
       )
     `);
 
@@ -108,7 +111,8 @@ export class CreateInventoryPriceTables1702432900000
         "discount_percentage" NUMERIC(19,2) NOT NULL,
         "status" BOOLEAN NOT NULL DEFAULT true,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMP NOT NULL DEFAULT now()
+        "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+        CONSTRAINT "fk_inventory_product_volume_discount_variants_pricing" FOREIGN KEY ("inventory_product_pricing_information_id") REFERENCES "inventory_product_pricing_informations"("id") ON DELETE CASCADE
       )
     `);
 

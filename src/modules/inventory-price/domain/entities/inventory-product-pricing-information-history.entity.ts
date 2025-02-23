@@ -1,17 +1,27 @@
-import { Entity, Column, CreateDateColumn, BeforeInsert } from "typeorm";
+import {
+  Entity,
+  Column,
+  CreateDateColumn,
+  BeforeInsert,
+  ManyToOne,
+  JoinColumn,
+} from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
+import { InventoryProduct } from "@/modules/inventory/domain/entities/inventory-product.entity";
+import { User } from "@/modules/users/domain/entities/user.entity";
 
 @Entity("inventory_product_pricing_information_histories")
 export class InventoryProductPricingInformationHistory extends VarPrimary {
-  @Column("varchar", { primary: true })
-  id: string;
-
   @Column({ type: "bigint" })
   inventory_product_pricing_information: number;
 
   @Column({ type: "bigint" })
   inventory_product_id: number;
+
+  @ManyToOne(() => InventoryProduct)
+  @JoinColumn({ name: "inventory_product_id" })
+  inventory_product: InventoryProduct;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   usd_price: number;
@@ -40,8 +50,9 @@ export class InventoryProductPricingInformationHistory extends VarPrimary {
   @Column({ type: "bigint" })
   user_id: number;
 
-  @CreateDateColumn({ type: "timestamp" })
-  created_at: Date;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: "user_id" })
+  user: User;
 
   @BeforeInsert()
   generateId() {

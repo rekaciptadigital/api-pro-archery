@@ -1,24 +1,12 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
-} from "typeorm";
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from "typeorm";
+import { BaseEntity } from "@/common/entities/base.entity";
 import { InventoryProductCustomerCategoryPrice } from "./inventory-product-customer-category-price.entity";
 import { InventoryProductGlobalDiscount } from "./inventory-product-global-discount.entity";
 import { InventoryProductVolumeDiscountVariant } from "./inventory-product-volume-discount-variant.entity";
 import { InventoryProduct } from "@/modules/inventory/domain/entities/inventory-product.entity";
 
 @Entity("inventory_product_pricing_informations")
-export class InventoryProductPricingInformation {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class InventoryProductPricingInformation extends BaseEntity {
   @Column({ type: "bigint" })
   inventory_product_id: number;
 
@@ -64,16 +52,13 @@ export class InventoryProductPricingInformation {
   )
   volume_discount_variants: InventoryProductVolumeDiscountVariant[];
 
-  @ManyToOne(() => InventoryProduct)
+  @ManyToOne(
+    () => InventoryProduct,
+    (inventoryProduct) => inventoryProduct.pricing_informations,
+    {
+      onDelete: "CASCADE",
+    }
+  )
   @JoinColumn({ name: "inventory_product_id" })
   inventory_product: InventoryProduct;
-
-  @CreateDateColumn({ type: "timestamp" })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: "timestamp" })
-  updated_at: Date;
-
-  @DeleteDateColumn({ type: "timestamp", nullable: true })
-  deleted_at: Date | null;
 }

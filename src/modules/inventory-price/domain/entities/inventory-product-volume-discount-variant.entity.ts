@@ -13,9 +13,6 @@ import { randomBytes } from "crypto";
 
 @Entity("inventory_product_volume_discount_variants")
 export class InventoryProductVolumeDiscountVariant extends VarPrimary {
-  @Column("varchar", { primary: true })
-  id: string;
-
   @Column({ type: "bigint" })
   inventory_product_pricing_information_id: number;
 
@@ -36,12 +33,6 @@ export class InventoryProductVolumeDiscountVariant extends VarPrimary {
 
   @Column({ type: "boolean", default: true })
   status: boolean;
-
-  @CreateDateColumn({ type: "timestamp" })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: "timestamp" })
-  updated_at: Date;
 
   @ManyToOne(
     () => InventoryProductPricingInformation,

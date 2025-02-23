@@ -78,7 +78,10 @@ export class InventoryProduct extends BaseEntity {
 
   @OneToMany(
     () => InventoryProductPricingInformation,
-    (pricing) => pricing.inventory_product
+    (pricing) => pricing.inventory_product,
+    {
+      cascade: true,
+    }
   )
   pricing_informations: InventoryProductPricingInformation[];
 }

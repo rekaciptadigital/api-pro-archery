@@ -4,9 +4,6 @@ import { randomBytes } from "crypto";
 
 @Entity("inventory_product_global_discount_histories")
 export class InventoryProductGlobalDiscountHistory extends VarPrimary {
-  @Column("varchar", { primary: true })
-  id: string;
-
   @Column({ type: "varchar" })
   inventory_product_pricing_information_history_id: string;
 
@@ -15,9 +12,6 @@ export class InventoryProductGlobalDiscountHistory extends VarPrimary {
 
   @Column({ type: "numeric", precision: 19, scale: 2 })
   discount_percentage: number;
-
-  @CreateDateColumn({ type: "timestamp" })
-  created_at: Date;
 
   @BeforeInsert()
   generateId() {

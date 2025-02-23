@@ -1,19 +1,10 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-} from "typeorm";
+import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
+import { BaseEntity } from "@/common/entities/base.entity";
 import { InventoryProductPricingInformation } from "./inventory-product-pricing-information.entity";
+import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
 
 @Entity("inventory_product_customer_category_prices")
-export class InventoryProductCustomerCategoryPrice {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class InventoryProductCustomerCategoryPrice extends BaseEntity {
   @Column({ type: "bigint" })
   inventory_product_pricing_information_id: number;
 
@@ -44,15 +35,10 @@ export class InventoryProductCustomerCategoryPrice {
   @Column({ type: "boolean", default: false })
   is_custom_tax_inclusive_price: boolean;
 
-  @CreateDateColumn({ type: "timestamp" })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: "timestamp" })
-  updated_at: Date;
-
   @ManyToOne(
     () => InventoryProductPricingInformation,
-    (pricing) => pricing.customer_category_prices
+    (pricing) => pricing.customer_category_prices,
+    { onDelete: "CASCADE" }
   )
   @JoinColumn({ name: "inventory_product_pricing_information_id" })
   pricing_information: InventoryProductPricingInformation;

@@ -13,9 +13,6 @@ import { InventoryProductVolumeDiscountVariant } from "./inventory-product-volum
 
 @Entity("inventory_product_volume_discount_variant_price_categories")
 export class InventoryProductVolumeDiscountVariantPriceCategory extends VarPrimary {
-  @Column("varchar", { primary: true })
-  id: string;
-
   @Column({ type: "varchar", length: 255 })
   inventory_product_volume_discount_variant_id: string;
 
@@ -33,12 +30,6 @@ export class InventoryProductVolumeDiscountVariantPriceCategory extends VarPrima
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   price: number;
-
-  @CreateDateColumn({ type: "timestamp" })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: "timestamp" })
-  updated_at: Date;
 
   @ManyToOne(() => InventoryProductVolumeDiscountVariant)
   @JoinColumn({ name: "inventory_product_volume_discount_variant_id" })
