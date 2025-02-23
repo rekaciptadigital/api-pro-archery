@@ -3,6 +3,7 @@ import { BaseEntity } from "@/common/entities/base.entity";
 import { InventoryProductCategory } from "./inventory-product-category.entity";
 import { InventoryProductSelectedVariant } from "./inventory-product-selected-variant.entity";
 import { InventoryProductByVariant } from "./inventory-product-by-variant.entity";
+import { InventoryProductPricingInformation } from "@/modules/inventory-price/domain/entities/inventory-product-pricing-information.entity";
 
 @Entity("inventory_products")
 export class InventoryProduct extends BaseEntity {
@@ -74,4 +75,10 @@ export class InventoryProduct extends BaseEntity {
     }
   )
   product_by_variant: InventoryProductByVariant[];
+
+  @OneToMany(
+    () => InventoryProductPricingInformation,
+    (pricing) => pricing.inventory_product
+  )
+  pricing_informations: InventoryProductPricingInformation[];
 }

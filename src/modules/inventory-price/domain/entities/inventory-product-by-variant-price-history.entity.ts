@@ -1,8 +1,10 @@
-import { Entity, PrimaryColumn, Column, CreateDateColumn } from "typeorm";
+import { Entity, Column, CreateDateColumn, BeforeInsert } from "typeorm";
+import { VarPrimary } from "@/common/entities/varPrimary.entity";
+import { randomBytes } from "crypto";
 
 @Entity("inventory_product_by_variant_price_histories")
-export class InventoryProductByVariantPriceHistory {
-  @PrimaryColumn({ type: "varchar", length: 255 })
+export class InventoryProductByVariantPriceHistory extends VarPrimary {
+  @Column("varchar", { primary: true })
   id: string;
 
   @Column({ type: "varchar" })
@@ -22,4 +24,11 @@ export class InventoryProductByVariantPriceHistory {
 
   @CreateDateColumn({ type: "timestamp" })
   created_at: Date;
+
+  @BeforeInsert()
+  generateId() {
+    const timestamp = Date.now().toString(20);
+    const randomStr = randomBytes(12).toString("hex");
+    this.id = `${randomStr}${timestamp}`;
+  }
 }

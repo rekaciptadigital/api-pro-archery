@@ -6,10 +6,13 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { InventoryProductCustomerCategoryPrice } from "./inventory-product-customer-category-price.entity";
 import { InventoryProductGlobalDiscount } from "./inventory-product-global-discount.entity";
 import { InventoryProductVolumeDiscountVariant } from "./inventory-product-volume-discount-variant.entity";
+import { InventoryProduct } from "@/modules/inventory/domain/entities/inventory-product.entity";
 
 @Entity("inventory_product_pricing_informations")
 export class InventoryProductPricingInformation {
@@ -60,6 +63,10 @@ export class InventoryProductPricingInformation {
     (variant) => variant.pricing_information
   )
   volume_discount_variants: InventoryProductVolumeDiscountVariant[];
+
+  @ManyToOne(() => InventoryProduct)
+  @JoinColumn({ name: "inventory_product_id" })
+  inventory_product: InventoryProduct;
 
   @CreateDateColumn({ type: "timestamp" })
   created_at: Date;
