@@ -1,10 +1,9 @@
-import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
-import { BaseEntity } from "@/common/entities/base.entity";
+import { BaseWithoutDeleteEntity } from "@/common/entities/base-without-delete.entity";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { InventoryProductPricingInformation } from "./inventory-product-pricing-information.entity";
-import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
 
 @Entity("inventory_product_customer_category_prices")
-export class InventoryProductCustomerCategoryPrice extends BaseEntity {
+export class InventoryProductCustomerCategoryPrice extends BaseWithoutDeleteEntity {
   @Column({ type: "bigint" })
   inventory_product_pricing_information_id: number;
 
