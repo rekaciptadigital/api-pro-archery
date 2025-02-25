@@ -235,7 +235,7 @@ export class CreateInventoryPriceTables1702432900000
 
     // inventory_product_volume_discount_variant_price_category_histories
     await queryRunner.query(`
-      CREATE TABLE "inventory_product_volume_discount_variant_price_category_histories" (
+      CREATE TABLE "inventory_product_volume_discount_variant_price_cat_his" (
         "id" VARCHAR(255) PRIMARY KEY,
         "inventory_product_pricing_information_history_id" VARCHAR(255) NOT NULL,
         "price_category_id" BIGINT NOT NULL,
@@ -253,7 +253,7 @@ export class CreateInventoryPriceTables1702432900000
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop history tables
     await queryRunner.query(
-      `DROP TABLE "inventory_product_volume_discount_variant_price_category_histories"`
+      `DROP TABLE "inventory_product_volume_discount_variant_price_cat_his"`
     );
     await queryRunner.query(
       `DROP TABLE "inventory_product_volume_discount_variant_histories"`

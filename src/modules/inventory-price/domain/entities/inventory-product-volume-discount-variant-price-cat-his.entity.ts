@@ -2,8 +2,10 @@ import { Entity, Column, CreateDateColumn, BeforeInsert } from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
 
-@Entity("inventory_product_volume_discount_variant_price_category_histories")
-export class InventoryProductVolumeDiscountVariantPriceCategoryHistory extends VarPrimary {
+// inventory_product_volume_discount_variant_price_category_histories
+
+@Entity("inventory_product_volume_discount_variant_price_cat_his")
+export class InventoryProductVolumeDiscountVariantPriceCatHis extends VarPrimary {
   @Column({ type: "varchar" })
   inventory_product_pricing_information_history_id: string;
 

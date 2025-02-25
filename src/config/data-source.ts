@@ -15,7 +15,7 @@ import { InventoryProductGlobalDiscount } from "@/modules/inventory-price/domain
 import { InventoryProductPricingInformationHistory } from "@/modules/inventory-price/domain/entities/inventory-product-pricing-information-history.entity";
 import { InventoryProductPricingInformation } from "@/modules/inventory-price/domain/entities/inventory-product-pricing-information.entity";
 import { InventoryProductVolumeDiscountVariantHistory } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-history.entity";
-import { InventoryProductVolumeDiscountVariantPriceCategoryHistory } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-price-category-history.entity";
+import { InventoryProductVolumeDiscountVariantPriceCatHis } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-price-cat-his.entity";
 import { InventoryProductVolumeDiscountVariantPriceCategory } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-price-category.entity";
 import { InventoryProductVolumeDiscountVariant } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant.entity";
 import { InventoryProductByVariantHistory } from "@/modules/inventory/domain/entities/inventory-product-by-variant-history.entity";
@@ -101,7 +101,7 @@ const options: DataSourceOptions = {
     InventoryProductVolumeDiscountVariant,
     InventoryProductVolumeDiscountVariantHistory,
     InventoryProductVolumeDiscountVariantPriceCategory,
-    InventoryProductVolumeDiscountVariantPriceCategoryHistory,
+    InventoryProductVolumeDiscountVariantPriceCatHis,
   ],
   migrations: [
     CreateInitialSchema1701234567890,

@@ -5,6 +5,7 @@ import { FeatureSeeder } from "./feature.seeder";
 import { PermissionSeeder } from "./permission.seeder";
 import { Logger } from "@nestjs/common";
 import { Seeder } from "./seeder.interface";
+import { InventoryProductPriceSeeder } from "./inventory-product-price.seeder";
 
 @Injectable()
 export class DatabaseSeeder {
@@ -15,13 +16,15 @@ export class DatabaseSeeder {
     private readonly roleSeeder: RoleSeeder,
     private readonly featureSeeder: FeatureSeeder,
     private readonly permissionSeeder: PermissionSeeder,
-    private readonly userSeeder: UserSeeder
+    private readonly userSeeder: UserSeeder,
+    private readonly inventoryProductPriceSeeder: InventoryProductPriceSeeder
   ) {
     this.seeders = new Map<string, Seeder>([
       ["roles", roleSeeder],
       ["features", featureSeeder],
       ["permissions", permissionSeeder],
       ["users", userSeeder],
+      ["inventory-product-prices", inventoryProductPriceSeeder],
     ]);
   }
 
@@ -43,6 +46,7 @@ export class DatabaseSeeder {
         await this.featureSeeder.createMany();
         await this.permissionSeeder.createMany();
         await this.userSeeder.createMany();
+        await this.inventoryProductPriceSeeder.createMany();
       }
 
       this.logger.log("Database seeding completed successfully");
