@@ -6,10 +6,12 @@ import {
   ManyToOne,
   JoinColumn,
   BeforeInsert,
+  OneToMany,
 } from "typeorm";
 import { InventoryProductPricingInformation } from "./inventory-product-pricing-information.entity";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
+import { InventoryProductVolumeDiscountVariantPriceCategory } from "./inventory-product-volume-discount-variant-price-category.entity";
 
 @Entity("inventory_product_volume_discount_variants")
 export class InventoryProductVolumeDiscountVariant extends VarPrimary {
@@ -40,6 +42,12 @@ export class InventoryProductVolumeDiscountVariant extends VarPrimary {
   )
   @JoinColumn({ name: "inventory_product_pricing_information_id" })
   pricing_information: InventoryProductPricingInformation;
+
+  @OneToMany(
+    () => InventoryProductVolumeDiscountVariantPriceCategory,
+    (priceCategory) => priceCategory.volume_discount_variant
+  )
+  price_categories: InventoryProductVolumeDiscountVariantPriceCategory[];
 
   @BeforeInsert()
   generateId() {

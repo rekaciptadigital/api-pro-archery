@@ -18,7 +18,7 @@ interface RequestUser {
 export class InventoryPriceController {
   constructor(private readonly inventoryPriceService: InventoryPriceService) {}
 
-  @Get("inventory-product-price-management/:inventory_product_id")
+  @Get(":inventory_product_id")
   @ApiOperation({ summary: "Get product pricing details" })
   @ApiParam({ name: "inventory_product_id", type: "number", required: true })
   @ApiResponse({

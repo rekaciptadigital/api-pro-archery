@@ -133,6 +133,10 @@ export interface IInventoryProductVolumeDiscountVariant {
   status: boolean;
   created_at: Date;
   updated_at: Date;
+  price_categories?: Array<{
+    type: string;
+    price: number;
+  }>;
 }
 
 export interface IInventoryProductVolumeDiscountVariantPriceCategory {
