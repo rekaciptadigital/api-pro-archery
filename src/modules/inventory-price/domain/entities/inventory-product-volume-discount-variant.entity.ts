@@ -1,8 +1,6 @@
 import {
   Entity,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
   BeforeInsert,
@@ -11,7 +9,7 @@ import {
 import { InventoryProductPricingInformation } from "./inventory-product-pricing-information.entity";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
-import { InventoryProductVolumeDiscountVariantPriceCategory } from "./inventory-product-volume-discount-variant-price-category.entity";
+import { InventoryProductVolumeDiscountVariantQty } from "./inventory-product-volume-discount-variant-qty.entity";
 
 @Entity("inventory_product_volume_discount_variants")
 export class InventoryProductVolumeDiscountVariant extends VarPrimary {
@@ -27,12 +25,6 @@ export class InventoryProductVolumeDiscountVariant extends VarPrimary {
   @Column({ type: "text" })
   inventory_product_by_variant_sku: string;
 
-  @Column({ type: "integer", default: 0 })
-  quantity: number;
-
-  @Column({ type: "numeric", precision: 19, scale: 2 })
-  discount_percentage: number;
-
   @Column({ type: "boolean", default: true })
   status: boolean;
 
@@ -44,10 +36,10 @@ export class InventoryProductVolumeDiscountVariant extends VarPrimary {
   pricing_information: InventoryProductPricingInformation;
 
   @OneToMany(
-    () => InventoryProductVolumeDiscountVariantPriceCategory,
-    (priceCategory) => priceCategory.volume_discount_variant
+    () => InventoryProductVolumeDiscountVariantQty,
+    (qty) => qty.volume_discount_variant
   )
-  price_categories: InventoryProductVolumeDiscountVariantPriceCategory[];
+  quantities: InventoryProductVolumeDiscountVariantQty[];
 
   @BeforeInsert()
   generateId() {

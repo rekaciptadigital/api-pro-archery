@@ -66,6 +66,7 @@ export interface IInventoryProductCustomerCategoryPrice {
   tax_id: number;
   tax_percentage: number;
   is_custom_tax_inclusive_price: boolean;
+  price_category_custom_percentage: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -83,6 +84,7 @@ export interface IInventoryProductCustomerCategoryPriceHistory {
   tax_id: number;
   tax_percentage: number;
   is_custom_tax_inclusive_price: boolean;
+  price_category_custom_percentage: number;
   created_at: Date;
 }
 
@@ -92,6 +94,9 @@ export interface IInventoryProductByVariantPrice {
   price_category_id: number;
   price: number;
   status: boolean;
+  usd_price: number;
+  exchange_rate: number;
+  adjustment_percentage: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -102,6 +107,9 @@ export interface IInventoryProductByVariantPriceHistory {
   inventory_product_by_variant_id: string;
   price_category_id: number;
   price: number;
+  usd_price: number;
+  exchange_rate: number;
+  adjustment_percentage: number;
   status: boolean;
   created_at: Date;
 }

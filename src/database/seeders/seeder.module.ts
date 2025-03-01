@@ -66,6 +66,8 @@ import { InventoryProductVolumeDiscountVariantHistory } from "../../modules/inve
 import { InventoryProductVolumeDiscountVariantPriceCatHis } from "../../modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-price-cat-his.entity";
 import { InventoryProductVolumeDiscountVariantPriceCategory } from "../../modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-price-category.entity";
 import { InventoryProductVolumeDiscountVariant } from "../../modules/inventory-price/domain/entities/inventory-product-volume-discount-variant.entity";
+import { InventoryProductVolumeDiscountVariantQtyHis } from "../../modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-qty-his.entity";
+import { InventoryProductVolumeDiscountVariantQty } from "../../modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-qty.entity";
 import { InventoryProductPriceSeeder } from "./inventory-product-price.seeder";
 
 @Module({
@@ -129,6 +131,8 @@ import { InventoryProductPriceSeeder } from "./inventory-product-price.seeder";
           InventoryProductGlobalDiscountPriceCategoryHistory,
           InventoryProductVolumeDiscountVariantHistory,
           InventoryProductVolumeDiscountVariantPriceCatHis,
+          InventoryProductVolumeDiscountVariantQty,
+          InventoryProductVolumeDiscountVariantQtyHis,
         ],
         synchronize: false,
       }),

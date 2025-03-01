@@ -26,6 +26,8 @@ import { InventoryProductVolumeDiscountVariantHistory } from "../inventory-price
 import { InventoryProductVolumeDiscountVariantPriceCatHis } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant-price-cat-his.entity";
 import { InventoryProductVolumeDiscountVariantPriceCategory } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant-price-category.entity";
 import { InventoryProductVolumeDiscountVariant } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant.entity";
+import { InventoryProductVolumeDiscountVariantQtyHis } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant-qty-his.entity";
+import { InventoryProductVolumeDiscountVariantQty } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant-qty.entity";
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { InventoryProductVolumeDiscountVariant } from "../inventory-price/domain
       InventoryProductGlobalDiscountPriceCategoryHistory,
       InventoryProductVolumeDiscountVariantHistory,
       InventoryProductVolumeDiscountVariantPriceCatHis,
+      InventoryProductVolumeDiscountVariantQty,
+      InventoryProductVolumeDiscountVariantQtyHis,
     ]),
     PaginationModule,
     TransformersModule,

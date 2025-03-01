@@ -19,6 +19,8 @@ import { InventoryProductVolumeDiscountVariantHistory } from "./domain/entities/
 import { InventoryProductVolumeDiscountVariantPriceCatHis } from "./domain/entities/inventory-product-volume-discount-variant-price-cat-his.entity";
 import { InventoryProductVolumeDiscountVariantPriceCategory } from "./domain/entities/inventory-product-volume-discount-variant-price-category.entity";
 import { InventoryProductVolumeDiscountVariant } from "./domain/entities/inventory-product-volume-discount-variant.entity";
+import { InventoryProductVolumeDiscountVariantQtyHis } from "./domain/entities/inventory-product-volume-discount-variant-qty-his.entity";
+import { InventoryProductVolumeDiscountVariantQty } from "./domain/entities/inventory-product-volume-discount-variant-qty.entity";
 // Inventory module entities
 import { InventoryProductByVariantHistory } from "../inventory/domain/entities/inventory-product-by-variant-history.entity";
 import { InventoryProductByVariant } from "../inventory/domain/entities/inventory-product-by-variant.entity";
@@ -44,6 +46,8 @@ import { InventoryPriceService } from "./applications/services/inventory-price.s
       InventoryProductGlobalDiscountPriceCategoryHistory,
       InventoryProductVolumeDiscountVariantHistory,
       InventoryProductVolumeDiscountVariantPriceCatHis,
+      InventoryProductVolumeDiscountVariantQty,
+      InventoryProductVolumeDiscountVariantQtyHis,
       // Inventory module entities
       InventoryProduct,
       InventoryProductSelectedVariant,

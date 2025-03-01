@@ -1,28 +1,41 @@
-import { Entity, Column, CreateDateColumn, BeforeInsert } from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
-
-// inventory_product_volume_discount_variant_price_category_histories
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne
+} from "typeorm";
+import { InventoryProductVolumeDiscountVariantQtyHis } from "./inventory-product-volume-discount-variant-qty-his.entity";
 
 @Entity("inventory_product_volume_discount_variant_price_cat_his")
 export class InventoryProductVolumeDiscountVariantPriceCatHis extends VarPrimary {
-  @Column({ type: "varchar" })
-  inventory_product_pricing_information_history_id: string;
+  @Column({ type: "varchar", length: 255, nullable: false })
+  inventory_product_vol_disc_variant_qty_his_id: string;
 
-  @Column({ type: "bigint" })
+  @Column({ type: "bigint", nullable: false })
   price_category_id: number;
 
-  @Column({ type: "varchar", length: 255 })
+  @Column({ type: "varchar", length: 255, nullable: false })
   price_category_name: string;
 
-  @Column({ type: "numeric", precision: 10, scale: 2 })
+  @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
   price_category_percentage: number;
 
-  @Column({ type: "boolean", default: false })
+  @Column({ type: "boolean", default: false, nullable: false })
   price_category_set_default: boolean;
 
-  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0, nullable: false })
   price: number;
+
+  @ManyToOne(
+    () => InventoryProductVolumeDiscountVariantQtyHis,
+    (qty) => qty.price_categories,
+    { onDelete: "CASCADE" }
+  )
+  @JoinColumn({ name: "inventory_product_vol_disc_variant_qty_his_id" })
+  volume_discount_variant_qty_history: InventoryProductVolumeDiscountVariantQtyHis;
 
   @BeforeInsert()
   generateId() {

@@ -110,8 +110,6 @@ export class CreateInventoryPriceTables1702432900000
         "inventory_product_by_variant_id" VARCHAR(255) NOT NULL,
         "inventory_product_by_variant_full_product_name" TEXT NOT NULL,
         "inventory_product_by_variant_sku" TEXT NOT NULL,
-        "quantity" INTEGER NOT NULL DEFAULT 0,
-        "discount_percentage" NUMERIC(19,2) NOT NULL,
         "status" BOOLEAN NOT NULL DEFAULT true,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
@@ -119,21 +117,33 @@ export class CreateInventoryPriceTables1702432900000
       )
     `);
 
+    // Create inventory_product_volume_discount_variant_qty table
+    await queryRunner.query(`
+      CREATE TABLE "inventory_product_volume_discount_variant_qty" (
+        "id" VARCHAR(255) PRIMARY KEY,
+        "inventory_product_vol_disc_variant_id" VARCHAR(255) NOT NULL,
+        "quantity" INTEGER NOT NULL DEFAULT 0,
+        "discount_percentage" NUMERIC(19,2) NOT NULL DEFAULT 0,
+        "status" BOOLEAN NOT NULL DEFAULT true,
+        "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+        "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+        CONSTRAINT "fk_ipvdvq_volume_discount_variant" FOREIGN KEY ("inventory_product_vol_disc_variant_id") REFERENCES "inventory_product_volume_discount_variants"("id") ON DELETE CASCADE
+      )
+    `);
+
     // Create inventory_product_volume_discount_variant_price_categories table
     await queryRunner.query(`
       CREATE TABLE "inventory_product_volume_discount_variant_price_categories" (
         "id" VARCHAR(255) PRIMARY KEY,
-        "inventory_product_volume_discount_variant_id" VARCHAR(255) NOT NULL,
+        "inventory_product_vol_disc_variant_qty_id" VARCHAR(255) NOT NULL,
         "price_category_id" BIGINT NOT NULL,
         "price_category_name" VARCHAR(255) NOT NULL,
         "price_category_percentage" NUMERIC(10,2) NOT NULL,
         "price_category_set_default" BOOLEAN NOT NULL DEFAULT false,
         "price" NUMERIC(19,2) NOT NULL DEFAULT 0,
-        "status" BOOLEAN NOT NULL DEFAULT true,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
-        CONSTRAINT "fk_ipvdvpc_volume_discount_variant" FOREIGN KEY ("inventory_product_volume_discount_variant_id") REFERENCES "inventory_product_volume_discount_variants"("id") ON DELETE CASCADE,
-        CONSTRAINT "fk_ipvdvpc_price_category" FOREIGN KEY ("price_category_id") REFERENCES "price_categories"("id")
+        CONSTRAINT "fk_ipvdvpc_volume_discount_variant_qty" FOREIGN KEY ("inventory_product_vol_disc_variant_qty_id") REFERENCES "inventory_product_volume_discount_variant_qty"("id") ON DELETE CASCADE
       )
     `);
 
@@ -273,6 +283,21 @@ export class CreateInventoryPriceTables1702432900000
     await queryRunner.query(
       `DROP TABLE "inventory_product_pricing_information_histories"`
     );
+
+    // Drop module tables
+    await queryRunner.query(
+      `DROP TABLE "inventory_product_volume_discount_variant_price_categories"`
+    );
+    await queryRunner.query(
+      `DROP TABLE "inventory_product_volume_discount_variant_qty"`
+    );
+    await queryRunner.query(
+      `DROP TABLE "inventory_product_volume_discount_variants"`
+    );
+    await queryRunner.query(
+      `DROP TABLE "inventory_product_global_discount_price_categories"`
+    );
+    await queryRunner.query(`DROP TABLE "inventory_product_global_discounts"`);
 
     // Drop module tables
     await queryRunner.query(

@@ -34,6 +34,15 @@ export class InventoryProductByVariantPrice extends VarPrimary {
   @Column({ type: "boolean", default: true })
   status: boolean;
 
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  usd_price: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  exchange_rate: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  adjustment_percentage: number;
+
   @BeforeInsert()
   generateId() {
     const timestamp = Date.now().toString(20);

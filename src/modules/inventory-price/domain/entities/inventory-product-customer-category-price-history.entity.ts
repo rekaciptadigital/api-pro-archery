@@ -37,6 +37,9 @@ export class InventoryProductCustomerCategoryPriceHistory extends VarPrimary {
   @Column({ type: "boolean", default: false })
   is_custom_tax_inclusive_price: boolean;
 
+  @Column({ type: "numeric", precision: 10, scale: 2 })
+  price_category_custom_percentage: number;
+
   @BeforeInsert()
   generateId() {
     const timestamp = Date.now().toString(20);

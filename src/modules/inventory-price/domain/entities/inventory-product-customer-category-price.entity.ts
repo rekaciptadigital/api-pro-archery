@@ -34,6 +34,9 @@ export class InventoryProductCustomerCategoryPrice extends BaseWithoutDeleteEnti
   @Column({ type: "boolean", default: false })
   is_custom_tax_inclusive_price: boolean;
 
+  @Column({ type: "numeric", precision: 10, scale: 2 })
+  price_category_custom_percentage: number;
+
   @ManyToOne(
     () => InventoryProductPricingInformation,
     (pricing) => pricing.customer_category_prices,

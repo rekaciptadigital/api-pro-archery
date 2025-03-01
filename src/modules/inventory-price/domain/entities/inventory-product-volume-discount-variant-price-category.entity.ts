@@ -1,20 +1,12 @@
-import {
-  Entity,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  BeforeInsert,
-  ManyToOne,
-  JoinColumn,
-} from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
-import { InventoryProductVolumeDiscountVariant } from "./inventory-product-volume-discount-variant.entity";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { InventoryProductVolumeDiscountVariantQty } from "./inventory-product-volume-discount-variant-qty.entity";
 
 @Entity("inventory_product_volume_discount_variant_price_categories")
 export class InventoryProductVolumeDiscountVariantPriceCategory extends VarPrimary {
   @Column({ type: "varchar", length: 255 })
-  inventory_product_volume_discount_variant_id: string;
+  inventory_product_vol_disc_variant_qty_id: string;
 
   @Column({ type: "bigint" })
   price_category_id: number;
@@ -31,9 +23,12 @@ export class InventoryProductVolumeDiscountVariantPriceCategory extends VarPrima
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   price: number;
 
-  @ManyToOne(() => InventoryProductVolumeDiscountVariant)
-  @JoinColumn({ name: "inventory_product_volume_discount_variant_id" })
-  volume_discount_variant: InventoryProductVolumeDiscountVariant;
+  @ManyToOne(
+    () => InventoryProductVolumeDiscountVariantQty,
+    (qty) => qty.price_categories
+  )
+  @JoinColumn({ name: "inventory_product_vol_disc_variant_qty_id" })
+  volume_discount_variant_qty: InventoryProductVolumeDiscountVariantQty;
 
   @BeforeInsert()
   generateId() {

@@ -18,6 +18,8 @@ import { InventoryProductVolumeDiscountVariantHistory } from "@/modules/inventor
 import { InventoryProductVolumeDiscountVariantPriceCatHis } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-price-cat-his.entity";
 import { InventoryProductVolumeDiscountVariantPriceCategory } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-price-category.entity";
 import { InventoryProductVolumeDiscountVariant } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant.entity";
+import { InventoryProductVolumeDiscountVariantQtyHis } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-qty-his.entity";
+import { InventoryProductVolumeDiscountVariantQty } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-qty.entity";
 import { InventoryProductByVariantHistory } from "@/modules/inventory/domain/entities/inventory-product-by-variant-history.entity";
 import { InventoryProductByVariant } from "@/modules/inventory/domain/entities/inventory-product-by-variant.entity";
 import { InventoryProductCategory } from "@/modules/inventory/domain/entities/inventory-product-category.entity";
@@ -55,6 +57,7 @@ import { UserRole } from "../modules/user-roles/domain/entities/user-role.entity
 import { User } from "../modules/users/domain/entities/user.entity";
 import { VariantValue } from "../modules/variants/domain/entities/variant-value.entity";
 import { Variant } from "../modules/variants/domain/entities/variant.entity";
+import { AddFieldsToInventoryPriceTables1702432900001 } from "@/migrations/1702432900001-AddFieldsToInventoryPriceTables";
 
 config();
 
@@ -102,6 +105,8 @@ const options: DataSourceOptions = {
     InventoryProductVolumeDiscountVariantHistory,
     InventoryProductVolumeDiscountVariantPriceCategory,
     InventoryProductVolumeDiscountVariantPriceCatHis,
+    InventoryProductVolumeDiscountVariantQty,
+    InventoryProductVolumeDiscountVariantQtyHis,
   ],
   migrations: [
     CreateInitialSchema1701234567890,
@@ -123,6 +128,7 @@ const options: DataSourceOptions = {
     AlterAuthTokenIdType1702432800013,
     AddSkuVendorToInventoryProductVariants1702432800014,
     CreateInventoryPriceTables1702432900000,
+    AddFieldsToInventoryPriceTables1702432900001,
   ],
   synchronize: false,
 };
