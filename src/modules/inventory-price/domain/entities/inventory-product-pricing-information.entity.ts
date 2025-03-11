@@ -3,6 +3,7 @@ import { BaseEntity } from "@/common/entities/base.entity";
 import { InventoryProductCustomerCategoryPrice } from "./inventory-product-customer-category-price.entity";
 import { InventoryProductGlobalDiscount } from "./inventory-product-global-discount.entity";
 import { InventoryProductVolumeDiscountVariant } from "./inventory-product-volume-discount-variant.entity";
+import { InventoryProductMarketplaceCategoryPrice } from "./inventory-product-marketplace-category-price.entity";
 import { InventoryProduct } from "@/modules/inventory/domain/entities/inventory-product.entity";
 
 @Entity("inventory_product_pricing_informations")
@@ -51,6 +52,12 @@ export class InventoryProductPricingInformation extends BaseEntity {
     (variant) => variant.pricing_information
   )
   volume_discount_variants: InventoryProductVolumeDiscountVariant[];
+
+  @OneToMany(
+    () => InventoryProductMarketplaceCategoryPrice,
+    (price) => price.pricing_information
+  )
+  marketplace_category_prices: InventoryProductMarketplaceCategoryPrice[];
 
   @ManyToOne(
     () => InventoryProduct,

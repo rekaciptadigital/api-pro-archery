@@ -83,6 +83,7 @@ export class InventoryPriceRepository extends BaseRepository<InventoryProductPri
       },
       relations: [
         "customer_category_prices",
+        "marketplace_category_prices",
         "global_discounts",
         "global_discounts.price_categories",
         "volume_discount_variants",

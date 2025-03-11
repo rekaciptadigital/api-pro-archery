@@ -8,9 +8,6 @@ export class InventoryProductCustomerCategoryPriceHistory extends VarPrimary {
   inventory_product_pricing_information_history_id: string;
 
   @Column({ type: "bigint" })
-  inventory_product_id: number;
-
-  @Column({ type: "bigint" })
   price_category_id: number;
 
   @Column({ type: "varchar", length: 255 })

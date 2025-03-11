@@ -12,6 +12,8 @@ import { InventoryProductGlobalDiscountHistory } from "@/modules/inventory-price
 import { InventoryProductGlobalDiscountPriceCategoryHistory } from "@/modules/inventory-price/domain/entities/inventory-product-global-discount-price-category-history.entity";
 import { InventoryProductGlobalDiscountPriceCategory } from "@/modules/inventory-price/domain/entities/inventory-product-global-discount-price-category.entity";
 import { InventoryProductGlobalDiscount } from "@/modules/inventory-price/domain/entities/inventory-product-global-discount.entity";
+import { InventoryProductMarketplaceCategoryPriceHistory } from "@/modules/inventory-price/domain/entities/inventory-product-marketplace-category-price-history.entity";
+import { InventoryProductMarketplaceCategoryPrice } from "@/modules/inventory-price/domain/entities/inventory-product-marketplace-category-price.entity";
 import { InventoryProductPricingInformationHistory } from "@/modules/inventory-price/domain/entities/inventory-product-pricing-information-history.entity";
 import { InventoryProductPricingInformation } from "@/modules/inventory-price/domain/entities/inventory-product-pricing-information.entity";
 import { InventoryProductVolumeDiscountVariantHistory } from "@/modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-history.entity";
@@ -58,6 +60,9 @@ import { User } from "../modules/users/domain/entities/user.entity";
 import { VariantValue } from "../modules/variants/domain/entities/variant-value.entity";
 import { Variant } from "../modules/variants/domain/entities/variant.entity";
 import { AddFieldsToInventoryPriceTables1702432900001 } from "@/migrations/1702432900001-AddFieldsToInventoryPriceTables";
+import { AddMarketplacePriceTables1702432900002 } from "@/migrations/1702432900002-AddMarketplacePriceTables";
+import { AddPriceCategoryTypeFields1702432900003 } from "@/migrations/1702432900003-AddPriceCategoryTypeFields";
+import { AddFieldsToInventoryProductByVariantPriceHistories1702432900004 } from "@/migrations/1702432900004-AddFieldsToInventoryProductByVariantPriceHistories";
 
 config();
 
@@ -107,6 +112,9 @@ const options: DataSourceOptions = {
     InventoryProductVolumeDiscountVariantPriceCatHis,
     InventoryProductVolumeDiscountVariantQty,
     InventoryProductVolumeDiscountVariantQtyHis,
+    InventoryProductMarketplaceCategoryPrice,
+    InventoryProductMarketplaceCategoryPriceHistory,
+    AddFieldsToInventoryProductByVariantPriceHistories1702432900004,
   ],
   migrations: [
     CreateInitialSchema1701234567890,
@@ -129,6 +137,8 @@ const options: DataSourceOptions = {
     AddSkuVendorToInventoryProductVariants1702432800014,
     CreateInventoryPriceTables1702432900000,
     AddFieldsToInventoryPriceTables1702432900001,
+    AddMarketplacePriceTables1702432900002,
+    AddPriceCategoryTypeFields1702432900003,
   ],
   synchronize: false,
 };

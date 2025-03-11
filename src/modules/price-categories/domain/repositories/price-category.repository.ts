@@ -7,6 +7,7 @@ import {
   SaveOptions,
   Not,
   QueryRunner,
+  FindOptionsWhere,
 } from "typeorm";
 import { PriceCategory } from "../entities/price-category.entity";
 import { BaseRepository } from "@/common/repositories/base.repository";
@@ -107,5 +108,18 @@ export class PriceCategoryRepository extends BaseRepository<PriceCategory> {
       return this.priceCategoryRepository.save(entityOrEntities, options);
     }
     return this.priceCategoryRepository.save(entityOrEntities, options);
+  }
+
+  async count(options?: FindOptionsWhere<PriceCategory>): Promise<number> {
+    return this.priceCategoryRepository.count({
+      where: {
+        ...options,
+        deleted_at: IsNull(),
+      },
+    });
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.priceCategoryRepository.softDelete(id);
   }
 }

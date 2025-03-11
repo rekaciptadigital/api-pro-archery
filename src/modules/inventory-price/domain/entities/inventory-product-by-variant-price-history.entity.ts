@@ -1,15 +1,8 @@
-import {
-  Entity,
-  Column,
-  CreateDateColumn,
-  BeforeInsert,
-  ManyToOne,
-  JoinColumn,
-} from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
-import { randomBytes } from "crypto";
-import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
 import { InventoryProductByVariant } from "@/modules/inventory/domain/entities/inventory-product-by-variant.entity";
+import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
+import { randomBytes } from "crypto";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { InventoryProductPricingInformationHistory } from "./inventory-product-pricing-information-history.entity";
 
 @Entity("inventory_product_by_variant_price_histories")
@@ -30,6 +23,18 @@ export class InventoryProductByVariantPriceHistory extends VarPrimary {
 
   @Column({ type: "bigint" })
   price_category_id: number;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  price_category_type: string;
+
+  @Column({ type: "varchar", length: 255 })
+  price_category_name: string;
+
+  @Column({ type: "numeric", precision: 10, scale: 2 })
+  price_category_percentage: number;
+
+  @Column({ type: "boolean", default: false })
+  price_category_set_default: boolean;
 
   @ManyToOne(() => PriceCategory)
   @JoinColumn({ name: "price_category_id" })

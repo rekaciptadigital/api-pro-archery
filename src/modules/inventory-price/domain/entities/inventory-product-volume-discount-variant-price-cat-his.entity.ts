@@ -1,18 +1,15 @@
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
-import {
-  BeforeInsert,
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne
-} from "typeorm";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { InventoryProductVolumeDiscountVariantQtyHis } from "./inventory-product-volume-discount-variant-qty-his.entity";
 
 @Entity("inventory_product_volume_discount_variant_price_cat_his")
 export class InventoryProductVolumeDiscountVariantPriceCatHis extends VarPrimary {
   @Column({ type: "varchar", length: 255, nullable: false })
   inventory_product_vol_disc_variant_qty_his_id: string;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  price_category_type: string;
 
   @Column({ type: "bigint", nullable: false })
   price_category_id: number;
@@ -26,7 +23,13 @@ export class InventoryProductVolumeDiscountVariantPriceCatHis extends VarPrimary
   @Column({ type: "boolean", default: false, nullable: false })
   price_category_set_default: boolean;
 
-  @Column({ type: "numeric", precision: 19, scale: 2, default: 0, nullable: false })
+  @Column({
+    type: "numeric",
+    precision: 19,
+    scale: 2,
+    default: 0,
+    nullable: false,
+  })
   price: number;
 
   @ManyToOne(

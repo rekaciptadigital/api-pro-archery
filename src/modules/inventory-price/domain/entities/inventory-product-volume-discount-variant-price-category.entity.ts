@@ -8,6 +8,9 @@ export class InventoryProductVolumeDiscountVariantPriceCategory extends VarPrima
   @Column({ type: "varchar", length: 255 })
   inventory_product_vol_disc_variant_qty_id: string;
 
+  @Column({ type: "varchar", length: 255, nullable: false })
+  price_category_type: string;
+
   @Column({ type: "bigint" })
   price_category_id: number;
 

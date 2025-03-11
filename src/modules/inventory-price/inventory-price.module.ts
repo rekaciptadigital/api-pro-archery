@@ -13,6 +13,8 @@ import { InventoryProductGlobalDiscountHistory } from "./domain/entities/invento
 import { InventoryProductGlobalDiscountPriceCategoryHistory } from "./domain/entities/inventory-product-global-discount-price-category-history.entity";
 import { InventoryProductGlobalDiscountPriceCategory } from "./domain/entities/inventory-product-global-discount-price-category.entity";
 import { InventoryProductGlobalDiscount } from "./domain/entities/inventory-product-global-discount.entity";
+import { InventoryProductMarketplaceCategoryPriceHistory } from "./domain/entities/inventory-product-marketplace-category-price-history.entity";
+import { InventoryProductMarketplaceCategoryPrice } from "./domain/entities/inventory-product-marketplace-category-price.entity";
 import { InventoryProductPricingInformationHistory } from "./domain/entities/inventory-product-pricing-information-history.entity";
 import { InventoryProductPricingInformation } from "./domain/entities/inventory-product-pricing-information.entity";
 import { InventoryProductVolumeDiscountVariantHistory } from "./domain/entities/inventory-product-volume-discount-variant-history.entity";
@@ -27,6 +29,8 @@ import { InventoryProductByVariant } from "../inventory/domain/entities/inventor
 import { InventoryProductSelectedVariant } from "../inventory/domain/entities/inventory-product-selected-variant.entity";
 import { InventoryProduct } from "../inventory/domain/entities/inventory-product.entity";
 import { InventoryPriceService } from "./applications/services/inventory-price.service";
+import { PriceCategory } from "../price-categories/domain/entities/price-category.entity";
+import { Tax } from "../taxes/domain/entities/tax.entity";
 
 @Module({
   imports: [
@@ -48,12 +52,20 @@ import { InventoryPriceService } from "./applications/services/inventory-price.s
       InventoryProductVolumeDiscountVariantPriceCatHis,
       InventoryProductVolumeDiscountVariantQty,
       InventoryProductVolumeDiscountVariantQtyHis,
+      InventoryProductMarketplaceCategoryPrice,
+      InventoryProductMarketplaceCategoryPriceHistory,
       // Inventory module entities
       InventoryProduct,
       InventoryProductSelectedVariant,
       InventoryProductByVariant,
       InventoryProductByVariantHistory,
       // ...existing entities if any...
+
+      // price categories
+      PriceCategory,
+
+      // taxes
+      Tax,
     ]),
     PaginationModule,
     TransformersModule,

@@ -154,7 +154,54 @@ export class PriceCategoryService {
       );
     }
 
-    await this.priceCategoryRepository.softDelete(id);
+    // Check if this is the last category of its type
+    const categoriesOfSameType = await this.priceCategoryRepository.count({
+      type: category.type,
+    });
+
+    if (categoriesOfSameType <= 1) {
+      throw new DomainException(
+        `Cannot delete the last price category of type ${category.type}`,
+        HttpStatus.NOT_ACCEPTABLE
+      );
+    }
+
+    // Check if the price category is referenced in any of the specified entities
+    const [
+      variantPrices,
+      customerCategoryPrices,
+      globalDiscountPrices,
+      volumeDiscountPrices,
+    ] = await Promise.all([
+      this.dataSource
+        .getRepository("inventory_product_by_variant_prices")
+        .count({ where: { price_category_id: id } }),
+      this.dataSource
+        .getRepository("inventory_product_customer_category_prices")
+        .count({ where: { price_category_id: id } }),
+      this.dataSource
+        .getRepository("inventory_product_global_discount_price_categories")
+        .count({ where: { price_category_id: id } }),
+      this.dataSource
+        .getRepository(
+          "inventory_product_volume_discount_variant_price_categories"
+        )
+        .count({ where: { price_category_id: id } }),
+    ]);
+
+    if (
+      variantPrices > 0 ||
+      customerCategoryPrices > 0 ||
+      globalDiscountPrices > 0 ||
+      volumeDiscountPrices > 0
+    ) {
+      throw new DomainException(
+        "Cannot delete price category as it is being used in product pricing",
+        HttpStatus.NOT_ACCEPTABLE
+      );
+    }
+
+    await this.priceCategoryRepository.delete(id);
     return this.responseTransformer.transform({
       message: "Price category deleted successfully",
     });

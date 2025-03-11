@@ -2,6 +2,8 @@ import { PaginationModule } from "@/common/pagination/pagination.module";
 import { TransformersModule } from "@/common/transformers/transformers.module";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { PriceCategoriesModule } from "@/modules/price-categories/price-categories.module";
+import { TaxesModule } from "@/modules/taxes/taxes.module";
 import { InventoryProductService } from "./application/services/inventory-product.service";
 import { InventoryProductByVariantHistory } from "./domain/entities/inventory-product-by-variant-history.entity";
 import { InventoryProductByVariant } from "./domain/entities/inventory-product-by-variant.entity";
@@ -20,6 +22,8 @@ import { InventoryProductGlobalDiscountHistory } from "../inventory-price/domain
 import { InventoryProductGlobalDiscountPriceCategoryHistory } from "../inventory-price/domain/entities/inventory-product-global-discount-price-category-history.entity";
 import { InventoryProductGlobalDiscountPriceCategory } from "../inventory-price/domain/entities/inventory-product-global-discount-price-category.entity";
 import { InventoryProductGlobalDiscount } from "../inventory-price/domain/entities/inventory-product-global-discount.entity";
+import { InventoryProductMarketplaceCategoryPriceHistory } from "../inventory-price/domain/entities/inventory-product-marketplace-category-price-history.entity";
+import { InventoryProductMarketplaceCategoryPrice } from "../inventory-price/domain/entities/inventory-product-marketplace-category-price.entity";
 import { InventoryProductPricingInformationHistory } from "../inventory-price/domain/entities/inventory-product-pricing-information-history.entity";
 import { InventoryProductPricingInformation } from "../inventory-price/domain/entities/inventory-product-pricing-information.entity";
 import { InventoryProductVolumeDiscountVariantHistory } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant-history.entity";
@@ -28,6 +32,8 @@ import { InventoryProductVolumeDiscountVariantPriceCategory } from "../inventory
 import { InventoryProductVolumeDiscountVariant } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant.entity";
 import { InventoryProductVolumeDiscountVariantQtyHis } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant-qty-his.entity";
 import { InventoryProductVolumeDiscountVariantQty } from "../inventory-price/domain/entities/inventory-product-volume-discount-variant-qty.entity";
+import { PriceCategory } from "../price-categories/domain/entities/price-category.entity";
+import { Tax } from "../taxes/domain/entities/tax.entity";
 
 @Module({
   imports: [
@@ -56,9 +62,16 @@ import { InventoryProductVolumeDiscountVariantQty } from "../inventory-price/dom
       InventoryProductVolumeDiscountVariantPriceCatHis,
       InventoryProductVolumeDiscountVariantQty,
       InventoryProductVolumeDiscountVariantQtyHis,
+      InventoryProductMarketplaceCategoryPrice,
+      InventoryProductMarketplaceCategoryPriceHistory,
+      // External entities needed for repository injection
+      PriceCategory,
+      Tax,
     ]),
     PaginationModule,
     TransformersModule,
+    PriceCategoriesModule,
+    TaxesModule,
   ],
   providers: [InventoryProductRepository, InventoryProductService],
   controllers: [InventoryProductController],

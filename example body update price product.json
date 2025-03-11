@@ -1,5 +1,5 @@
 {
-    "id": 10,
+    "id": 8,
     "usd_price": 150.3,
     "exchange_rate": 18000,
     "adjustment_percentage": 10,
@@ -10,7 +10,7 @@
     "is_enable_volume_discount_by_product_variant": false,
     "customer_category_prices": [
         {
-            "id": 13,
+            "id": 15,
             "price_category_id": 1,
             "price_category_name": "Elite",
             "formula": "Formula: HB Naik + 3.5% markup",
@@ -20,10 +20,11 @@
             "tax_inclusive_price": 3203304,
             "tax_id": 2,
             "tax_percentage": 4,
-            "is_custom_tax_inclusive_price": false
+            "is_custom_tax_inclusive_price": false,
+            "price_category_custom_percentage": 0
         },
         {
-            "id": 14,
+            "id": 16,
             "price_category_id": 3,
             "price_category_name": "Gold",
             "formula": "Formula: HB Naik + 5.0% markup",
@@ -33,14 +34,18 @@
             "tax_inclusive_price": 3249726,
             "tax_id": 2,
             "tax_percentage": 4,
-            "is_custom_tax_inclusive_price": false
+            "is_custom_tax_inclusive_price": false,
+            "price_category_custom_percentage": 0
         }
     ],
     "product_variant_prices": [
         {
-            "id": "6395d972abe42ef28c0c51bc37j7b0e3i3",
             "variant_id": "6395d972abe42ef28c0c51bc37j7b0e3i3",
             "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Blue",
+            "usd_price": 150.3,
+            "exchange_rate": 18000,
+            "adjustment_percentage": 10,
+            "status": true,
             "price_categories": [
                 {
                     "id": 1,
@@ -52,7 +57,7 @@
                 },
                 {
                     "id": 3,
-                    "price": null,
+                    "price": 3249726,
                     "price_category_name": "Gold",
                     "percentage": 5,
                     "type": "customer",
@@ -61,9 +66,12 @@
             ]
         },
         {
-            "id": "b4cf88a1d4ef68b2bc9fd35537j7b0d3jj",
             "variant_id": "b4cf88a1d4ef68b2bc9fd35537j7b0d3jj",
             "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Red",
+            "usd_price": 150.3,
+            "exchange_rate": 18000,
+            "adjustment_percentage": 10,
+            "status": false,
             "price_categories": [
                 {
                     "id": 1,
@@ -75,7 +83,7 @@
                 },
                 {
                     "id": 3,
-                    "price": null,
+                    "price": 3249726,
                     "price_category_name": "Gold",
                     "percentage": 5,
                     "type": "customer",
@@ -84,9 +92,12 @@
             ]
         },
         {
-            "id": "4e5bcb79ac1ae3a4d0713a6537j7b0d413",
             "variant_id": "4e5bcb79ac1ae3a4d0713a6537j7b0d413",
             "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Silver",
+            "usd_price": 150.3,
+            "exchange_rate": 18000,
+            "adjustment_percentage": 10,
+            "status": true,
             "price_categories": [
                 {
                     "id": 1,
@@ -98,7 +109,7 @@
                 },
                 {
                     "id": 3,
-                    "price": null,
+                    "price": 3249726,
                     "price_category_name": "Gold",
                     "percentage": 5,
                     "type": "customer",
@@ -121,7 +132,7 @@
                     "price_category_name": "Elite",
                     "price_category_percentage": 3.5,
                     "price_category_set_default": true,
-                    "price": 0
+                    "price": 3043139
                 },
                 {
                     "id": null,
@@ -130,14 +141,14 @@
                     "price_category_name": "Gold",
                     "price_category_percentage": 5,
                     "price_category_set_default": false,
-                    "price": 35000
+                    "price": 3087240
                 }
             ]
         }
     ],
     "variant_volume_discounts": [
         {
-            "id": null,
+            "id": "b109fa8df7508661df010df23808f2b76j",
             "inventory_product_pricing_information_id": 10,
             "inventory_product_by_variant_id": "6395d972abe42ef28c0c51bc37j7b0e3i3",
             "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Blue",
@@ -145,7 +156,7 @@
             "inventory_product_volume_discount_variant_quantities": [
                 {
                     "id": null,
-                    "inventory_product_volume_discount_variant_id": null,
+                    "inventory_product_volume_discount_variant_id": "b109fa8df7508661df010df23808f2b76j",
                     "quantity": 10,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
@@ -155,7 +166,7 @@
                             "price_category_name": "Elite",
                             "price_category_percentage": 3.5,
                             "price_category_set_default": true,
-                            "price": 0
+                            "price": 3043139
                         },
                         {
                             "id": null,
@@ -164,7 +175,7 @@
                             "price_category_name": "Gold",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
-                            "price": 10000
+                            "price": 3087240
                         }
                     ],
                     "discount_percentage": 5,
@@ -172,7 +183,7 @@
                 },
                 {
                     "id": null,
-                    "inventory_product_volume_discount_variant_id": null,
+                    "inventory_product_volume_discount_variant_id": "b109fa8df7508661df010df23808f2b76j",
                     "quantity": 20,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
@@ -182,7 +193,7 @@
                             "price_category_name": "Elite",
                             "price_category_percentage": 3.5,
                             "price_category_set_default": true,
-                            "price": 0
+                            "price": 3043139
                         },
                         {
                             "id": null,
@@ -191,17 +202,17 @@
                             "price_category_name": "Gold",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
-                            "price": 40000
+                            "price": 3087240
                         }
                     ],
-                    "discount_percentage": 10,
+                    "discount_percentage": 5,
                     "status": true
                 }
             ],
             "status": true
         },
         {
-            "id": null,
+            "id": "5c9e7011c157a30142f143fb3808f2b703",
             "inventory_product_pricing_information_id": 10,
             "inventory_product_by_variant_id": "b4cf88a1d4ef68b2bc9fd35537j7b0d3jj",
             "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Red",
@@ -209,7 +220,7 @@
             "inventory_product_volume_discount_variant_quantities": [
                 {
                     "id": null,
-                    "inventory_product_volume_discount_variant_id": null,
+                    "inventory_product_volume_discount_variant_id": "5c9e7011c157a30142f143fb3808f2b703",
                     "quantity": 10,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
@@ -219,7 +230,7 @@
                             "price_category_name": "Elite",
                             "price_category_percentage": 3.5,
                             "price_category_set_default": true,
-                            "price": 0
+                            "price": 3043139
                         },
                         {
                             "id": null,
@@ -228,44 +239,17 @@
                             "price_category_name": "Gold",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
-                            "price": 10000
+                            "price": 3087240
                         }
                     ],
                     "discount_percentage": 5,
-                    "status": true
-                },
-                {
-                    "id": null,
-                    "inventory_product_volume_discount_variant_id": null,
-                    "quantity": 20,
-                    "inventory_product_volume_discount_variant_price_categories": [
-                        {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 1,
-                            "price_category_name": "Elite",
-                            "price_category_percentage": 3.5,
-                            "price_category_set_default": true,
-                            "price": 0
-                        },
-                        {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 3,
-                            "price_category_name": "Gold",
-                            "price_category_percentage": 5,
-                            "price_category_set_default": false,
-                            "price": 40000
-                        }
-                    ],
-                    "discount_percentage": 10,
                     "status": true
                 }
             ],
             "status": true
         },
         {
-            "id": null,
+            "id": "94a25064cf3e59a8cafaff083808f2b75d",
             "inventory_product_pricing_information_id": 10,
             "inventory_product_by_variant_id": "4e5bcb79ac1ae3a4d0713a6537j7b0d413",
             "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Silver",
@@ -273,7 +257,7 @@
             "inventory_product_volume_discount_variant_quantities": [
                 {
                     "id": null,
-                    "inventory_product_volume_discount_variant_id": null,
+                    "inventory_product_volume_discount_variant_id": "94a25064cf3e59a8cafaff083808f2b75d",
                     "quantity": 10,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
@@ -283,7 +267,7 @@
                             "price_category_name": "Elite",
                             "price_category_percentage": 3.5,
                             "price_category_set_default": true,
-                            "price": 0
+                            "price": 3043139
                         },
                         {
                             "id": null,
@@ -292,37 +276,10 @@
                             "price_category_name": "Gold",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
-                            "price": 10000
+                            "price": 3087240
                         }
                     ],
                     "discount_percentage": 5,
-                    "status": true
-                },
-                {
-                    "id": null,
-                    "inventory_product_volume_discount_variant_id": null,
-                    "quantity": 20,
-                    "inventory_product_volume_discount_variant_price_categories": [
-                        {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 1,
-                            "price_category_name": "Elite",
-                            "price_category_percentage": 3.5,
-                            "price_category_set_default": true,
-                            "price": 0
-                        },
-                        {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 3,
-                            "price_category_name": "Gold",
-                            "price_category_percentage": 5,
-                            "price_category_set_default": false,
-                            "price": 40000
-                        }
-                    ],
-                    "discount_percentage": 10,
                     "status": true
                 }
             ],

@@ -60,6 +60,8 @@ import { InventoryProductGlobalDiscountHistory } from "../../modules/inventory-p
 import { InventoryProductGlobalDiscountPriceCategoryHistory } from "../../modules/inventory-price/domain/entities/inventory-product-global-discount-price-category-history.entity";
 import { InventoryProductGlobalDiscountPriceCategory } from "../../modules/inventory-price/domain/entities/inventory-product-global-discount-price-category.entity";
 import { InventoryProductGlobalDiscount } from "../../modules/inventory-price/domain/entities/inventory-product-global-discount.entity";
+import { InventoryProductMarketplaceCategoryPriceHistory } from "../../modules/inventory-price/domain/entities/inventory-product-marketplace-category-price-history.entity";
+import { InventoryProductMarketplaceCategoryPrice } from "../../modules/inventory-price/domain/entities/inventory-product-marketplace-category-price.entity";
 import { InventoryProductPricingInformationHistory } from "../../modules/inventory-price/domain/entities/inventory-product-pricing-information-history.entity";
 import { InventoryProductPricingInformation } from "../../modules/inventory-price/domain/entities/inventory-product-pricing-information.entity";
 import { InventoryProductVolumeDiscountVariantHistory } from "../../modules/inventory-price/domain/entities/inventory-product-volume-discount-variant-history.entity";
@@ -133,6 +135,8 @@ import { InventoryProductPriceSeeder } from "./inventory-product-price.seeder";
           InventoryProductVolumeDiscountVariantPriceCatHis,
           InventoryProductVolumeDiscountVariantQty,
           InventoryProductVolumeDiscountVariantQtyHis,
+          InventoryProductMarketplaceCategoryPrice,
+          InventoryProductMarketplaceCategoryPriceHistory,
         ],
         synchronize: false,
       }),
@@ -183,6 +187,8 @@ import { InventoryProductPriceSeeder } from "./inventory-product-price.seeder";
       InventoryProductGlobalDiscountPriceCategoryHistory,
       InventoryProductVolumeDiscountVariantHistory,
       InventoryProductVolumeDiscountVariantPriceCatHis,
+      InventoryProductMarketplaceCategoryPrice,
+      InventoryProductMarketplaceCategoryPriceHistory,
     ]),
   ],
   providers: [

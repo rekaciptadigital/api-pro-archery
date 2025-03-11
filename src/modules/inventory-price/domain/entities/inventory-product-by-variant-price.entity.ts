@@ -1,16 +1,8 @@
-import {
-  Entity,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  BeforeInsert,
-  ManyToOne,
-  JoinColumn,
-} from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
-import { randomBytes } from "crypto";
-import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
 import { InventoryProductByVariant } from "@/modules/inventory/domain/entities/inventory-product-by-variant.entity";
+import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
+import { randomBytes } from "crypto";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 
 @Entity("inventory_product_by_variant_prices")
 export class InventoryProductByVariantPrice extends VarPrimary {
