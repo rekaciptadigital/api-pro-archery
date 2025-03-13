@@ -1,6 +1,6 @@
-import { Entity, Column, CreateDateColumn, BeforeInsert } from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
+import { BeforeInsert, Column, Entity } from "typeorm";
 
 @Entity("inventory_product_marketplace_category_price_histories")
 export class InventoryProductMarketplaceCategoryPriceHistory extends VarPrimary {
@@ -11,13 +11,22 @@ export class InventoryProductMarketplaceCategoryPriceHistory extends VarPrimary 
   price_category_id: number;
 
   @Column({ type: "varchar", length: 255, nullable: false })
-  price_category_name: string;
+  old_price_category_name: string;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  new_price_category_name: string;
 
   @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
-  price_category_percentage: number;
+  old_price_category_percentage: number;
+
+  @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
+  new_price_category_percentage: number;
 
   @Column({ type: "boolean", default: false, nullable: false })
-  price_category_set_default: boolean;
+  old_price_category_set_default: boolean;
+
+  @Column({ type: "boolean", default: false, nullable: false })
+  new_price_category_set_default: boolean;
 
   @Column({
     type: "numeric",
@@ -26,23 +35,28 @@ export class InventoryProductMarketplaceCategoryPriceHistory extends VarPrimary 
     default: 0,
     nullable: false,
   })
-  price: number;
+  old_price: number;
+
+  @Column({
+    type: "numeric",
+    precision: 19,
+    scale: 2,
+    default: 0,
+    nullable: false,
+  })
+  new_price: number;
 
   @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
-  price_category_custom_percentage: number;
+  old_price_category_custom_percentage: number;
+
+  @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
+  new_price_category_custom_percentage: number;
 
   @Column({ type: "boolean", default: false, nullable: false })
-  is_custom_price_category: boolean;
+  old_is_custom_price_category: boolean;
 
-  @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
-  created_at: Date;
-
-  @CreateDateColumn({
-    type: "timestamp",
-    default: () => "CURRENT_TIMESTAMP",
-    onUpdate: "CURRENT_TIMESTAMP",
-  })
-  updated_at: Date;
+  @Column({ type: "boolean", default: false, nullable: false })
+  new_is_custom_price_category: boolean;
 
   @BeforeInsert()
   generateId() {

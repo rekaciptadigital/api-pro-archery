@@ -1,6 +1,6 @@
-import { Entity, Column, CreateDateColumn, BeforeInsert } from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
+import { BeforeInsert, Column, Entity } from "typeorm";
 
 @Entity("inventory_product_global_discount_histories")
 export class InventoryProductGlobalDiscountHistory extends VarPrimary {
@@ -8,10 +8,16 @@ export class InventoryProductGlobalDiscountHistory extends VarPrimary {
   inventory_product_pricing_information_history_id: string;
 
   @Column({ type: "integer", default: 0 })
-  quantity: number;
+  old_quantity: number;
+
+  @Column({ type: "integer", default: 0 })
+  new_quantity: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2 })
-  discount_percentage: number;
+  old_discount_percentage: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2 })
+  new_discount_percentage: number;
 
   @BeforeInsert()
   generateId() {

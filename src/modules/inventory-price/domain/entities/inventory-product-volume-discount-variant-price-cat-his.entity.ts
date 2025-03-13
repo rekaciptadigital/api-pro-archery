@@ -8,20 +8,32 @@ export class InventoryProductVolumeDiscountVariantPriceCatHis extends VarPrimary
   @Column({ type: "varchar", length: 255, nullable: false })
   inventory_product_vol_disc_variant_qty_his_id: string;
 
-  @Column({ type: "varchar", length: 255, nullable: false })
-  price_category_type: string;
-
   @Column({ type: "bigint", nullable: false })
   price_category_id: number;
 
   @Column({ type: "varchar", length: 255, nullable: false })
-  price_category_name: string;
+  old_price_category_type: string;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  new_price_category_type: string;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  old_price_category_name: string;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  new_price_category_name: string;
 
   @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
-  price_category_percentage: number;
+  old_price_category_percentage: number;
+
+  @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
+  new_price_category_percentage: number;
 
   @Column({ type: "boolean", default: false, nullable: false })
-  price_category_set_default: boolean;
+  old_price_category_set_default: boolean;
+
+  @Column({ type: "boolean", default: false, nullable: false })
+  new_price_category_set_default: boolean;
 
   @Column({
     type: "numeric",
@@ -30,7 +42,16 @@ export class InventoryProductVolumeDiscountVariantPriceCatHis extends VarPrimary
     default: 0,
     nullable: false,
   })
-  price: number;
+  old_price: number;
+
+  @Column({
+    type: "numeric",
+    precision: 19,
+    scale: 2,
+    default: 0,
+    nullable: false,
+  })
+  new_price: number;
 
   @ManyToOne(
     () => InventoryProductVolumeDiscountVariantQtyHis,

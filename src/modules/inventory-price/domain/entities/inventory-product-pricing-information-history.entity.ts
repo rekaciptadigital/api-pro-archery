@@ -1,15 +1,8 @@
-import {
-  Entity,
-  Column,
-  CreateDateColumn,
-  BeforeInsert,
-  ManyToOne,
-  JoinColumn,
-} from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
-import { randomBytes } from "crypto";
 import { InventoryProduct } from "@/modules/inventory/domain/entities/inventory-product.entity";
 import { User } from "@/modules/users/domain/entities/user.entity";
+import { randomBytes } from "crypto";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 
 @Entity("inventory_product_pricing_information_histories")
 export class InventoryProductPricingInformationHistory extends VarPrimary {
@@ -24,28 +17,52 @@ export class InventoryProductPricingInformationHistory extends VarPrimary {
   inventory_product: InventoryProduct;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  usd_price: number;
+  old_usd_price: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  exchange_rate: number;
+  new_usd_price: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  adjustment_percentage: number;
+  old_exchange_rate: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  price_hb_real: number;
+  new_exchange_rate: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  hb_adjustment_price: number;
+  old_adjustment_percentage: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_adjustment_percentage: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  old_price_hb_real: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_price_hb_real: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  old_hb_adjustment_price: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_hb_adjustment_price: number;
 
   @Column({ type: "boolean", default: false })
-  is_manual_product_variant_price_edit: boolean;
+  old_is_manual_product_variant_price_edit: boolean;
 
   @Column({ type: "boolean", default: false })
-  is_enable_volume_discount: boolean;
+  new_is_manual_product_variant_price_edit: boolean;
 
   @Column({ type: "boolean", default: false })
-  is_enable_volume_discount_by_product_variant: boolean;
+  old_is_enable_volume_discount: boolean;
+
+  @Column({ type: "boolean", default: false })
+  new_is_enable_volume_discount: boolean;
+
+  @Column({ type: "boolean", default: false })
+  old_is_enable_volume_discount_by_product_variant: boolean;
+
+  @Column({ type: "boolean", default: false })
+  new_is_enable_volume_discount_by_product_variant: boolean;
 
   @Column({ type: "bigint" })
   user_id: number;

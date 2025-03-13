@@ -25,35 +25,62 @@ export class InventoryProductByVariantPriceHistory extends VarPrimary {
   price_category_id: number;
 
   @Column({ type: "varchar", length: 255, nullable: false })
-  price_category_type: string;
+  old_price_category_type: string;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  new_price_category_type: string;
 
   @Column({ type: "varchar", length: 255 })
-  price_category_name: string;
+  old_price_category_name: string;
+
+  @Column({ type: "varchar", length: 255 })
+  new_price_category_name: string;
 
   @Column({ type: "numeric", precision: 10, scale: 2 })
-  price_category_percentage: number;
+  old_price_category_percentage: number;
+
+  @Column({ type: "numeric", precision: 10, scale: 2 })
+  new_price_category_percentage: number;
 
   @Column({ type: "boolean", default: false })
-  price_category_set_default: boolean;
+  old_price_category_set_default: boolean;
+
+  @Column({ type: "boolean", default: false })
+  new_price_category_set_default: boolean;
 
   @ManyToOne(() => PriceCategory)
   @JoinColumn({ name: "price_category_id" })
   price_category: PriceCategory;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  price: number;
+  old_price: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_price: number;
 
   @Column({ type: "boolean", default: true })
-  status: boolean;
+  old_status: boolean;
+
+  @Column({ type: "boolean", default: true })
+  new_status: boolean;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  usd_price: number;
+  old_usd_price: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  exchange_rate: number;
+  new_usd_price: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  adjustment_percentage: number;
+  old_exchange_rate: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_exchange_rate: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  old_adjustment_percentage: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_adjustment_percentage: number;
 
   @BeforeInsert()
   generateId() {

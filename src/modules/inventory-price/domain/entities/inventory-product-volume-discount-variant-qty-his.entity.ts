@@ -17,10 +17,16 @@ export class InventoryProductVolumeDiscountVariantQtyHis extends VarPrimary {
   inventory_product_vol_disc_variant_his_id: string;
 
   @Column({ type: "integer", default: 0 })
-  quantity: number;
+  old_quantity: number;
+
+  @Column({ type: "integer", default: 0 })
+  new_quantity: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2 })
-  discount_percentage: number;
+  old_discount_percentage: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2 })
+  new_discount_percentage: number;
 
   @ManyToOne(
     () => InventoryProductVolumeDiscountVariantHistory,

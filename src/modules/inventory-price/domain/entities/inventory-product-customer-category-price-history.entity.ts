@@ -11,31 +11,55 @@ export class InventoryProductCustomerCategoryPriceHistory extends VarPrimary {
   price_category_id: number;
 
   @Column({ type: "varchar", length: 255 })
-  price_category_name: string;
+  old_price_category_name: string;
+
+  @Column({ type: "varchar", length: 255 })
+  new_price_category_name: string;
 
   @Column({ type: "numeric", precision: 10, scale: 2 })
-  price_category_percentage: number;
+  old_price_category_percentage: number;
+
+  @Column({ type: "numeric", precision: 10, scale: 2 })
+  new_price_category_percentage: number;
 
   @Column({ type: "boolean", default: false })
-  price_category_set_default: boolean;
+  old_price_category_set_default: boolean;
+
+  @Column({ type: "boolean", default: false })
+  new_price_category_set_default: boolean;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  pre_tax_price: number;
+  old_pre_tax_price: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  tax_inclusive_price: number;
+  new_pre_tax_price: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  old_tax_inclusive_price: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_tax_inclusive_price: number;
 
   @Column({ type: "bigint" })
   tax_id: number;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  tax_percentage: number;
+  old_tax_percentage: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_tax_percentage: number;
 
   @Column({ type: "boolean", default: false })
-  is_custom_tax_inclusive_price: boolean;
+  old_is_custom_tax_inclusive_price: boolean;
+
+  @Column({ type: "boolean", default: false })
+  new_is_custom_tax_inclusive_price: boolean;
 
   @Column({ type: "numeric", precision: 10, scale: 2 })
-  price_category_custom_percentage: number;
+  old_price_category_custom_percentage: number;
+
+  @Column({ type: "numeric", precision: 10, scale: 2 })
+  new_price_category_custom_percentage: number;
 
   @BeforeInsert()
   generateId() {

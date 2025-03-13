@@ -1,17 +1,15 @@
-import {
-  Entity,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  BeforeInsert,
-  ManyToOne,
-  JoinColumn,
-  OneToMany,
-} from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
-import { InventoryProductPricingInformation } from "./inventory-product-pricing-information.entity";
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm";
 import { InventoryProductGlobalDiscountPriceCategory } from "./inventory-product-global-discount-price-category.entity";
+import { InventoryProductPricingInformation } from "./inventory-product-pricing-information.entity";
 
 @Entity("inventory_product_global_discounts")
 export class InventoryProductGlobalDiscount extends VarPrimary {

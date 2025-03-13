@@ -19,7 +19,13 @@ export class InventoryProductMarketplaceCategoryPrice extends BaseEntity {
   @Column({ type: "boolean", default: false, nullable: false })
   price_category_set_default: boolean;
 
-  @Column({ type: "numeric", precision: 19, scale: 2, default: 0, nullable: false })
+  @Column({
+    type: "numeric",
+    precision: 19,
+    scale: 2,
+    default: 0,
+    nullable: false,
+  })
   price: number;
 
   @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })

@@ -7,23 +7,38 @@ export class InventoryProductGlobalDiscountPriceCategoryHistory extends VarPrima
   @Column({ type: "varchar" })
   inventory_product_pricing_information_history_id: string;
 
-  @Column({ type: "varchar", length: 255, nullable: false })
-  price_category_type: string;
-
   @Column({ type: "bigint" })
   price_category_id: number;
 
+  @Column({ type: "varchar", length: 255, nullable: false })
+  old_price_category_type: string;
+
+  @Column({ type: "varchar", length: 255, nullable: false })
+  new_price_category_type: string;
+
   @Column({ type: "varchar", length: 255 })
-  price_category_name: string;
+  old_price_category_name: string;
+
+  @Column({ type: "varchar", length: 255 })
+  new_price_category_name: string;
 
   @Column({ type: "numeric", precision: 10, scale: 2 })
-  price_category_percentage: number;
+  old_price_category_percentage: number;
+
+  @Column({ type: "numeric", precision: 10, scale: 2 })
+  new_price_category_percentage: number;
 
   @Column({ type: "boolean", default: false })
-  price_category_set_default: boolean;
+  old_price_category_set_default: boolean;
+
+  @Column({ type: "boolean", default: false })
+  new_price_category_set_default: boolean;
 
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
-  price: number;
+  old_price: number;
+
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
+  new_price: number;
 
   @BeforeInsert()
   generateId() {

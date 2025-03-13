@@ -12,13 +12,22 @@ export class InventoryProductVolumeDiscountVariantHistory extends VarPrimary {
   inventory_product_by_variant_id: string;
 
   @Column({ type: "text", nullable: false })
-  inventory_product_by_variant_full_product_name: string;
+  old_inventory_product_by_variant_full_product_name: string;
 
   @Column({ type: "text", nullable: false })
-  inventory_product_by_variant_sku: string;
+  new_inventory_product_by_variant_full_product_name: string;
+
+  @Column({ type: "text", nullable: false })
+  old_inventory_product_by_variant_sku: string;
+
+  @Column({ type: "text", nullable: false })
+  new_inventory_product_by_variant_sku: string;
 
   @Column({ type: "boolean", default: true, nullable: false })
-  status: boolean;
+  old_status: boolean;
+
+  @Column({ type: "boolean", default: true, nullable: false })
+  new_status: boolean;
 
   @OneToMany(
     () => InventoryProductVolumeDiscountVariantQtyHis,
