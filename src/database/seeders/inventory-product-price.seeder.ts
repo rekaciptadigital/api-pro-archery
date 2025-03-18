@@ -116,6 +116,7 @@ export class InventoryProductPriceSeeder implements Seeder {
             tax_id: activeTax?.id || 0,
             tax_percentage: activeTax?.percentage || 0,
             is_custom_tax_inclusive_price: false,
+            price_category_custom_percentage: 0,
             created_at: now,
             updated_at: now,
           });
@@ -130,7 +131,7 @@ export class InventoryProductPriceSeeder implements Seeder {
             price_category_percentage: category.percentage,
             price_category_set_default: category.set_default,
             price: 0,
-            price_category_custom_percentage: category.percentage,
+            price_category_custom_percentage: 0,
             is_custom_price_category: false,
             created_at: now,
             updated_at: now,
@@ -162,6 +163,7 @@ export class InventoryProductPriceSeeder implements Seeder {
               const allPriceCategories = [
                 ...customerPriceCategories,
                 ...customPriceCategories,
+                ...marketplacePriceCategories,
               ];
 
               for (const category of allPriceCategories) {

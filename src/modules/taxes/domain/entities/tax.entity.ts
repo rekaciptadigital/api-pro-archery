@@ -1,17 +1,17 @@
-import { Entity, Column } from 'typeorm';
-import { BaseEntity } from '@/common/entities/base.entity';
+import { Entity, Column } from "typeorm";
+import { BaseEntity } from "@/common/entities/base.entity";
 
-@Entity('taxes')
+@Entity("taxes")
 export class Tax extends BaseEntity {
   @Column()
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   description: string;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2 })
+  @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
   percentage: number;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: "boolean", default: true })
   status: boolean;
 }

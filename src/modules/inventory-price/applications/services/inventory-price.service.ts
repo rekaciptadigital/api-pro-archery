@@ -2,6 +2,8 @@ import { PaginationHelper } from "@/common/pagination/helpers/pagination.helper"
 import { ResponseTransformer } from "@/common/transformers/response.transformer";
 import { InventoryProductByVariantPrice } from "@/modules/inventory-price/domain/entities/inventory-product-by-variant-price.entity";
 import { InventoryProduct } from "@/modules/inventory/domain/entities/inventory-product.entity";
+import { InventoryProductCustomerCategoryPrice } from "@/modules/inventory-price/domain/entities/inventory-product-customer-category-price.entity";
+import { InventoryProductMarketplaceCategoryPrice } from "@/modules/inventory-price/domain/entities/inventory-product-marketplace-category-price.entity";
 import {
   BadRequestException,
   ConflictException,
@@ -13,6 +15,10 @@ import { UpdateInventoryPriceDto } from "../../domain/dtos/update-inventory-pric
 import { IInventoryProductCustomerCategoryPrice } from "../../domain/interfaces/inventory-price.interface";
 import { InventoryPriceRepository } from "../../domain/repositories/inventory-price.repository";
 import { randomBytes } from "crypto";
+import { InventoryProductPricingInformationHistory } from "../../domain/entities/inventory-product-pricing-information-history.entity";
+
+import { InventoryProductGlobalDiscount } from "../../domain/entities/inventory-product-global-discount.entity";
+import { InventoryProductGlobalDiscountHistory } from "../../domain/entities/inventory-product-global-discount-history.entity";
 
 @Injectable()
 export class InventoryPriceService {
@@ -29,6 +35,7 @@ export class InventoryPriceService {
       .select([
         "v.id as variant_id",
         "v.full_product_name as variant_name",
+        "v.sku_product_variant as sku_product_variant",
         "v.status",
         "vp.price_category_id",
         "vp.price",
@@ -66,6 +73,7 @@ export class InventoryPriceService {
         variantMap.set(row.variant_id, {
           variant_id: row.variant_id,
           variant_name: row.variant_name,
+          sku_product_variant: row.sku_product_variant,
           status: row.variant_price_status,
           price_categories: [],
           usd_price: Number(row.usd_price),
@@ -160,14 +168,15 @@ export class InventoryPriceService {
       global_volume_discounts:
         pricing.global_discounts?.map((discount) => ({
           id: discount.id,
-          quantity: discount.quantity,
-          discount_percentage: discount.discount_percentage,
+          quantity: Number(discount.quantity),
+          discount_percentage: Number(discount.discount_percentage),
           global_volume_discount_price_categories:
             discount.price_categories?.map((pc) => ({
               id: pc.id,
-              price_category_id: pc.price_category_id,
+              price_category_id: Number(pc.price_category_id),
               price_category_name: pc.price_category_name,
-              price_category_percentage: pc.price_category_percentage,
+              price_category_type: pc.price_category_type,
+              price_category_percentage: Number(pc.price_category_percentage),
               price_category_set_default: pc.price_category_set_default,
               price: Number(pc.price),
             })) || [],
@@ -179,17 +188,21 @@ export class InventoryPriceService {
           id: variant.id,
           variant_id: variant.inventory_product_by_variant_id,
           variant_name: variant.inventory_product_by_variant_full_product_name,
+          variant_sku: variant.inventory_product_by_variant_sku,
           inventory_product_volume_discount_variant_quantities:
             variant.quantities?.map((qty) => ({
               id: qty.id,
-              quantity: qty.quantity,
-              discount_percentage: qty.discount_percentage,
+              quantity: Number(qty.quantity),
+              discount_percentage: Number(qty.discount_percentage),
               inventory_product_volume_discount_variant_price_categories:
                 qty.price_categories?.map((pc) => ({
                   id: pc.id,
-                  price_category_id: pc.price_category_id,
+                  price_category_id: Number(pc.price_category_id),
                   price_category_name: pc.price_category_name,
-                  price_category_percentage: pc.price_category_percentage,
+                  price_category_type: pc.price_category_type,
+                  price_category_percentage: Number(
+                    pc.price_category_percentage
+                  ),
                   price_category_set_default: pc.price_category_set_default,
                   price: Number(pc.price),
                 })) || [],
@@ -496,6 +509,32 @@ export class InventoryPriceService {
         }
       }
 
+      // 3. Validate marketplace category price IDs
+      if (updateInventoryPriceDto.marketplace_category_prices) {
+        for (const marketplacePrice of updateInventoryPriceDto.marketplace_category_prices) {
+          const existingMarketplacePrice = await this.dataSource
+            .getRepository("inventory_product_marketplace_category_prices")
+            .findOne({ where: { id: marketplacePrice.id } });
+
+          if (!existingMarketplacePrice) {
+            throw new NotFoundException(
+              `Marketplace category price with ID ${marketplacePrice.id} not found`
+            );
+          }
+
+          // Validate price category ID in marketplace category prices
+          const priceCategory = await this.dataSource
+            .getRepository("price_categories")
+            .findOne({ where: { id: marketplacePrice.price_category_id } });
+
+          if (!priceCategory) {
+            throw new NotFoundException(
+              `Price category with ID ${marketplacePrice.price_category_id} not found`
+            );
+          }
+        }
+      }
+
       // 3. Validate product variant price IDs if provided
       if (updateInventoryPriceDto.product_variant_prices) {
         for (const variantPrice of updateInventoryPriceDto.product_variant_prices) {
@@ -614,7 +653,8 @@ export class InventoryPriceService {
 
   async updateByProductId(
     productId: number,
-    updateInventoryPriceDto: UpdateInventoryPriceDto
+    updateInventoryPriceDto: UpdateInventoryPriceDto,
+    userId: number
   ) {
     // Validate inventory product existence
     await this.validateInventoryProduct(productId);
@@ -649,6 +689,40 @@ export class InventoryPriceService {
     await queryRunner.startTransaction();
 
     try {
+      // Save pricing history before update
+      const pricingHistory = queryRunner.manager.create(
+        InventoryProductPricingInformationHistory,
+        {
+          inventory_product_pricing_information: pricing.id,
+          inventory_product_id: pricing.inventory_product_id,
+          old_usd_price: pricing.usd_price,
+          new_usd_price: updateInventoryPriceDto.usd_price,
+          old_exchange_rate: pricing.exchange_rate,
+          new_exchange_rate: updateInventoryPriceDto.exchange_rate,
+          old_adjustment_percentage: pricing.adjustment_percentage,
+          new_adjustment_percentage:
+            updateInventoryPriceDto.adjustment_percentage,
+          old_price_hb_real: pricing.price_hb_real,
+          new_price_hb_real: updateInventoryPriceDto.price_hb_real,
+          old_hb_adjustment_price: pricing.hb_adjustment_price,
+          new_hb_adjustment_price: updateInventoryPriceDto.hb_adjustment_price,
+          old_is_manual_product_variant_price_edit:
+            pricing.is_manual_product_variant_price_edit,
+          new_is_manual_product_variant_price_edit:
+            updateInventoryPriceDto.is_manual_product_variant_price_edit,
+          old_is_enable_volume_discount: pricing.is_enable_volume_discount,
+          new_is_enable_volume_discount:
+            updateInventoryPriceDto.is_enable_volume_discount,
+          old_is_enable_volume_discount_by_product_variant:
+            pricing.is_enable_volume_discount_by_product_variant,
+          new_is_enable_volume_discount_by_product_variant:
+            updateInventoryPriceDto.is_enable_volume_discount_by_product_variant,
+          user_id: userId,
+        }
+      );
+
+      await queryRunner.manager.save(pricingHistory);
+
       // Update main pricing information
       await queryRunner.manager.update(
         "inventory_product_pricing_informations",
@@ -671,20 +745,121 @@ export class InventoryPriceService {
       // Update customer category prices
       if (updateInventoryPriceDto.customer_category_prices) {
         for (const categoryPrice of updateInventoryPriceDto.customer_category_prices) {
-          await queryRunner.manager.update(
-            "inventory_product_customer_category_prices",
-            { id: categoryPrice.id },
-            {
-              pre_tax_price: categoryPrice.pre_tax_price,
-              tax_inclusive_price: categoryPrice.tax_inclusive_price,
-              tax_id: categoryPrice.tax_id,
-              tax_percentage: categoryPrice.tax_percentage,
-              is_custom_tax_inclusive_price:
-                categoryPrice.is_custom_tax_inclusive_price,
-              price_category_custom_percentage:
-                categoryPrice.price_category_custom_percentage,
-            }
+          // Get existing customer category price data
+          const existingCategoryPrice = await queryRunner.manager.findOne(
+            InventoryProductCustomerCategoryPrice,
+            { where: { id: categoryPrice.id } }
           );
+
+          if (existingCategoryPrice) {
+            // Create history record
+            await queryRunner.manager.create(
+              "inventory_product_customer_category_price_histories",
+              {
+                inventory_product_pricing_information_history_id:
+                  pricingHistory.id,
+                price_category_id: existingCategoryPrice.price_category_id,
+                old_price_category_name:
+                  existingCategoryPrice.price_category_name,
+                new_price_category_name: categoryPrice.price_category_name,
+                old_price_category_percentage:
+                  existingCategoryPrice.price_category_percentage,
+                new_price_category_percentage: categoryPrice.percentage,
+                old_price_category_set_default:
+                  existingCategoryPrice.price_category_set_default,
+                new_price_category_set_default: categoryPrice.set_default,
+                old_pre_tax_price: existingCategoryPrice.pre_tax_price,
+                new_pre_tax_price: categoryPrice.pre_tax_price,
+                old_tax_inclusive_price:
+                  existingCategoryPrice.tax_inclusive_price,
+                new_tax_inclusive_price: categoryPrice.tax_inclusive_price,
+                tax_id: categoryPrice.tax_id,
+                old_tax_percentage: existingCategoryPrice.tax_percentage,
+                new_tax_percentage: categoryPrice.tax_percentage,
+                old_is_custom_tax_inclusive_price:
+                  existingCategoryPrice.is_custom_tax_inclusive_price,
+                new_is_custom_tax_inclusive_price:
+                  categoryPrice.is_custom_tax_inclusive_price,
+                old_price_category_custom_percentage:
+                  existingCategoryPrice.price_category_custom_percentage,
+                new_price_category_custom_percentage:
+                  categoryPrice.price_category_custom_percentage,
+              }
+            );
+
+            // Update the customer category price
+            await queryRunner.manager.update(
+              "inventory_product_customer_category_prices",
+              { id: categoryPrice.id },
+              {
+                pre_tax_price: categoryPrice.pre_tax_price,
+                tax_inclusive_price: categoryPrice.tax_inclusive_price,
+                tax_id: categoryPrice.tax_id,
+                tax_percentage: categoryPrice.tax_percentage,
+                is_custom_tax_inclusive_price:
+                  categoryPrice.is_custom_tax_inclusive_price,
+                price_category_custom_percentage:
+                  categoryPrice.price_category_custom_percentage,
+              }
+            );
+          }
+        }
+      }
+
+      // Update marketplace category prices
+      if (updateInventoryPriceDto.marketplace_category_prices) {
+        for (const marketplacePrice of updateInventoryPriceDto.marketplace_category_prices) {
+          // Get existing marketplace category price data
+          const existingMarketplacePrice = await queryRunner.manager.findOne(
+            InventoryProductMarketplaceCategoryPrice,
+            { where: { id: marketplacePrice.id } }
+          );
+
+          if (existingMarketplacePrice) {
+            // Create history record
+            await queryRunner.manager.create(
+              "inventory_product_marketplace_category_price_histories",
+              {
+                inventory_product_pricing_information_history_id:
+                  pricingHistory.id,
+                price_category_id: existingMarketplacePrice.price_category_id,
+                old_price_category_name:
+                  existingMarketplacePrice.price_category_name,
+                new_price_category_name: marketplacePrice.price_category_name,
+                old_price_category_percentage:
+                  existingMarketplacePrice.price_category_percentage,
+                new_price_category_percentage:
+                  marketplacePrice.price_category_percentage,
+                old_price_category_set_default:
+                  existingMarketplacePrice.price_category_set_default,
+                new_price_category_set_default:
+                  marketplacePrice.price_category_set_default,
+                old_price: existingMarketplacePrice.price,
+                new_price: marketplacePrice.price,
+                old_price_category_custom_percentage:
+                  existingMarketplacePrice.price_category_custom_percentage,
+                new_price_category_custom_percentage:
+                  marketplacePrice.price_category_custom_percentage,
+                old_is_custom_price_category:
+                  existingMarketplacePrice.is_custom_price_category,
+                new_is_custom_price_category:
+                  marketplacePrice.is_custom_price_category,
+              }
+            );
+
+            // Update the marketplace category price
+            await queryRunner.manager.update(
+              "inventory_product_marketplace_category_prices",
+              { id: marketplacePrice.id },
+              {
+                price: marketplacePrice.price,
+                price_category_custom_percentage:
+                  marketplacePrice.price_category_custom_percentage,
+                is_custom_price_category:
+                  marketplacePrice.is_custom_price_category,
+              }
+            );
+          }
         }
       }
 
@@ -774,6 +949,29 @@ export class InventoryPriceService {
       if (updateInventoryPriceDto.global_volume_discounts) {
         for (const discount of updateInventoryPriceDto.global_volume_discounts) {
           if (discount.id) {
+            // Get existing global discount data
+            const existingGlobalDiscount = await queryRunner.manager.findOne(
+              InventoryProductGlobalDiscount,
+              { where: { id: discount.id } }
+            );
+
+            // Create history record for existing global discount
+            await queryRunner.manager.create(
+              InventoryProductGlobalDiscountHistory,
+              {
+                inventory_product_pricing_information_history_id:
+                  pricingHistory.id,
+                old_quantity: existingGlobalDiscount
+                  ? existingGlobalDiscount.quantity
+                  : 0,
+                new_quantity: discount.quantity,
+                old_discount_percentage: existingGlobalDiscount
+                  ? existingGlobalDiscount.discount_percentage
+                  : 0,
+                new_discount_percentage: discount.discount_percentage,
+              }
+            );
+
             await queryRunner.manager.update(
               "inventory_product_global_discounts",
               { id: discount.id },
@@ -783,6 +981,19 @@ export class InventoryPriceService {
               }
             );
           } else {
+            // Create history record for new global discount
+            await queryRunner.manager.create(
+              InventoryProductGlobalDiscountHistory,
+              {
+                inventory_product_pricing_information_history_id:
+                  pricingHistory.id,
+                old_quantity: 0,
+                new_quantity: discount.quantity,
+                old_discount_percentage: 0,
+                new_discount_percentage: discount.discount_percentage,
+              }
+            );
+
             const newDiscount = await queryRunner.manager
               .getRepository("inventory_product_global_discounts")
               .save({
@@ -804,6 +1015,7 @@ export class InventoryPriceService {
                     inventory_product_global_discount_id: newDiscount.id,
                     price_category_id: category.price_category_id,
                     price_category_name: category.price_category_name,
+                    price_category_type: category.price_category_type,
                     price_category_percentage:
                       category.price_category_percentage,
                     price_category_set_default:
@@ -877,6 +1089,7 @@ export class InventoryPriceService {
                         quantityEntity.id,
                       price_category_id: category.price_category_id,
                       price_category_name: category.price_category_name,
+                      price_category_type: category.price_category_type,
                       price_category_percentage:
                         category.price_category_percentage,
                       price_category_set_default:

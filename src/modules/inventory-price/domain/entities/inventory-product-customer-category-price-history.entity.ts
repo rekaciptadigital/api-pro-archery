@@ -55,10 +55,10 @@ export class InventoryProductCustomerCategoryPriceHistory extends VarPrimary {
   @Column({ type: "boolean", default: false })
   new_is_custom_tax_inclusive_price: boolean;
 
-  @Column({ type: "numeric", precision: 10, scale: 2 })
+  @Column({ type: "numeric", precision: 10, scale: 2, default: 0 })
   old_price_category_custom_percentage: number;
 
-  @Column({ type: "numeric", precision: 10, scale: 2 })
+  @Column({ type: "numeric", precision: 10, scale: 2, default: 0 })
   new_price_category_custom_percentage: number;
 
   @BeforeInsert()

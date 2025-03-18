@@ -59,6 +59,40 @@ class CustomerCategoryPriceDto {
   price_category_custom_percentage: number;
 }
 
+class MarketplaceCategoryPriceDto {
+  @ApiProperty()
+  @IsNumber()
+  id: number;
+
+  @ApiProperty()
+  @IsNumber()
+  price_category_id: number;
+
+  @ApiProperty()
+  @IsString()
+  price_category_name: string;
+
+  @ApiProperty()
+  @IsNumber()
+  price_category_percentage: number;
+
+  @ApiProperty()
+  @IsBoolean()
+  price_category_set_default: boolean;
+
+  @ApiProperty()
+  @IsNumber()
+  price: number;
+
+  @ApiProperty()
+  @IsNumber()
+  price_category_custom_percentage: number;
+
+  @ApiProperty()
+  @IsBoolean()
+  is_custom_price_category: boolean;
+}
+
 class PriceCategoryDto {
   @ApiProperty()
   @IsNumber()
@@ -98,6 +132,10 @@ class ProductVariantPriceDto {
   @ApiProperty()
   @IsString()
   variant_name: string;
+
+  @ApiProperty()
+  @IsString()
+  sku_product_variant: string;
 
   @ApiProperty()
   @IsNumber()
@@ -140,6 +178,10 @@ class GlobalVolumeDiscountPriceCategoryDto {
   @ApiProperty()
   @IsString()
   price_category_name: string;
+
+  @ApiProperty()
+  @IsString()
+  price_category_type: string;
 
   @ApiProperty()
   @IsNumber()
@@ -197,6 +239,10 @@ class VariantVolumeDiscountPriceCategoryDto {
   @ApiProperty()
   @IsString()
   price_category_name: string;
+
+  @ApiProperty()
+  @IsString()
+  price_category_type: string;
 
   @ApiProperty()
   @IsNumber()
@@ -316,6 +362,12 @@ export class UpdateInventoryPriceDto {
   @ValidateNested({ each: true })
   @Type(() => CustomerCategoryPriceDto)
   customer_category_prices: CustomerCategoryPriceDto[];
+
+  @ApiProperty({ type: [MarketplaceCategoryPriceDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MarketplaceCategoryPriceDto)
+  marketplace_category_prices: MarketplaceCategoryPriceDto[];
 
   @ApiProperty({ type: [ProductVariantPriceDto] })
   @IsArray()

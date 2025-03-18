@@ -13,7 +13,7 @@ export class InventoryProductCustomerCategoryPrice extends BaseWithoutDeleteEnti
   @Column({ type: "varchar", length: 255 })
   price_category_name: string;
 
-  @Column({ type: "numeric", precision: 10, scale: 2 })
+  @Column({ type: "numeric", precision: 10, scale: 2, default: 0 })
   price_category_percentage: number;
 
   @Column({ type: "boolean", default: false })
@@ -34,7 +34,7 @@ export class InventoryProductCustomerCategoryPrice extends BaseWithoutDeleteEnti
   @Column({ type: "boolean", default: false })
   is_custom_tax_inclusive_price: boolean;
 
-  @Column({ type: "numeric", precision: 10, scale: 2 })
+  @Column({ type: "numeric", precision: 10, scale: 2, default: 0 })
   price_category_custom_percentage: number;
 
   @ManyToOne(

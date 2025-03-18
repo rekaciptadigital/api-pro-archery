@@ -1,10 +1,10 @@
 {
-    "id": 8,
-    "usd_price": 150.3,
-    "exchange_rate": 18000,
+    "id": 1,
+    "usd_price": 100,
+    "exchange_rate": 15000,
     "adjustment_percentage": 10,
-    "price_hb_real": 2705400,
-    "hb_adjustment_price": 2975940,
+    "price_hb_real": 1500000,
+    "hb_adjustment_price": 1650000,
     "is_manual_product_variant_price_edit": true,
     "is_enable_volume_discount": true,
     "is_enable_volume_discount_by_product_variant": false,
@@ -16,12 +16,12 @@
             "formula": "Formula: HB Naik + 3.5% markup",
             "percentage": 3.5,
             "set_default": true,
-            "pre_tax_price": 3080100,
-            "tax_inclusive_price": 3203304,
+            "pre_tax_price": 1732500,
+            "tax_inclusive_price": 1801800,
             "tax_id": 2,
             "tax_percentage": 4,
-            "is_custom_tax_inclusive_price": false,
-            "price_category_custom_percentage": 0
+            "is_custom_tax_inclusive_price": true,
+            "price_category_custom_percentage": 5
         },
         {
             "id": 16,
@@ -30,26 +30,39 @@
             "formula": "Formula: HB Naik + 5.0% markup",
             "percentage": 5,
             "set_default": false,
-            "pre_tax_price": 3124737,
-            "tax_inclusive_price": 3249726,
+            "pre_tax_price": 1815000,
+            "tax_inclusive_price": 1887600,
             "tax_id": 2,
             "tax_percentage": 4,
-            "is_custom_tax_inclusive_price": false,
-            "price_category_custom_percentage": 0
+            "is_custom_tax_inclusive_price": true,
+            "price_category_custom_percentage": 10
+        }
+    ],
+    "marketplace_category_prices": [
+        {
+            "id": 1,
+            "price_category_id": 2,
+            "price_category_name": "lazoda",
+            "price_category_percentage": 4,
+            "price_category_set_default": false,
+            "price": 1945944,
+            "price_category_custom_percentage": 8,
+            "is_custom_price_category": true
         }
     ],
     "product_variant_prices": [
         {
             "variant_id": "6395d972abe42ef28c0c51bc37j7b0e3i3",
             "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Blue",
-            "usd_price": 150.3,
-            "exchange_rate": 18000,
-            "adjustment_percentage": 10,
+            "sku_product_variant": "ARRP99938-1235",
+            "usd_price": 100,
+            "exchange_rate": 15000,
+            "adjustment_percentage": 30,
             "status": true,
             "price_categories": [
                 {
                     "id": 1,
-                    "price": 3203304,
+                    "price": 2272725,
                     "price_category_name": "Elite",
                     "percentage": 3.5,
                     "type": "customer",
@@ -57,10 +70,18 @@
                 },
                 {
                     "id": 3,
-                    "price": 3249726,
+                    "price": 2272725,
                     "price_category_name": "Gold",
                     "percentage": 5,
                     "type": "customer",
+                    "set_default": false
+                },
+                {
+                    "id": 2,
+                    "price": 2272725,
+                    "price_category_name": "lazoda",
+                    "percentage": 4,
+                    "type": "marketplace",
                     "set_default": false
                 }
             ]
@@ -68,14 +89,15 @@
         {
             "variant_id": "b4cf88a1d4ef68b2bc9fd35537j7b0d3jj",
             "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Red",
-            "usd_price": 150.3,
-            "exchange_rate": 18000,
-            "adjustment_percentage": 10,
-            "status": false,
+            "sku_product_variant": "ARRP99938-001",
+            "usd_price": 100,
+            "exchange_rate": 15000,
+            "adjustment_percentage": 30,
+            "status": true,
             "price_categories": [
                 {
                     "id": 1,
-                    "price": 3203304,
+                    "price": 2272725,
                     "price_category_name": "Elite",
                     "percentage": 3.5,
                     "type": "customer",
@@ -83,10 +105,18 @@
                 },
                 {
                     "id": 3,
-                    "price": 3249726,
+                    "price": 2272725,
                     "price_category_name": "Gold",
                     "percentage": 5,
                     "type": "customer",
+                    "set_default": false
+                },
+                {
+                    "id": 2,
+                    "price": 2272725,
+                    "price_category_name": "lazoda",
+                    "percentage": 4,
+                    "type": "marketplace",
                     "set_default": false
                 }
             ]
@@ -94,14 +124,15 @@
         {
             "variant_id": "4e5bcb79ac1ae3a4d0713a6537j7b0d413",
             "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Silver",
-            "usd_price": 150.3,
-            "exchange_rate": 18000,
-            "adjustment_percentage": 10,
+            "sku_product_variant": "ARRP99938-002",
+            "usd_price": 100,
+            "exchange_rate": 15000,
+            "adjustment_percentage": 30,
             "status": true,
             "price_categories": [
                 {
                     "id": 1,
-                    "price": 3203304,
+                    "price": 2272725,
                     "price_category_name": "Elite",
                     "percentage": 3.5,
                     "type": "customer",
@@ -109,10 +140,18 @@
                 },
                 {
                     "id": 3,
-                    "price": 3249726,
+                    "price": 2272725,
                     "price_category_name": "Gold",
                     "percentage": 5,
                     "type": "customer",
+                    "set_default": false
+                },
+                {
+                    "id": 2,
+                    "price": 2272725,
+                    "price_category_name": "lazoda",
+                    "percentage": 4,
+                    "type": "marketplace",
                     "set_default": false
                 }
             ]
@@ -123,6 +162,44 @@
             "id": null,
             "inventory_product_pricing_information_id": 10,
             "quantity": 10,
+            "discount_percentage": 2.5,
+            "global_volume_discount_price_categories": [
+                {
+                    "id": null,
+                    "inventory_product_global_discount_id": null,
+                    "price_category_id": 1,
+                    "price_category_name": "Elite",
+                    "price_category_type": "customer",
+                    "price_category_percentage": 3.5,
+                    "price_category_set_default": true,
+                    "price": 2215907
+                },
+                {
+                    "id": null,
+                    "inventory_product_global_discount_id": null,
+                    "price_category_id": 3,
+                    "price_category_name": "Gold",
+                    "price_category_type": "customer",
+                    "price_category_percentage": 5,
+                    "price_category_set_default": false,
+                    "price": 2215907
+                },
+                {
+                    "id": null,
+                    "inventory_product_global_discount_id": null,
+                    "price_category_id": 2,
+                    "price_category_name": "lazoda",
+                    "price_category_type": "marketplace",
+                    "price_category_percentage": 5,
+                    "price_category_set_default": false,
+                    "price": 2215907
+                }
+            ]
+        },
+        {
+            "id": null,
+            "inventory_product_pricing_information_id": 10,
+            "quantity": 50,
             "discount_percentage": 5,
             "global_volume_discount_price_categories": [
                 {
@@ -130,25 +207,37 @@
                     "inventory_product_global_discount_id": null,
                     "price_category_id": 1,
                     "price_category_name": "Elite",
+                    "price_category_type": "customer",
                     "price_category_percentage": 3.5,
                     "price_category_set_default": true,
-                    "price": 3043139
+                    "price": 2159089
                 },
                 {
                     "id": null,
                     "inventory_product_global_discount_id": null,
                     "price_category_id": 3,
                     "price_category_name": "Gold",
+                    "price_category_type": "customer",
                     "price_category_percentage": 5,
                     "price_category_set_default": false,
-                    "price": 3087240
+                    "price": 2159089
+                },
+                {
+                    "id": null,
+                    "inventory_product_global_discount_id": null,
+                    "price_category_id": 2,
+                    "price_category_name": "lazoda",
+                    "price_category_type": "marketplace",
+                    "price_category_percentage": 5,
+                    "price_category_set_default": false,
+                    "price": 2159089
                 }
             ]
         }
     ],
     "variant_volume_discounts": [
         {
-            "id": "b109fa8df7508661df010df23808f2b76j",
+            "id": "3f1bb1c88f8d07a0971fbc7f380i8jag0d",
             "inventory_product_pricing_information_id": 10,
             "inventory_product_by_variant_id": "6395d972abe42ef28c0c51bc37j7b0e3i3",
             "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Blue",
@@ -156,7 +245,7 @@
             "inventory_product_volume_discount_variant_quantities": [
                 {
                     "id": null,
-                    "inventory_product_volume_discount_variant_id": "b109fa8df7508661df010df23808f2b76j",
+                    "inventory_product_volume_discount_variant_id": "3f1bb1c88f8d07a0971fbc7f380i8jag0d",
                     "quantity": 10,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
@@ -164,45 +253,30 @@
                             "inventory_product_vol_disc_variant_qty_id": null,
                             "price_category_id": 1,
                             "price_category_name": "Elite",
+                            "price_category_type": "customer",
                             "price_category_percentage": 3.5,
                             "price_category_set_default": true,
-                            "price": 3043139
+                            "price": 2159089
                         },
                         {
                             "id": null,
                             "inventory_product_vol_disc_variant_qty_id": null,
                             "price_category_id": 3,
                             "price_category_name": "Gold",
+                            "price_category_type": "customer",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
-                            "price": 3087240
-                        }
-                    ],
-                    "discount_percentage": 5,
-                    "status": true
-                },
-                {
-                    "id": null,
-                    "inventory_product_volume_discount_variant_id": "b109fa8df7508661df010df23808f2b76j",
-                    "quantity": 20,
-                    "inventory_product_volume_discount_variant_price_categories": [
-                        {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 1,
-                            "price_category_name": "Elite",
-                            "price_category_percentage": 3.5,
-                            "price_category_set_default": true,
-                            "price": 3043139
+                            "price": 2159089
                         },
                         {
                             "id": null,
                             "inventory_product_vol_disc_variant_qty_id": null,
                             "price_category_id": 3,
                             "price_category_name": "Gold",
+                            "price_category_type": "marketplace",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
-                            "price": 3087240
+                            "price": 2159089
                         }
                     ],
                     "discount_percentage": 5,
@@ -212,7 +286,7 @@
             "status": true
         },
         {
-            "id": "5c9e7011c157a30142f143fb3808f2b703",
+            "id": "53af7dfddc0be5b260b8a1b6380i8jafi6",
             "inventory_product_pricing_information_id": 10,
             "inventory_product_by_variant_id": "b4cf88a1d4ef68b2bc9fd35537j7b0d3jj",
             "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Red",
@@ -220,7 +294,7 @@
             "inventory_product_volume_discount_variant_quantities": [
                 {
                     "id": null,
-                    "inventory_product_volume_discount_variant_id": "5c9e7011c157a30142f143fb3808f2b703",
+                    "inventory_product_volume_discount_variant_id": "53af7dfddc0be5b260b8a1b6380i8jafi6",
                     "quantity": 10,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
@@ -228,18 +302,30 @@
                             "inventory_product_vol_disc_variant_qty_id": null,
                             "price_category_id": 1,
                             "price_category_name": "Elite",
+                            "price_category_type": "customer",
                             "price_category_percentage": 3.5,
                             "price_category_set_default": true,
-                            "price": 3043139
+                            "price": 2159089
                         },
                         {
                             "id": null,
                             "inventory_product_vol_disc_variant_qty_id": null,
                             "price_category_id": 3,
                             "price_category_name": "Gold",
+                            "price_category_type": "customer",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
-                            "price": 3087240
+                            "price": 2159089
+                        },
+                        {
+                            "id": null,
+                            "inventory_product_vol_disc_variant_qty_id": null,
+                            "price_category_id": 3,
+                            "price_category_name": "Gold",
+                            "price_category_type": "marketplace",
+                            "price_category_percentage": 5,
+                            "price_category_set_default": false,
+                            "price": 2159089
                         }
                     ],
                     "discount_percentage": 5,
@@ -249,7 +335,7 @@
             "status": true
         },
         {
-            "id": "94a25064cf3e59a8cafaff083808f2b75d",
+            "id": "ace772208ea1acc67f2bf497380i8jafjf",
             "inventory_product_pricing_information_id": 10,
             "inventory_product_by_variant_id": "4e5bcb79ac1ae3a4d0713a6537j7b0d413",
             "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Silver",
@@ -257,7 +343,7 @@
             "inventory_product_volume_discount_variant_quantities": [
                 {
                     "id": null,
-                    "inventory_product_volume_discount_variant_id": "94a25064cf3e59a8cafaff083808f2b75d",
+                    "inventory_product_volume_discount_variant_id": "ace772208ea1acc67f2bf497380i8jafjf",
                     "quantity": 10,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
@@ -265,18 +351,30 @@
                             "inventory_product_vol_disc_variant_qty_id": null,
                             "price_category_id": 1,
                             "price_category_name": "Elite",
+                            "price_category_type": "customer",
                             "price_category_percentage": 3.5,
                             "price_category_set_default": true,
-                            "price": 3043139
+                            "price": 2159089
                         },
                         {
                             "id": null,
                             "inventory_product_vol_disc_variant_qty_id": null,
                             "price_category_id": 3,
                             "price_category_name": "Gold",
+                            "price_category_type": "customer",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
-                            "price": 3087240
+                            "price": 2159089
+                        },
+                        {
+                            "id": null,
+                            "inventory_product_vol_disc_variant_qty_id": null,
+                            "price_category_id": 3,
+                            "price_category_name": "Gold",
+                            "price_category_type": "marketplace",
+                            "price_category_percentage": 5,
+                            "price_category_set_default": false,
+                            "price": 2159089
                         }
                     ],
                     "discount_percentage": 5,

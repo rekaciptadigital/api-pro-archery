@@ -19,7 +19,7 @@ export class InventoryProductGlobalDiscount extends VarPrimary {
   @Column({ type: "integer", default: 0 })
   quantity: number;
 
-  @Column({ type: "numeric", precision: 19, scale: 2 })
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   discount_percentage: number;
 
   @ManyToOne(

@@ -46,10 +46,22 @@ export class InventoryProductMarketplaceCategoryPriceHistory extends VarPrimary 
   })
   new_price: number;
 
-  @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
+  @Column({
+    type: "numeric",
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   old_price_category_custom_percentage: number;
 
-  @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
+  @Column({
+    type: "numeric",
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   new_price_category_custom_percentage: number;
 
   @Column({ type: "boolean", default: false, nullable: false })

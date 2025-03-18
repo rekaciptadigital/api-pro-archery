@@ -4,6 +4,7 @@ import { AlterUserSessionIdType1702432800012 } from "@/migrations/1702432800012-
 import { AlterAuthTokenIdType1702432800013 } from "@/migrations/1702432800013-alter-auth-token-id-type";
 import { AddSkuVendorToInventoryProductVariants1702432800014 } from "@/migrations/1702432800014-AddSkuVendorToInventoryProductVariants";
 import { CreateInventoryPriceTables1702432900000 } from "@/migrations/1702432900000-CreateInventoryPriceTables";
+import { CreateInventoryPriceHistoryTables1702433000000 } from "@/migrations/1702433000000-CreateInventoryPriceHistoryTables";
 import { InventoryLocation } from "@/modules/inventory-locations/domain/entities/inventory-location.entity";
 import { InventoryProductByVariantPriceHistory } from "@/modules/inventory-price/domain/entities/inventory-product-by-variant-price-history.entity";
 import { InventoryProductByVariantPrice } from "@/modules/inventory-price/domain/entities/inventory-product-by-variant-price.entity";
@@ -131,6 +132,7 @@ const options: DataSourceOptions = {
     AlterAuthTokenIdType1702432800013,
     AddSkuVendorToInventoryProductVariants1702432800014,
     CreateInventoryPriceTables1702432900000,
+    CreateInventoryPriceHistoryTables1702433000000,
   ],
   synchronize: false,
 };

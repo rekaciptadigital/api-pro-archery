@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Put,
   Body,
+  Req,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from "@nestjs/swagger";
 import { InventoryPriceService } from "../applications/services/inventory-price.service";
@@ -51,8 +52,13 @@ export class InventoryPriceController {
   })
   async updateByProductId(
     @Param("inventory_product_id", ParseIntPipe) productId: number,
-    @Body() updateInventoryPriceDto: UpdateInventoryPriceDto
+    @Body() updateInventoryPriceDto: UpdateInventoryPriceDto,
+    @Req() req: { user: RequestUser }
   ) {
-    return this.inventoryPriceService.updateByProductId(productId, updateInventoryPriceDto);
+    return this.inventoryPriceService.updateByProductId(
+      productId,
+      updateInventoryPriceDto,
+      req.user.id
+    );
   }
 }

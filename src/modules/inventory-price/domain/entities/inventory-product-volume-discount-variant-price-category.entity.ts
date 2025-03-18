@@ -17,7 +17,7 @@ export class InventoryProductVolumeDiscountVariantPriceCategory extends VarPrima
   @Column({ type: "varchar", length: 255 })
   price_category_name: string;
 
-  @Column({ type: "numeric", precision: 10, scale: 2 })
+  @Column({ type: "numeric", precision: 10, scale: 2, default: 0 })
   price_category_percentage: number;
 
   @Column({ type: "boolean", default: false })

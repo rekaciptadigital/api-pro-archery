@@ -12,7 +12,7 @@ export class PriceCategory extends BaseEntity {
   @Column({ type: "text", nullable: true })
   formula: string;
 
-  @Column({ type: "decimal", precision: 10, scale: 2 })
+  @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
   percentage: number;
 
   @Column({ type: "boolean", default: true })

@@ -13,10 +13,10 @@ export class InventoryProductGlobalDiscountHistory extends VarPrimary {
   @Column({ type: "integer", default: 0 })
   new_quantity: number;
 
-  @Column({ type: "numeric", precision: 19, scale: 2 })
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   old_discount_percentage: number;
 
-  @Column({ type: "numeric", precision: 19, scale: 2 })
+  @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   new_discount_percentage: number;
 
   @BeforeInsert()

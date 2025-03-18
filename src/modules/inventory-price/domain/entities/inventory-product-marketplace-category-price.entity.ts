@@ -13,7 +13,13 @@ export class InventoryProductMarketplaceCategoryPrice extends BaseEntity {
   @Column({ type: "varchar", length: 255, nullable: false })
   price_category_name: string;
 
-  @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
+  @Column({
+    type: "numeric",
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   price_category_percentage: number;
 
   @Column({ type: "boolean", default: false, nullable: false })
@@ -28,7 +34,13 @@ export class InventoryProductMarketplaceCategoryPrice extends BaseEntity {
   })
   price: number;
 
-  @Column({ type: "numeric", precision: 10, scale: 2, nullable: false })
+  @Column({
+    type: "numeric",
+    precision: 10,
+    scale: 2,
+    nullable: false,
+    default: 0,
+  })
   price_category_custom_percentage: number;
 
   @Column({ type: "boolean", default: false, nullable: false })

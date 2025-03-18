@@ -88,6 +88,7 @@ export class InventoryPriceRepository extends BaseRepository<InventoryProductPri
         "global_discounts.price_categories",
         "volume_discount_variants",
         "volume_discount_variants.quantities",
+        "volume_discount_variants.quantities.price_categories",
       ],
     });
   }
