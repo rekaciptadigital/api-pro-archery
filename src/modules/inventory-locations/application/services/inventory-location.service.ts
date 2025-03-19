@@ -10,6 +10,7 @@ import { PaginationHelper } from "@/common/pagination/helpers/pagination.helper"
 import { ResponseTransformer } from "@/common/transformers/response.transformer";
 import { DomainException } from "@/common/exceptions/domain.exception";
 import { HttpStatus } from "@nestjs/common";
+import { InventoryLocation } from "../../domain/entities/inventory-location.entity";
 
 @Injectable()
 export class InventoryLocationService {
@@ -31,6 +32,10 @@ export class InventoryLocationService {
       createInventoryLocationDto.type
     );
 
+    await this.inventoryLocationValidator.validateParentId(
+      createInventoryLocationDto.parent_id ?? null
+    );
+
     const location = await this.inventoryLocationRepository.create({
       ...createInventoryLocationDto,
       status: createInventoryLocationDto.status ?? true,
@@ -45,14 +50,47 @@ export class InventoryLocationService {
       query.limit
     );
 
-    const [locations, total] =
-      await this.inventoryLocationRepository.findLocations(
-        skip,
-        take,
-        query.search,
-        query.type,
-        query.status
-      );
+    const allLocations = await this.inventoryLocationRepository.findAll();
+    type LocationWithChildren = InventoryLocation & {
+      children: LocationWithChildren[];
+    };
+    const locationMap = new Map<number, LocationWithChildren>();
+    allLocations.forEach((location) => {
+      locationMap.set(location.id, { ...location, children: [] });
+    });
+
+    const rootLocations: LocationWithChildren[] = [];
+    allLocations.forEach((location) => {
+      const locationWithChildren = locationMap.get(location.id);
+      if (location.parent_id === null) {
+        rootLocations.push(locationWithChildren!);
+      } else {
+        const parent = locationMap.get(location.parent_id);
+        if (parent) {
+          parent.children.push(locationWithChildren!);
+        }
+      }
+    });
+
+    const filteredRootLocations = rootLocations.filter((location) => {
+      if (query.search) {
+        return (
+          location.name.toLowerCase().includes(query.search.toLowerCase()) ||
+          location.code.toLowerCase().includes(query.search.toLowerCase())
+        );
+      }
+      if (query.type) {
+        return location.type === query.type;
+      }
+      if (query.status !== undefined) {
+        return location.status === query.status;
+      }
+      return true;
+    });
+
+    const start = ((query.page || 1) - 1) * take;
+    const paginatedLocations = filteredRootLocations.slice(start, start + take);
+    const total = filteredRootLocations.length;
 
     const paginationData = this.paginationHelper.generatePaginationData({
       serviceName: "inventory-locations",
@@ -63,7 +101,7 @@ export class InventoryLocationService {
     });
 
     return this.responseTransformer.transformPaginated(
-      locations,
+      paginatedLocations,
       total,
       query.page || 1,
       query.limit || 10,
@@ -73,13 +111,36 @@ export class InventoryLocationService {
 
   async findOne(id: number) {
     const location = await this.inventoryLocationRepository.findById(id);
+
     if (!location) {
-      throw new DomainException(
-        "Location not found or has been deleted.",
-        HttpStatus.NOT_FOUND
-      );
+      throw new NotFoundException("Location not found");
     }
-    return this.responseTransformer.transform(location);
+
+    const locationWithParent =
+      await this.getLocationWithParentAndChildren(location);
+    return this.responseTransformer.transform(locationWithParent);
+  }
+
+  private async getLocationWithParentAndChildren(
+    location: InventoryLocation
+  ): Promise<InventoryLocation> {
+    if (location.parent_id) {
+      const parent = await this.inventoryLocationRepository.findById(
+        location.parent_id
+      );
+      if (parent) {
+        const parentWithParentAndChildren =
+          await this.getLocationWithParentAndChildren(parent);
+        location.parent = parentWithParentAndChildren;
+      }
+    }
+
+    const children = await this.inventoryLocationRepository.findChildren(
+      location.id
+    );
+    location.children = children;
+
+    return location;
   }
 
   async update(
@@ -103,6 +164,10 @@ export class InventoryLocationService {
     );
     await this.inventoryLocationValidator.validateType(
       updateInventoryLocationDto.type
+    );
+
+    await this.inventoryLocationValidator.validateParentId(
+      updateInventoryLocationDto.parent_id ?? null
     );
 
     Object.assign(location, updateInventoryLocationDto);

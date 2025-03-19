@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsNotEmpty,
 } from "class-validator";
+import { Transform } from "class-transformer";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class CreateInventoryLocationDto {
@@ -35,6 +36,11 @@ export class CreateInventoryLocationDto {
   @IsOptional()
   @IsBoolean()
   status?: boolean;
+
+  @ApiPropertyOptional({ description: "Parent location ID" })
+  @IsOptional()
+  @Transform(({ value }) => (!value ? null : Number(value)))
+  parent_id?: number | null;
 }
 
 export class UpdateInventoryLocationDto {
@@ -65,4 +71,9 @@ export class UpdateInventoryLocationDto {
   @IsOptional()
   @IsBoolean()
   status?: boolean;
+
+  @ApiPropertyOptional({ description: "Parent location ID" })
+  @IsOptional()
+  @Transform(({ value }) => (value === "" ? null : Number(value)))
+  parent_id?: number | null;
 }

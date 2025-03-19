@@ -60,6 +60,7 @@ import { UserRole } from "../modules/user-roles/domain/entities/user-role.entity
 import { User } from "../modules/users/domain/entities/user.entity";
 import { VariantValue } from "../modules/variants/domain/entities/variant-value.entity";
 import { Variant } from "../modules/variants/domain/entities/variant.entity";
+import { AddParentIdToInventoryLocations1702432800015 } from "@/migrations/1702432800015-AddParentIdToInventoryLocations";
 
 config();
 
@@ -133,6 +134,7 @@ const options: DataSourceOptions = {
     AddSkuVendorToInventoryProductVariants1702432800014,
     CreateInventoryPriceTables1702432900000,
     CreateInventoryPriceHistoryTables1702433000000,
+    AddParentIdToInventoryLocations1702432800015,
   ],
   synchronize: false,
 };

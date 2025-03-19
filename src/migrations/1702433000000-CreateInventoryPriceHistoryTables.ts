@@ -31,7 +31,8 @@ export class CreateInventoryPriceHistoryTables1702433000000
         "user_id" BIGINT NOT NULL,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
-        CONSTRAINT "fk_ipih_inventory_product" FOREIGN KEY ("inventory_product_id") REFERENCES "inventory_products"("id")
+        CONSTRAINT "fk_ipih_inventory_product" FOREIGN KEY ("inventory_product_id") REFERENCES "inventory_products"("id"),
+        CONSTRAINT "fk_ipih_user" FOREIGN KEY ("user_id") REFERENCES "users"("id")
       )
     `);
 
@@ -56,8 +57,8 @@ export class CreateInventoryPriceHistoryTables1702433000000
         "new_tax_percentage" NUMERIC(19,2) NOT NULL DEFAULT 0,
         "old_is_custom_tax_inclusive_price" BOOLEAN NOT NULL DEFAULT false,
         "new_is_custom_tax_inclusive_price" BOOLEAN NOT NULL DEFAULT false,
-        "old_price_category_custom_percentage" NUMERIC(10,2) NOT NULL,
-        "new_price_category_custom_percentage" NUMERIC(10,2) NOT NULL,
+        "old_price_category_custom_percentage" NUMERIC(10,2) NOT NULL DEFAULT 0,
+        "new_price_category_custom_percentage" NUMERIC(10,2) NOT NULL DEFAULT 0,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "fk_ipccp_history" FOREIGN KEY ("inventory_product_pricing_information_history_id") REFERENCES "inventory_product_pricing_information_histories"("id") ON DELETE CASCADE
@@ -103,8 +104,8 @@ export class CreateInventoryPriceHistoryTables1702433000000
         "inventory_product_pricing_information_history_id" VARCHAR(255) NOT NULL,
         "old_quantity" INTEGER NOT NULL DEFAULT 0,
         "new_quantity" INTEGER NOT NULL DEFAULT 0,
-        "old_discount_percentage" NUMERIC(19,2) NOT NULL,
-        "new_discount_percentage" NUMERIC(19,2) NOT NULL,
+        "old_discount_percentage" NUMERIC(19,2) NOT NULL DEFAULT 0,
+        "new_discount_percentage" NUMERIC(19,2) NOT NULL DEFAULT 0,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "fk_ipgdh_history" FOREIGN KEY ("inventory_product_pricing_information_history_id") REFERENCES "inventory_product_pricing_information_histories"("id") ON DELETE CASCADE
@@ -184,6 +185,8 @@ export class CreateInventoryPriceHistoryTables1702433000000
         "new_quantity" INTEGER NOT NULL DEFAULT 0,
         "old_discount_percentage" NUMERIC(19,2) NOT NULL,
         "new_discount_percentage" NUMERIC(19,2) NOT NULL,
+        "old_status" BOOLEAN NOT NULL DEFAULT true,
+        "new_status" BOOLEAN NOT NULL DEFAULT true,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "fk_ipvdvqh_variant_history" FOREIGN KEY ("inventory_product_vol_disc_variant_his_id") REFERENCES "inventory_product_volume_discount_variant_histories"("id") ON DELETE CASCADE

@@ -28,6 +28,12 @@ export class InventoryProductVolumeDiscountVariantQtyHis extends VarPrimary {
   @Column({ type: "numeric", precision: 19, scale: 2 })
   new_discount_percentage: number;
 
+  @Column({ type: "boolean", default: true })
+  old_status: boolean;
+
+  @Column({ type: "boolean", default: true })
+  new_status: boolean;
+
   @ManyToOne(
     () => InventoryProductVolumeDiscountVariantHistory,
     (history) => history.quantities,

@@ -1,14 +1,14 @@
+import { VarPrimary } from "@/common/entities/varPrimary.entity";
+import { randomBytes } from "crypto";
 import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
   BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
 } from "typeorm";
 import { InventoryProductPricingInformation } from "./inventory-product-pricing-information.entity";
-import { VarPrimary } from "@/common/entities/varPrimary.entity";
-import { randomBytes } from "crypto";
 import { InventoryProductVolumeDiscountVariantQty } from "./inventory-product-volume-discount-variant-qty.entity";
 
 @Entity("inventory_product_volume_discount_variants")

@@ -22,6 +22,19 @@ export class InventoryLocationRepository extends BaseRepository<InventoryLocatio
     });
   }
 
+  async findById(id: number): Promise<InventoryLocation | null> {
+    return this.inventoryLocationRepository.findOne({
+      where: {
+        id,
+        deleted_at: IsNull(),
+      },
+    });
+  }
+
+  async find(options: any): Promise<InventoryLocation[]> {
+    return this.inventoryLocationRepository.find(options);
+  }
+
   async findByCodeWithDeleted(code: string): Promise<InventoryLocation | null> {
     return this.inventoryLocationRepository.findOne({
       where: { code },
@@ -78,5 +91,17 @@ export class InventoryLocationRepository extends BaseRepository<InventoryLocatio
 
   async save(entity: InventoryLocation): Promise<InventoryLocation> {
     return this.inventoryLocationRepository.save(entity);
+  }
+
+  async findChildren(parentId: number): Promise<InventoryLocation[]> {
+    return this.inventoryLocationRepository.find({
+      where: {
+        parent_id: parentId,
+        deleted_at: IsNull(),
+      },
+      order: {
+        name: "ASC",
+      },
+    });
   }
 }

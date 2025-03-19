@@ -95,6 +95,27 @@ export class InventoryLocationValidator {
     }
   }
 
+  async validateParentId(parentId: number | null): Promise<void> {
+    console.log("parentId", parentId);
+    if (parentId === null) return;
+
+    const parentLocation =
+      await this.inventoryLocationRepository.findById(parentId);
+    if (!parentLocation) {
+      throw new DomainException(
+        "Parent location not found",
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    if (!parentLocation.status) {
+      throw new DomainException(
+        "Parent location is inactive",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  }
+
   private isValidCodeFormat(code: string): boolean {
     const codeRegex = /^[a-zA-Z0-9-]+$/;
     return codeRegex.test(code);
