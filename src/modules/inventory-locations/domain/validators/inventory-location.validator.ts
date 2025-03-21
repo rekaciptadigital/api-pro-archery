@@ -96,7 +96,6 @@ export class InventoryLocationValidator {
   }
 
   async validateParentId(parentId: number | null): Promise<void> {
-    console.log("parentId", parentId);
     if (parentId === null) return;
 
     const parentLocation =

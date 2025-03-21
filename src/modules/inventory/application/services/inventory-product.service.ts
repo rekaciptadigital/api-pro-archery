@@ -201,192 +201,190 @@ export class InventoryProductService {
           );
         }
 
-        // Get active customer price categories
-        const customerPriceCategories = await this.priceCategoryRepository
-          .createQueryBuilder("category")
-          .where("category.type = :type AND category.status = true", {
-            type: "customer",
-          })
-          .getMany();
+        // // Get active customer price categories
+        // const customerPriceCategories = await this.priceCategoryRepository
+        //   .createQueryBuilder("category")
+        //   .where("category.type = :type AND category.status = true", {
+        //     type: "customer",
+        //   })
+        //   .getMany();
 
-        // Get active custom price categories
-        const customPriceCategories = await this.priceCategoryRepository
-          .createQueryBuilder("category")
-          .where("category.type = :type AND category.status = true", {
-            type: "custom",
-          })
-          .getMany();
+        // // Get active custom price categories
+        // const customPriceCategories = await this.priceCategoryRepository
+        //   .createQueryBuilder("category")
+        //   .where("category.type = :type AND category.status = true", {
+        //     type: "custom",
+        //   })
+        //   .getMany();
 
-        const activeTax = await this.taxRepository.findOne({
-          where: { status: true },
-        });
-        const now = new Date();
+        // const activeTax = await this.taxRepository.findOne({
+        //   where: { status: true },
+        // });
+        // const now = new Date();
 
-        // Create pricing information
-        const pricingInfo = await queryRunner.manager.save(
-          InventoryProductPricingInformation,
-          {
-            inventory_product_id: product.id,
-            usd_price: 0,
-            exchange_rate: 0,
-            adjustment_percentage: 0,
-            price_hb_real: 0,
-            hb_adjustment_price: 0,
-            is_manual_product_variant_price_edit: false,
-            is_enable_volume_discount: false,
-            is_enable_volume_discount_by_product_variant: false,
-            created_at: now,
-            updated_at: now,
-          }
-        );
+        // // Create pricing information
+        // const pricingInfo = await queryRunner.manager.save(
+        //   InventoryProductPricingInformation,
+        //   {
+        //     inventory_product_id: product.id,
+        //     usd_price: 0,
+        //     exchange_rate: 0,
+        //     adjustment_percentage: 0,
+        //     price_hb_real: 0,
+        //     hb_adjustment_price: 0,
+        //     is_manual_product_variant_price_edit: false,
+        //     is_enable_volume_discount: false,
+        //     is_enable_volume_discount_by_product_variant: false,
+        //     created_at: now,
+        //     updated_at: now,
+        //   }
+        // );
 
-        // Create customer category prices
-        for (const category of customerPriceCategories) {
-          await queryRunner.manager.save(
-            InventoryProductCustomerCategoryPrice,
-            {
-              inventory_product_pricing_information_id: pricingInfo.id,
-              price_category_id: category.id,
-              price_category_name: category.name,
-              price_category_percentage: category.percentage,
-              price_category_set_default: category.set_default,
-              pre_tax_price: 0,
-              tax_inclusive_price: 0,
-              tax_id: activeTax?.id || 0,
-              tax_percentage: 0,
-              is_custom_tax_inclusive_price: false,
-              price_category_custom_percentage: 0,
-            }
-          );
-        }
+        // // Create customer category prices
+        // for (const category of customerPriceCategories) {
+        //   await queryRunner.manager.save(
+        //     InventoryProductCustomerCategoryPrice,
+        //     {
+        //       inventory_product_pricing_information_id: pricingInfo.id,
+        //       price_category_id: category.id,
+        //       price_category_name: category.name,
+        //       price_category_percentage: category.percentage,
+        //       price_category_set_default: category.set_default,
+        //       pre_tax_price: 0,
+        //       tax_inclusive_price: 0,
+        //       tax_id: activeTax?.id || 0,
+        //       tax_percentage: 0,
+        //       is_custom_tax_inclusive_price: false,
+        //       price_category_custom_percentage: 0,
+        //     }
+        //   );
+        // }
 
-        // Create variant prices for each variant and price category
-        const allPriceCategories = [
-          ...customerPriceCategories,
-          ...customPriceCategories,
-        ];
+        // // Create variant prices for each variant and price category
+        // const allPriceCategories = [
+        //   ...customerPriceCategories,
+        //   ...customPriceCategories,
+        // ];
 
-        for (const variant of createInventoryProductDto.product_by_variant) {
-          for (const category of allPriceCategories) {
-            await queryRunner.manager.save(InventoryProductByVariantPrice, {
-              id: randomBytes(12).toString("hex"),
-              inventory_product_by_variant_id: variantIdMap.get(variant.sku),
-              price_category_id: category.id,
-              price: 0,
-              status: true,
-              usd_price: 0,
-              exchange_rate: 0,
-              adjustment_percentage: 0,
-            });
-          }
-        }
+        // // create all price categories product variants
+        // for (const variant of createInventoryProductDto.product_by_variant) {
+        //   for (const category of allPriceCategories) {
+        //     await queryRunner.manager.save(InventoryProductByVariantPrice, {
+        //       id: randomBytes(12).toString("hex"),
+        //       inventory_product_by_variant_id: variantIdMap.get(variant.sku),
+        //       price_category_id: category.id,
+        //       price: 0,
+        //       status: true,
+        //       usd_price: 0,
+        //       exchange_rate: 0,
+        //       adjustment_percentage: 0,
+        //     });
+        //   }
+        // }
 
-        // Create volume discount variants
-        if (createInventoryProductDto.product_by_variant?.length) {
-          for (const variant of createInventoryProductDto.product_by_variant) {
-            await queryRunner.manager.save(
-              InventoryProductVolumeDiscountVariant,
-              {
-                id: randomBytes(12).toString("hex"),
-                inventory_product_pricing_information_id: pricingInfo.id,
-                inventory_product_by_variant_id: variantIdMap.get(variant.sku),
-                inventory_product_by_variant_full_product_name:
-                  variant.full_product_name,
-                status: true,
-              }
-            );
-          }
-        }
+        // // Create volume discount variants
+        // if (createInventoryProductDto.product_by_variant?.length) {
+        //   for (const variant of createInventoryProductDto.product_by_variant) {
+        //     await queryRunner.manager.save(
+        //       InventoryProductVolumeDiscountVariant,
+        //       {
+        //         id: randomBytes(12).toString("hex"),
+        //         inventory_product_pricing_information_id: pricingInfo.id,
+        //         inventory_product_by_variant_id: variantIdMap.get(variant.sku),
+        //         inventory_product_by_variant_full_product_name:
+        //           variant.full_product_name,
+        //         status: true,
+        //       }
+        //     );
+        //   }
+        // }
 
-        // Create variant prices if variants exist
-        for (const variant of createInventoryProductDto.product_by_variant) {
-          // Create prices for both customer and custom categories
-          for (const category of allPriceCategories) {
-            const timestamp = Date.now().toString(20);
-            const randomStr = randomBytes(12).toString("hex");
-            await queryRunner.manager.save(InventoryProductByVariantPrice, {
-              id: `${randomStr}${timestamp}`,
-              inventory_product_by_variant_id: variantIdMap.get(variant.sku),
-              inventory_product_pricing_information_id: pricingInfo.id,
-              price_category_id: category.id,
-              price: 0,
-              status: false,
-              created_at: now,
-              updated_at: now,
-            });
-          }
+        // // Create variant prices if variants exist
+        // for (const variant of createInventoryProductDto.product_by_variant) {
+        //   // Create prices for both customer and custom categories
+        //   for (const category of allPriceCategories) {
+        //     const timestamp = Date.now().toString(20);
+        //     const randomStr = randomBytes(12).toString("hex");
+        //     await queryRunner.manager.save(InventoryProductByVariantPrice, {
+        //       id: `${randomStr}${timestamp}`,
+        //       inventory_product_by_variant_id: variantIdMap.get(variant.sku),
+        //       inventory_product_pricing_information_id: pricingInfo.id,
+        //       price_category_id: category.id,
+        //       price: 0,
+        //       status: false,
+        //       created_at: now,
+        //       updated_at: now,
+        //     });
+        //   }
 
-          // Create variant discount prices
-          const timestamp = Date.now().toString(20);
-          const randomStr = randomBytes(12).toString("hex");
-          await queryRunner.manager.save(
-            InventoryProductVolumeDiscountVariant,
-            {
-              id: `${randomStr}${timestamp}`,
-              inventory_product_pricing_information_id: pricingInfo.id,
-              inventory_product_by_variant_id: variantIdMap.get(variant.sku),
-              inventory_product_by_variant_full_product_name:
-                variant.full_product_name,
-              inventory_product_by_variant_sku: variant.sku,
-              status: false,
-            }
-          );
-        }
+        //   // Create variant discount prices
+        //   const timestamp = Date.now().toString(20);
+        //   const randomStr = randomBytes(12).toString("hex");
+        //   await queryRunner.manager.save(
+        //     InventoryProductVolumeDiscountVariant,
+        //     {
+        //       id: `${randomStr}${timestamp}`,
+        //       inventory_product_pricing_information_id: pricingInfo.id,
+        //       inventory_product_by_variant_id: variantIdMap.get(variant.sku),
+        //       inventory_product_by_variant_full_product_name:
+        //         variant.full_product_name,
+        //       inventory_product_by_variant_sku: variant.sku,
+        //       status: false,
+        //     }
+        //   );
+        // }
       } else {
-        // If no variants, still create pricing information
-        // Get active tax
-        const activeTax = await this.taxRepository
-          .createQueryBuilder("tax")
-          .where("tax.status = true")
-          .getOne();
-        const now = new Date();
-
-        // Create pricing information
-        const pricingInfo = await queryRunner.manager.save(
-          InventoryProductPricingInformation,
-          {
-            inventory_product_id: product.id,
-            usd_price: 0,
-            exchange_rate: 0,
-            adjustment_percentage: 0,
-            price_hb_real: 0,
-            hb_adjustment_price: 0,
-            is_manual_product_variant_price_edit: false,
-            is_enable_volume_discount: false,
-            is_enable_volume_discount_by_product_variant: false,
-            created_at: now,
-            updated_at: now,
-          }
-        );
-
-        // Get active customer price categories
-        const customerPriceCategories = await this.priceCategoryRepository
-          .createQueryBuilder("category")
-          .where("category.type = :type AND category.status = true", {
-            type: "customer",
-          })
-          .getMany();
-
-        // Create customer category prices
-        for (const category of customerPriceCategories) {
-          await queryRunner.manager.save(
-            InventoryProductCustomerCategoryPrice,
-            {
-              inventory_product_pricing_information_id: pricingInfo.id,
-              price_category_id: category.id,
-              price_category_name: category.name,
-              price_category_percentage: category.percentage,
-              price_category_set_default: category.set_default,
-              pre_tax_price: 0,
-              tax_inclusive_price: 0,
-              tax_id: activeTax?.id || 0,
-              tax_percentage: activeTax?.percentage || 0,
-              is_custom_tax_inclusive_price: false,
-              created_at: now,
-              updated_at: now,
-            }
-          );
-        }
+        // // If no variants, still create pricing information
+        // // Get active tax
+        // const activeTax = await this.taxRepository
+        //   .createQueryBuilder("tax")
+        //   .where("tax.status = true")
+        //   .getOne();
+        // const now = new Date();
+        // // Create pricing information
+        // const pricingInfo = await queryRunner.manager.save(
+        //   InventoryProductPricingInformation,
+        //   {
+        //     inventory_product_id: product.id,
+        //     usd_price: 0,
+        //     exchange_rate: 0,
+        //     adjustment_percentage: 0,
+        //     price_hb_real: 0,
+        //     hb_adjustment_price: 0,
+        //     is_manual_product_variant_price_edit: false,
+        //     is_enable_volume_discount: false,
+        //     is_enable_volume_discount_by_product_variant: false,
+        //     created_at: now,
+        //     updated_at: now,
+        //   }
+        // );
+        // // Get active customer price categories
+        // const customerPriceCategories = await this.priceCategoryRepository
+        //   .createQueryBuilder("category")
+        //   .where("category.type = :type AND category.status = true", {
+        //     type: "customer",
+        //   })
+        //   .getMany();
+        // // Create customer category prices
+        // for (const category of customerPriceCategories) {
+        //   await queryRunner.manager.save(
+        //     InventoryProductCustomerCategoryPrice,
+        //     {
+        //       inventory_product_pricing_information_id: pricingInfo.id,
+        //       price_category_id: category.id,
+        //       price_category_name: category.name,
+        //       price_category_percentage: category.percentage,
+        //       price_category_set_default: category.set_default,
+        //       pre_tax_price: 0,
+        //       tax_inclusive_price: 0,
+        //       tax_id: activeTax?.id || 0,
+        //       tax_percentage: activeTax?.percentage || 0,
+        //       is_custom_tax_inclusive_price: false,
+        //       created_at: now,
+        //       updated_at: now,
+        //     }
+        //   );
+        // }
       }
 
       await queryRunner.commitTransaction();
