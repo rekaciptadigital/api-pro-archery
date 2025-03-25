@@ -1246,10 +1246,9 @@ export class InventoryPriceService {
             // Save price categories for new discount
             if (discount.global_volume_discount_price_categories) {
               for (const category of discount.global_volume_discount_price_categories) {
-                await queryRunner.manager
+                const globalDiscountPriceCategory = await queryRunner.manager
                   .getRepository(InventoryProductGlobalDiscountPriceCategory)
                   .save({
-                    // id: `${randomBytes(12).toString("hex")}${Date.now().toString(20)}`,
                     inventory_product_global_discount_id: newDiscount.id,
                     price_category_id: category.price_category_id,
                     price_category_name: category.price_category_name,
@@ -1259,6 +1258,31 @@ export class InventoryPriceService {
                     price_category_set_default:
                       category.price_category_set_default,
                     price: category.price,
+                  });
+
+                await queryRunner.manager
+                  .getRepository(
+                    InventoryProductGlobalDiscountPriceCategoryHistory
+                  )
+                  .save({
+                    inventory_product_pricing_information_history_id:
+                      pricingHistory.id,
+                    inventory_product_global_discount_history_id:
+                      globalDiscountPriceCategory.id,
+                    price_category_id: category.price_category_id,
+                    old_price_category_type: category.price_category_type,
+                    new_price_category_type: category.price_category_type,
+                    old_price_category_name: category.price_category_name,
+                    new_price_category_name: category.price_category_name,
+                    old_price_category_percentage: 0,
+                    new_price_category_percentage:
+                      category.price_category_percentage,
+                    old_price_category_set_default:
+                      category.price_category_set_default,
+                    new_price_category_set_default:
+                      category.price_category_set_default,
+                    old_price: 0,
+                    new_price: category.price,
                   });
               }
             }
