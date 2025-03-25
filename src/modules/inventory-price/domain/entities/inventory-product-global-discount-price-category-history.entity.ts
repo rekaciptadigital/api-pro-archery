@@ -7,6 +7,9 @@ export class InventoryProductGlobalDiscountPriceCategoryHistory extends VarPrima
   @Column({ type: "varchar" })
   inventory_product_pricing_information_history_id: string;
 
+  @Column({ type: "varchar", length: 255 })
+  inventory_product_global_discount_history_id: string;
+
   @Column({ type: "bigint" })
   price_category_id: number;
 

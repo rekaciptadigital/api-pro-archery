@@ -10,7 +10,7 @@
     "is_enable_volume_discount_by_product_variant": false,
     "customer_category_prices": [
         {
-            "id": 15,
+            "id": 1,
             "price_category_id": 1,
             "price_category_name": "Elite",
             "formula": "Formula: HB Naik + 3.5% markup",
@@ -24,7 +24,7 @@
             "price_category_custom_percentage": 5
         },
         {
-            "id": 16,
+            "id": 2,
             "price_category_id": 3,
             "price_category_name": "Gold",
             "formula": "Formula: HB Naik + 5.0% markup",
@@ -52,42 +52,7 @@
     ],
     "product_variant_prices": [
         {
-            "variant_id": "6395d972abe42ef28c0c51bc37j7b0e3i3",
-            "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Blue",
-            "sku_product_variant": "ARRP99938-1235",
-            "usd_price": 100,
-            "exchange_rate": 15000,
-            "adjustment_percentage": 30,
-            "status": true,
-            "price_categories": [
-                {
-                    "id": 1,
-                    "price": 2272725,
-                    "price_category_name": "Elite",
-                    "percentage": 3.5,
-                    "type": "customer",
-                    "set_default": true
-                },
-                {
-                    "id": 3,
-                    "price": 2272725,
-                    "price_category_name": "Gold",
-                    "percentage": 5,
-                    "type": "customer",
-                    "set_default": false
-                },
-                {
-                    "id": 2,
-                    "price": 2272725,
-                    "price_category_name": "lazoda",
-                    "percentage": 4,
-                    "type": "marketplace",
-                    "set_default": false
-                }
-            ]
-        },
-        {
-            "variant_id": "b4cf88a1d4ef68b2bc9fd35537j7b0d3jj",
+            "variant_id": "f952b9fe582a1da9816940183817ibi14i",
             "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Red",
             "sku_product_variant": "ARRP99938-001",
             "usd_price": 100,
@@ -122,7 +87,7 @@
             ]
         },
         {
-            "variant_id": "4e5bcb79ac1ae3a4d0713a6537j7b0d413",
+            "variant_id": "2a6bc85593f629f95b276ec73817ibi15b",
             "variant_name": "ARCHON RECURVE SCOPE Testing Dev 6 Silver",
             "sku_product_variant": "ARRP99938-002",
             "usd_price": 100,
@@ -159,14 +124,14 @@
     ],
     "global_volume_discounts": [
         {
-            "id": null,
-            "inventory_product_pricing_information_id": 10,
+            "id": "e900a71ddde7e575daa8d137381bd29888",
+            "inventory_product_pricing_information_id": 1,
             "quantity": 10,
             "discount_percentage": 2.5,
             "global_volume_discount_price_categories": [
                 {
-                    "id": null,
-                    "inventory_product_global_discount_id": null,
+                    "id": "519e75b02beca5e6a77bc291381bd2988c",
+                    "inventory_product_global_discount_id": "e900a71ddde7e575daa8d137381bd29888",
                     "price_category_id": 1,
                     "price_category_name": "Elite",
                     "price_category_type": "customer",
@@ -175,8 +140,8 @@
                     "price": 2215907
                 },
                 {
-                    "id": null,
-                    "inventory_product_global_discount_id": null,
+                    "id": "feb911ffc2ea1d6e32916f00381bd29892",
+                    "inventory_product_global_discount_id": "e900a71ddde7e575daa8d137381bd29888",
                     "price_category_id": 3,
                     "price_category_name": "Gold",
                     "price_category_type": "customer",
@@ -185,8 +150,8 @@
                     "price": 2215907
                 },
                 {
-                    "id": null,
-                    "inventory_product_global_discount_id": null,
+                    "id": "950258219f6dadd72ebc8cc4381bd29895",
+                    "inventory_product_global_discount_id": "e900a71ddde7e575daa8d137381bd29888",
                     "price_category_id": 2,
                     "price_category_name": "lazoda",
                     "price_category_type": "marketplace",
@@ -197,14 +162,14 @@
             ]
         },
         {
-            "id": null,
+            "id": "2ced1af8237e78353a9fecb0381bd29898",
             "inventory_product_pricing_information_id": 10,
             "quantity": 50,
             "discount_percentage": 5,
             "global_volume_discount_price_categories": [
                 {
-                    "id": null,
-                    "inventory_product_global_discount_id": null,
+                    "id": "be763cd2da6a9d1f87b6b668381bd2989i",
+                    "inventory_product_global_discount_id": "2ced1af8237e78353a9fecb0381bd29898",
                     "price_category_id": 1,
                     "price_category_name": "Elite",
                     "price_category_type": "customer",
@@ -213,8 +178,8 @@
                     "price": 2159089
                 },
                 {
-                    "id": null,
-                    "inventory_product_global_discount_id": null,
+                    "id": "c6f8fd5b324b13261ff14409381bd298a1",
+                    "inventory_product_global_discount_id": "2ced1af8237e78353a9fecb0381bd29898",
                     "price_category_id": 3,
                     "price_category_name": "Gold",
                     "price_category_type": "customer",
@@ -223,8 +188,8 @@
                     "price": 2159089
                 },
                 {
-                    "id": null,
-                    "inventory_product_global_discount_id": null,
+                    "id": "552e3654b5153230be247dac381bd298a6",
+                    "inventory_product_global_discount_id": "2ced1af8237e78353a9fecb0381bd29898",
                     "price_category_id": 2,
                     "price_category_name": "lazoda",
                     "price_category_type": "marketplace",
@@ -237,69 +202,20 @@
     ],
     "variant_volume_discounts": [
         {
-            "id": "3f1bb1c88f8d07a0971fbc7f380i8jag0d",
-            "inventory_product_pricing_information_id": 10,
-            "inventory_product_by_variant_id": "6395d972abe42ef28c0c51bc37j7b0e3i3",
-            "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Blue",
-            "inventory_product_by_variant_sku": "ARRP99938-1235",
-            "inventory_product_volume_discount_variant_quantities": [
-                {
-                    "id": null,
-                    "inventory_product_volume_discount_variant_id": "3f1bb1c88f8d07a0971fbc7f380i8jag0d",
-                    "quantity": 10,
-                    "inventory_product_volume_discount_variant_price_categories": [
-                        {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 1,
-                            "price_category_name": "Elite",
-                            "price_category_type": "customer",
-                            "price_category_percentage": 3.5,
-                            "price_category_set_default": true,
-                            "price": 2159089
-                        },
-                        {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 3,
-                            "price_category_name": "Gold",
-                            "price_category_type": "customer",
-                            "price_category_percentage": 5,
-                            "price_category_set_default": false,
-                            "price": 2159089
-                        },
-                        {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 3,
-                            "price_category_name": "Gold",
-                            "price_category_type": "marketplace",
-                            "price_category_percentage": 5,
-                            "price_category_set_default": false,
-                            "price": 2159089
-                        }
-                    ],
-                    "discount_percentage": 5,
-                    "status": true
-                }
-            ],
-            "status": true
-        },
-        {
-            "id": "53af7dfddc0be5b260b8a1b6380i8jafi6",
-            "inventory_product_pricing_information_id": 10,
-            "inventory_product_by_variant_id": "b4cf88a1d4ef68b2bc9fd35537j7b0d3jj",
+            "id": "bed6940d2dbc719110bca060381a0djc4d",
+            "inventory_product_pricing_information_id": 1,
+            "inventory_product_by_variant_id": "f952b9fe582a1da9816940183817ibi14i",
             "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Red",
             "inventory_product_by_variant_sku": "ARRP99938-001",
             "inventory_product_volume_discount_variant_quantities": [
                 {
-                    "id": null,
-                    "inventory_product_volume_discount_variant_id": "53af7dfddc0be5b260b8a1b6380i8jafi6",
+                    "id": "f596f08715749f5596b10105381bd298cc",
+                    "inventory_product_volume_discount_variant_id": "bed6940d2dbc719110bca060381a0djc4d",
                     "quantity": 10,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
+                            "id": "56bd5cc1feb576fcfe983952381bd298cf",
+                            "inventory_product_vol_disc_variant_qty_id": "f596f08715749f5596b10105381bd298cc",
                             "price_category_id": 1,
                             "price_category_name": "Elite",
                             "price_category_type": "customer",
@@ -308,8 +224,8 @@
                             "price": 2159089
                         },
                         {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
+                            "id": "ab679b597a226c9c2e457902381bd298d7",
+                            "inventory_product_vol_disc_variant_qty_id": "f596f08715749f5596b10105381bd298cc",
                             "price_category_id": 3,
                             "price_category_name": "Gold",
                             "price_category_type": "customer",
@@ -318,10 +234,10 @@
                             "price": 2159089
                         },
                         {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 3,
-                            "price_category_name": "Gold",
+                            "id": "e4c9b7a447afcc9ad7cd35a1381bd298d9",
+                            "inventory_product_vol_disc_variant_qty_id": "f596f08715749f5596b10105381bd298cc",
+                            "price_category_id": 2,
+                            "price_category_name": "lazoda",
                             "price_category_type": "marketplace",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,
@@ -335,20 +251,20 @@
             "status": true
         },
         {
-            "id": "ace772208ea1acc67f2bf497380i8jafjf",
+            "id": "5928e206ce08cc5aeac7d55c381a0djc5e",
             "inventory_product_pricing_information_id": 10,
-            "inventory_product_by_variant_id": "4e5bcb79ac1ae3a4d0713a6537j7b0d413",
+            "inventory_product_by_variant_id": "2a6bc85593f629f95b276ec73817ibi15b",
             "inventory_product_by_variant_full_product_name": "ARCHON RECURVE SCOPE Testing Dev 6 Silver",
             "inventory_product_by_variant_sku": "ARRP99938-002",
             "inventory_product_volume_discount_variant_quantities": [
                 {
-                    "id": null,
-                    "inventory_product_volume_discount_variant_id": "ace772208ea1acc67f2bf497380i8jafjf",
+                    "id": "f4a4d084e1167a9930f1a0a9381bd298ea",
+                    "inventory_product_volume_discount_variant_id": "5928e206ce08cc5aeac7d55c381a0djc5e",
                     "quantity": 10,
                     "inventory_product_volume_discount_variant_price_categories": [
                         {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
+                            "id": "9fedb93e44f4ba1d4f9d51c6381bd298ej",
+                            "inventory_product_vol_disc_variant_qty_id": "5928e206ce08cc5aeac7d55c381a0djc5e",
                             "price_category_id": 1,
                             "price_category_name": "Elite",
                             "price_category_type": "customer",
@@ -357,8 +273,8 @@
                             "price": 2159089
                         },
                         {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
+                            "id": "9a3a43d04b7d06a2da31f155381bd298f4",
+                            "inventory_product_vol_disc_variant_qty_id": "5928e206ce08cc5aeac7d55c381a0djc5e",
                             "price_category_id": 3,
                             "price_category_name": "Gold",
                             "price_category_type": "customer",
@@ -367,10 +283,10 @@
                             "price": 2159089
                         },
                         {
-                            "id": null,
-                            "inventory_product_vol_disc_variant_qty_id": null,
-                            "price_category_id": 3,
-                            "price_category_name": "Gold",
+                            "id": "586c0047a44801e46f2236b1381bd298g0",
+                            "inventory_product_vol_disc_variant_qty_id": "5928e206ce08cc5aeac7d55c381a0djc5e",
+                            "price_category_id": 2,
+                            "price_category_name": "lazoda",
                             "price_category_type": "marketplace",
                             "price_category_percentage": 5,
                             "price_category_set_default": false,

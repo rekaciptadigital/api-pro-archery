@@ -1,6 +1,6 @@
-import { Entity, Column, CreateDateColumn, BeforeInsert } from "typeorm";
 import { VarPrimary } from "@/common/entities/varPrimary.entity";
 import { randomBytes } from "crypto";
+import { BeforeInsert, Column, Entity } from "typeorm";
 
 @Entity("inventory_product_customer_category_price_histories")
 export class InventoryProductCustomerCategoryPriceHistory extends VarPrimary {

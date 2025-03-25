@@ -61,6 +61,7 @@ import { User } from "../modules/users/domain/entities/user.entity";
 import { VariantValue } from "../modules/variants/domain/entities/variant-value.entity";
 import { Variant } from "../modules/variants/domain/entities/variant.entity";
 import { AddParentIdToInventoryLocations1702432800015 } from "@/migrations/1702432800015-AddParentIdToInventoryLocations";
+import { AddGlobalDiscountHistories1702433100000 } from "@/migrations/1702433100000-AddGlobalDiscountHistories";
 
 config();
 
@@ -135,6 +136,7 @@ const options: DataSourceOptions = {
     CreateInventoryPriceTables1702432900000,
     CreateInventoryPriceHistoryTables1702433000000,
     AddParentIdToInventoryLocations1702432800015,
+    AddGlobalDiscountHistories1702433100000,
   ],
   synchronize: false,
 };
