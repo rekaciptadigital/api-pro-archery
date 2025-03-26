@@ -19,6 +19,9 @@ export class InventoryProductGlobalDiscountHistory extends VarPrimary {
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   new_discount_percentage: number;
 
+  @Column({ type: "boolean", default: false })
+  is_deleted: boolean;
+
   @BeforeInsert()
   generateId() {
     const timestamp = Date.now().toString(20);

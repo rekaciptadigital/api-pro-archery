@@ -53,6 +53,9 @@ export class InventoryProductVolumeDiscountVariantPriceCatHis extends VarPrimary
   })
   new_price: number;
 
+  @Column({ type: "boolean", default: false })
+  is_deleted: boolean;
+
   @ManyToOne(
     () => InventoryProductVolumeDiscountVariantQtyHis,
     (qty) => qty.price_categories,

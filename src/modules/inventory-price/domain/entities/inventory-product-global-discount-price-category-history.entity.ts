@@ -43,6 +43,9 @@ export class InventoryProductGlobalDiscountPriceCategoryHistory extends VarPrima
   @Column({ type: "numeric", precision: 19, scale: 2, default: 0 })
   new_price: number;
 
+  @Column({ type: "boolean", default: false })
+  is_deleted: boolean;
+
   @BeforeInsert()
   generateId() {
     const timestamp = Date.now().toString(20);

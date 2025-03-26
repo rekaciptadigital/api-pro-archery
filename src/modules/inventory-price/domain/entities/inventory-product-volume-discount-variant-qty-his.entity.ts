@@ -34,6 +34,9 @@ export class InventoryProductVolumeDiscountVariantQtyHis extends VarPrimary {
   @Column({ type: "boolean", default: true })
   new_status: boolean;
 
+  @Column({ type: "boolean", default: false })
+  is_deleted: boolean;
+
   @ManyToOne(
     () => InventoryProductVolumeDiscountVariantHistory,
     (history) => history.quantities,

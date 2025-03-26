@@ -7,6 +7,7 @@ import {
   Put,
   Body,
   Req,
+  Delete,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from "@nestjs/swagger";
 import { InventoryPriceService } from "../applications/services/inventory-price.service";
@@ -60,5 +61,35 @@ export class InventoryPriceController {
       updateInventoryPriceDto,
       req.user.id
     );
+  }
+
+  @Delete("delete-global-discount/:id")
+  @ApiOperation({ summary: "Delete global discount price" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Global Discount deleted successfully",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "Global Discount not found",
+  })
+  @ApiParam({ name: "id", type: "string" })
+  removeGlobalDiscount(@Param("id") id: string) {
+    return this.inventoryPriceService.removeGlobalDiscount(id);
+  }
+
+  @Delete("delete-variant-discount-quantity/:id")
+  @ApiOperation({ summary: "Delete variant discount quantity price" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Variant Discount quantity deleted successfully",
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "Variant Discount quantity not found",
+  })
+  @ApiParam({ name: "id", type: "string" })
+  removeVariantDiscountQuantity(@Param("id") id: string) {
+    return this.inventoryPriceService.removeVariantDiscountQuantity(id);
   }
 }
