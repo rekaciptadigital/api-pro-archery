@@ -33,6 +33,7 @@ import { InventoryProductVolumeDiscountVariantQty } from "../../domain/entities/
 import { InventoryProductVolumeDiscountVariant } from "../../domain/entities/inventory-product-volume-discount-variant.entity";
 import { PriceCategory } from "@/modules/price-categories/domain/entities/price-category.entity";
 import { InventoryProductMarketplaceCategoryPriceHistory } from "../../domain/entities/inventory-product-marketplace-category-price-history.entity";
+import { randomBytes } from "crypto";
 
 @Injectable()
 export class InventoryPriceService {
@@ -871,7 +872,7 @@ export class InventoryPriceService {
             // Create history record
             const historyProductMarketplaceCategory =
               queryRunner.manager.create(
-                "inventory_product_marketplace_category_price_histories",
+                InventoryProductMarketplaceCategoryPriceHistory,
                 {
                   inventory_product_pricing_information_history_id:
                     pricingHistory.id,
@@ -952,15 +953,15 @@ export class InventoryPriceService {
             );
           } else {
             // Create new variant price
-            await queryRunner.manager
-              .getRepository(InventoryProductByVariantPrice)
-              .save({
+            const createInventoryProductVariantPrice =
+              queryRunner.manager.create(InventoryProductByVariantPrice, {
                 inventory_product_by_variant_id: variantPrice.variant_id,
                 usd_price: variantPrice.usd_price,
                 exchange_rate: variantPrice.exchange_rate,
                 adjustment_percentage: variantPrice.adjustment_percentage,
                 status: variantPrice.status,
               });
+            await queryRunner.manager.save(createInventoryProductVariantPrice);
           }
 
           // Update price categories
@@ -986,14 +987,16 @@ export class InventoryPriceService {
                   }
                 );
               } else {
-                await queryRunner.manager
-                  .getRepository("inventory_product_by_variant_prices")
-                  .save({
+                const createInventoryProductVariantPrice =
+                  queryRunner.manager.create(InventoryProductByVariantPrice, {
                     inventory_product_by_variant_id: variantPrice.variant_id,
                     price_category_id: category.id,
                     price: category.price,
                     status: variantPrice.status,
                   });
+                await queryRunner.manager.save(
+                  createInventoryProductVariantPrice
+                );
               }
 
               // Create variant price history
@@ -1235,23 +1238,23 @@ export class InventoryPriceService {
 
             await queryRunner.manager.save(productGlobalDiscountHistory);
 
-            const newDiscount = await queryRunner.manager
-              .getRepository(InventoryProductGlobalDiscount)
-              .save({
-                // id: `${randomBytes(12).toString("hex")}${Date.now().toString(20)}`,
+            const newDiscount = queryRunner.manager.create(
+              InventoryProductGlobalDiscount,
+              {
                 inventory_product_pricing_information_id: pricing.id,
                 quantity: discount.quantity,
                 discount_percentage: discount.discount_percentage,
-              });
+              }
+            );
 
             await queryRunner.manager.save(newDiscount);
 
             // Save price categories for new discount
             if (discount.global_volume_discount_price_categories) {
               for (const category of discount.global_volume_discount_price_categories) {
-                const globalDiscountPriceCategory = await queryRunner.manager
-                  .getRepository(InventoryProductGlobalDiscountPriceCategory)
-                  .save({
+                const globalDiscountPriceCategory = queryRunner.manager.create(
+                  InventoryProductGlobalDiscountPriceCategory,
+                  {
                     inventory_product_global_discount_id: newDiscount.id,
                     price_category_id: category.price_category_id,
                     price_category_name: category.price_category_name,
@@ -1261,32 +1264,37 @@ export class InventoryPriceService {
                     price_category_set_default:
                       category.price_category_set_default,
                     price: category.price,
-                  });
+                  }
+                );
+                await queryRunner.manager.save(globalDiscountPriceCategory);
 
-                await queryRunner.manager
-                  .getRepository(
-                    InventoryProductGlobalDiscountPriceCategoryHistory
-                  )
-                  .save({
-                    inventory_product_pricing_information_history_id:
-                      pricingHistory.id,
-                    inventory_product_global_discount_history_id:
-                      globalDiscountPriceCategory.id,
-                    price_category_id: category.price_category_id,
-                    old_price_category_type: category.price_category_type,
-                    new_price_category_type: category.price_category_type,
-                    old_price_category_name: category.price_category_name,
-                    new_price_category_name: category.price_category_name,
-                    old_price_category_percentage: 0,
-                    new_price_category_percentage:
-                      category.price_category_percentage,
-                    old_price_category_set_default:
-                      category.price_category_set_default,
-                    new_price_category_set_default:
-                      category.price_category_set_default,
-                    old_price: 0,
-                    new_price: category.price,
-                  });
+                const globalDiscountPriceCategoryHistory =
+                  queryRunner.manager.create(
+                    InventoryProductGlobalDiscountPriceCategoryHistory,
+                    {
+                      inventory_product_pricing_information_history_id:
+                        pricingHistory.id,
+                      inventory_product_global_discount_history_id:
+                        productGlobalDiscountHistory.id,
+                      price_category_id: category.price_category_id,
+                      old_price_category_type: category.price_category_type,
+                      new_price_category_type: category.price_category_type,
+                      old_price_category_name: category.price_category_name,
+                      new_price_category_name: category.price_category_name,
+                      old_price_category_percentage: 0,
+                      new_price_category_percentage:
+                        category.price_category_percentage,
+                      old_price_category_set_default:
+                        category.price_category_set_default,
+                      new_price_category_set_default:
+                        category.price_category_set_default,
+                      old_price: 0,
+                      new_price: category.price,
+                    }
+                  );
+                await queryRunner.manager.save(
+                  globalDiscountPriceCategoryHistory
+                );
               }
             }
           }
@@ -2022,7 +2030,19 @@ export class InventoryPriceService {
       const existVariantDiscountQty = await queryRunner.manager.findOne(
         InventoryProductVolumeDiscountVariantQty,
         {
-          where: { id: id },
+          where: { id },
+          relations: {
+            volume_discount_variant: {
+              pricing_information: {
+                customer_category_prices: true,
+                marketplace_category_prices: true,
+                inventory_product: {
+                  product_by_variant: true,
+                },
+              },
+            },
+            price_categories: true,
+          },
         }
       );
 
@@ -2031,6 +2051,8 @@ export class InventoryPriceService {
           `Variant Discount quantity not found for id ${id}`
         );
       }
+
+      console.log("existVariantDiscountQty", existVariantDiscountQty);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
