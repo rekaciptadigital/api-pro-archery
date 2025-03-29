@@ -74,8 +74,11 @@ export class InventoryPriceController {
     description: "Global Discount not found",
   })
   @ApiParam({ name: "id", type: "string" })
-  removeGlobalDiscount(@Param("id") id: string) {
-    return this.inventoryPriceService.removeGlobalDiscount(id);
+  removeGlobalDiscount(
+    @Param("id") id: string,
+    @Req() req: { user: RequestUser }
+  ) {
+    return this.inventoryPriceService.removeGlobalDiscount(id, req.user.id);
   }
 
   @Delete("delete-variant-discount-quantity/:id")
