@@ -85,14 +85,20 @@ export class InventoryPriceController {
   @ApiOperation({ summary: "Delete variant discount quantity price" })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Variant Discount quantity deleted successfully",
+    description: "Variant discount quantity deleted successfully",
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: "Variant Discount quantity not found",
+    description: "Variant discount quantity not found",
   })
   @ApiParam({ name: "id", type: "string" })
-  removeVariantDiscountQuantity(@Param("id") id: string) {
-    return this.inventoryPriceService.removeVariantDiscountQuantity(id);
+  removeVariantDiscountQuantity(
+    @Param("id") id: string,
+    @Req() req: { user: RequestUser }
+  ) {
+    return this.inventoryPriceService.removeVariantDiscountQuantity(
+      id,
+      req.user.id
+    );
   }
 }

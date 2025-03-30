@@ -3,9 +3,10 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Brackets, IsNull, Repository } from "typeorm";
 import { InventoryProductByVariantPrice } from "../entities/inventory-product-by-variant-price.entity";
-import { InventoryProductPricingInformation } from "../entities/inventory-product-pricing-information.entity";
-import { InventoryProductGlobalDiscount } from "../entities/inventory-product-global-discount.entity";
 import { InventoryProductGlobalDiscountPriceCategory } from "../entities/inventory-product-global-discount-price-category.entity";
+import { InventoryProductGlobalDiscount } from "../entities/inventory-product-global-discount.entity";
+import { InventoryProductPricingInformation } from "../entities/inventory-product-pricing-information.entity";
+import { InventoryProductVolumeDiscountVariantQty } from "../entities/inventory-product-volume-discount-variant-qty.entity";
 
 @Injectable()
 export class InventoryPriceRepository extends BaseRepository<InventoryProductPricingInformation> {
@@ -17,7 +18,9 @@ export class InventoryPriceRepository extends BaseRepository<InventoryProductPri
     @InjectRepository(InventoryProductGlobalDiscount)
     private readonly inventoryProductGlobalDiscountRepository: Repository<InventoryProductGlobalDiscount>,
     @InjectRepository(InventoryProductGlobalDiscountPriceCategory)
-    private readonly inventoryProductGlobalDiscountPriceCategoryRepository: Repository<InventoryProductGlobalDiscountPriceCategory>
+    private readonly inventoryProductGlobalDiscountPriceCategoryRepository: Repository<InventoryProductGlobalDiscountPriceCategory>,
+    @InjectRepository(InventoryProductVolumeDiscountVariantQty)
+    private readonly inventoryProductVolumeDiscountVariantQtyRepository: Repository<InventoryProductVolumeDiscountVariantQty>
   ) {
     super(inventoryPriceRepository);
   }
@@ -142,5 +145,24 @@ export class InventoryPriceRepository extends BaseRepository<InventoryProductPri
       .execute();
 
     await this.inventoryProductGlobalDiscountRepository.delete({ id });
+  }
+
+  async findGetDiscountVariantQtyNotId(
+    id: string
+  ): Promise<InventoryProductVolumeDiscountVariantQty[]> {
+    const query = this.inventoryProductVolumeDiscountVariantQtyRepository
+      .createQueryBuilder("inventory_product_volume_discount_variant_qty")
+      .leftJoinAndSelect(
+        "inventory_product_volume_discount_variant_qty.volume_discount_variant",
+        "volume_discount_variant"
+      )
+      .leftJoinAndSelect(
+        "inventory_product_volume_discount_variant_qty.price_categories",
+        "price_categories"
+      )
+      .where("inventory_product_volume_discount_variant_qty.id != :id", { id })
+      .getMany();
+
+    return query;
   }
 }
