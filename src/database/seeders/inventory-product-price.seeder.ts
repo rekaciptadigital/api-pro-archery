@@ -47,6 +47,7 @@ export class InventoryProductPriceSeeder implements Seeder {
         .createQueryBuilder("product")
         .leftJoin("product.pricing_informations", "pricing")
         .where("pricing.id IS NULL")
+        .andWhere("product.deleted_at IS NULL")
         .getMany();
 
       if (productsWithoutPricing.length === 0) {

@@ -7,6 +7,9 @@ import { InventoryProductGlobalDiscountPriceCategory } from "../entities/invento
 import { InventoryProductGlobalDiscount } from "../entities/inventory-product-global-discount.entity";
 import { InventoryProductPricingInformation } from "../entities/inventory-product-pricing-information.entity";
 import { InventoryProductVolumeDiscountVariantQty } from "../entities/inventory-product-volume-discount-variant-qty.entity";
+import { InventoryProductVolumeDiscountVariant } from "../entities/inventory-product-volume-discount-variant.entity";
+import { InventoryProductVolumeDiscountVariantHistory } from "../entities/inventory-product-volume-discount-variant-history.entity";
+import { InventoryProductVolumeDiscountVariantPriceCategory } from "../entities/inventory-product-volume-discount-variant-price-category.entity";
 
 @Injectable()
 export class InventoryPriceRepository extends BaseRepository<InventoryProductPricingInformation> {
@@ -19,8 +22,14 @@ export class InventoryPriceRepository extends BaseRepository<InventoryProductPri
     private readonly inventoryProductGlobalDiscountRepository: Repository<InventoryProductGlobalDiscount>,
     @InjectRepository(InventoryProductGlobalDiscountPriceCategory)
     private readonly inventoryProductGlobalDiscountPriceCategoryRepository: Repository<InventoryProductGlobalDiscountPriceCategory>,
+    @InjectRepository(InventoryProductVolumeDiscountVariant)
+    private readonly inventoryProductVolumeDiscountVariantRepository: Repository<InventoryProductVolumeDiscountVariant>,
+    @InjectRepository(InventoryProductVolumeDiscountVariantHistory)
+    private readonly inventoryProductVolumeDiscountVariantHistoryRepository: Repository<InventoryProductVolumeDiscountVariantHistory>,
     @InjectRepository(InventoryProductVolumeDiscountVariantQty)
-    private readonly inventoryProductVolumeDiscountVariantQtyRepository: Repository<InventoryProductVolumeDiscountVariantQty>
+    private readonly inventoryProductVolumeDiscountVariantQtyRepository: Repository<InventoryProductVolumeDiscountVariantQty>,
+    @InjectRepository(InventoryProductVolumeDiscountVariantPriceCategory)
+    private readonly inventoryProductVolumeDiscountVariantPriceCategoryRepository: Repository<InventoryProductVolumeDiscountVariantPriceCategory>
   ) {
     super(inventoryPriceRepository);
   }
@@ -148,21 +157,59 @@ export class InventoryPriceRepository extends BaseRepository<InventoryProductPri
   }
 
   async findGetDiscountVariantQtyNotId(
-    id: string
-  ): Promise<InventoryProductVolumeDiscountVariantQty[]> {
-    const query = this.inventoryProductVolumeDiscountVariantQtyRepository
-      .createQueryBuilder("inventory_product_volume_discount_variant_qty")
+    pricingInformationId: number,
+    qtyId: string
+  ): Promise<InventoryProductVolumeDiscountVariant[]> {
+    const query = this.inventoryProductVolumeDiscountVariantRepository
+      .createQueryBuilder("inventory_product_volume_discount_variants")
       .leftJoinAndSelect(
-        "inventory_product_volume_discount_variant_qty.volume_discount_variant",
-        "volume_discount_variant"
+        "inventory_product_volume_discount_variants.quantities",
+        "quantities"
       )
-      .leftJoinAndSelect(
-        "inventory_product_volume_discount_variant_qty.price_categories",
-        "price_categories"
+      .leftJoinAndSelect("quantities.price_categories", "price_categories")
+      .where(
+        "inventory_product_volume_discount_variants.inventory_product_pricing_information_id = :pricingInformationId",
+        { pricingInformationId }
       )
-      .where("inventory_product_volume_discount_variant_qty.id != :id", { id })
+      .andWhere("quantities.id != :qtyId", { qtyId })
       .getMany();
 
     return query;
+  }
+
+  async findVariantHistory(
+    idPricingInformation: string,
+    idInventoryProductVariant: string
+  ): Promise<InventoryProductVolumeDiscountVariantHistory | null> {
+    const query = this.inventoryProductVolumeDiscountVariantHistoryRepository
+      .createQueryBuilder("inventory_product_volume_discount_variant_histories")
+      .where(
+        "inventory_product_volume_discount_variant_histories.inventory_product_pricing_information_id = :idPricingInformation",
+        { idPricingInformation }
+      )
+      .andWhere(
+        "inventory_product_volume_discount_variant_histories.inventory_product_by_variant_id = :idInventoryProductVariant",
+        { idInventoryProductVariant }
+      )
+      .getOne();
+
+    return query;
+  }
+
+  async deleteDiscountVariantQtyById(id: string): Promise<void> {
+    await this.inventoryProductVolumeDiscountVariantPriceCategoryRepository
+      .createQueryBuilder(
+        "inventory_product_volume_discount_variant_price_categories"
+      )
+      .where(
+        "inventory_product_volume_discount_variant_price_categories.inventory_product_vol_disc_variant_qty_id = :inventory_product_vol_disc_variant_qty_id",
+        { inventory_product_vol_disc_variant_qty_id: id }
+      )
+      .delete()
+      .execute();
+
+    await this.inventoryProductVolumeDiscountVariantQtyRepository.delete({
+      id,
+    });
   }
 }

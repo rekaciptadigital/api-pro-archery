@@ -2064,314 +2064,509 @@ export class InventoryPriceService {
       }
 
       const notFindByIdVariantDiscQty =
-        await this.inventoryPriceRepository.findGetDiscountVariantQtyNotId(id);
-      console.log("notFindByIdVariantDiscQty:", notFindByIdVariantDiscQty);
+        await this.inventoryPriceRepository.findGetDiscountVariantQtyNotId(
+          existVariantDiscountQty.volume_discount_variant.pricing_information
+            .id,
+          id
+        );
 
-      // // Create history record for global discount
-      // const pricingInformationHistory = queryRunner.manager.create(
-      //   InventoryProductPricingInformationHistory,
-      //   {
-      //     inventory_product_pricing_information:
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .id,
-      //     inventory_product_id:
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .inventory_product.id,
-      //     old_usd_price: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .usd_price
-      //     ),
-      //     new_usd_price: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .usd_price
-      //     ),
-      //     old_exchange_rate: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .exchange_rate
-      //     ),
-      //     new_exchange_rate: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .exchange_rate
-      //     ),
-      //     old_adjustment_percentage: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .adjustment_percentage
-      //     ),
-      //     new_adjustment_percentage: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .adjustment_percentage
-      //     ),
-      //     old_price_hb_real: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .price_hb_real
-      //     ),
-      //     new_price_hb_real: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .price_hb_real
-      //     ),
-      //     old_hb_adjustment_price: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .hb_adjustment_price
-      //     ),
-      //     new_hb_adjustment_price: Number(
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .hb_adjustment_price
-      //     ),
-      //     old_is_manual_product_variant_price_edit:
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .is_manual_product_variant_price_edit,
-      //     new_is_manual_product_variant_price_edit:
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .is_manual_product_variant_price_edit,
-      //     old_is_enable_volume_discount:
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .is_enable_volume_discount,
-      //     new_is_enable_volume_discount:
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .is_enable_volume_discount,
-      //     old_is_enable_volume_discount_by_product_variant:
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .is_enable_volume_discount_by_product_variant,
-      //     new_is_enable_volume_discount_by_product_variant:
-      //       existVariantDiscountQty.volume_discount_variant.pricing_information
-      //         .is_enable_volume_discount_by_product_variant,
-      //     user_id: userId,
-      //   }
-      // );
+      // Create history record for global discount
+      const pricingInformationHistory = queryRunner.manager.create(
+        InventoryProductPricingInformationHistory,
+        {
+          inventory_product_pricing_information:
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .id,
+          inventory_product_id:
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .inventory_product.id,
+          old_usd_price: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .usd_price
+          ),
+          new_usd_price: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .usd_price
+          ),
+          old_exchange_rate: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .exchange_rate
+          ),
+          new_exchange_rate: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .exchange_rate
+          ),
+          old_adjustment_percentage: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .adjustment_percentage
+          ),
+          new_adjustment_percentage: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .adjustment_percentage
+          ),
+          old_price_hb_real: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .price_hb_real
+          ),
+          new_price_hb_real: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .price_hb_real
+          ),
+          old_hb_adjustment_price: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .hb_adjustment_price
+          ),
+          new_hb_adjustment_price: Number(
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .hb_adjustment_price
+          ),
+          old_is_manual_product_variant_price_edit:
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .is_manual_product_variant_price_edit,
+          new_is_manual_product_variant_price_edit:
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .is_manual_product_variant_price_edit,
+          old_is_enable_volume_discount:
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .is_enable_volume_discount,
+          new_is_enable_volume_discount:
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .is_enable_volume_discount,
+          old_is_enable_volume_discount_by_product_variant:
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .is_enable_volume_discount_by_product_variant,
+          new_is_enable_volume_discount_by_product_variant:
+            existVariantDiscountQty.volume_discount_variant.pricing_information
+              .is_enable_volume_discount_by_product_variant,
+          user_id: userId,
+        }
+      );
 
-      // await queryRunner.manager.save(pricingInformationHistory);
+      await queryRunner.manager.save(pricingInformationHistory);
 
-      // // create history customer price category
-      // if (
-      //   existVariantDiscountQty.volume_discount_variant.pricing_information
-      //     .customer_category_prices
-      // ) {
-      //   for (const customerCategoryPrice of existVariantDiscountQty
-      //     .volume_discount_variant.pricing_information
-      //     .customer_category_prices) {
-      //     const HistoryCustomerPriceCategory = queryRunner.manager.create(
-      //       InventoryProductCustomerCategoryPriceHistory,
-      //       {
-      //         inventory_product_pricing_information_history_id:
-      //           pricingInformationHistory.id,
-      //         price_category_id: customerCategoryPrice.price_category_id,
-      //         old_price_category_name:
-      //           customerCategoryPrice.price_category_name,
-      //         new_price_category_name:
-      //           customerCategoryPrice.price_category_name,
-      //         old_price_category_percentage: Number(
-      //           customerCategoryPrice.price_category_percentage
-      //         ),
-      //         new_price_category_percentage: Number(
-      //           customerCategoryPrice.price_category_percentage
-      //         ),
-      //         old_price_category_set_default:
-      //           customerCategoryPrice.price_category_set_default,
-      //         new_price_category_set_default:
-      //           customerCategoryPrice.price_category_set_default,
-      //         old_pre_tax_price: Number(customerCategoryPrice.pre_tax_price),
-      //         new_pre_tax_price: Number(customerCategoryPrice.pre_tax_price),
-      //         old_tax_inclusive_price: Number(
-      //           customerCategoryPrice.tax_inclusive_price
-      //         ),
-      //         new_tax_inclusive_price: Number(
-      //           customerCategoryPrice.tax_inclusive_price
-      //         ),
-      //         tax_id: customerCategoryPrice.tax_id,
-      //         old_tax_percentage: Number(customerCategoryPrice.tax_percentage),
-      //         new_tax_percentage: Number(customerCategoryPrice.tax_percentage),
-      //         old_is_custom_tax_inclusive_price:
-      //           customerCategoryPrice.is_custom_tax_inclusive_price,
-      //         new_is_custom_tax_inclusive_price:
-      //           customerCategoryPrice.is_custom_tax_inclusive_price,
-      //         old_price_category_custom_percentage: Number(
-      //           customerCategoryPrice.price_category_custom_percentage
-      //         ),
-      //         new_price_category_custom_percentage: Number(
-      //           customerCategoryPrice.price_category_custom_percentage
-      //         ),
-      //       }
-      //     );
+      // create history customer price category
+      if (
+        existVariantDiscountQty.volume_discount_variant.pricing_information
+          .customer_category_prices
+      ) {
+        for (const customerCategoryPrice of existVariantDiscountQty
+          .volume_discount_variant.pricing_information
+          .customer_category_prices) {
+          const HistoryCustomerPriceCategory = queryRunner.manager.create(
+            InventoryProductCustomerCategoryPriceHistory,
+            {
+              inventory_product_pricing_information_history_id:
+                pricingInformationHistory.id,
+              price_category_id: customerCategoryPrice.price_category_id,
+              old_price_category_name:
+                customerCategoryPrice.price_category_name,
+              new_price_category_name:
+                customerCategoryPrice.price_category_name,
+              old_price_category_percentage: Number(
+                customerCategoryPrice.price_category_percentage
+              ),
+              new_price_category_percentage: Number(
+                customerCategoryPrice.price_category_percentage
+              ),
+              old_price_category_set_default:
+                customerCategoryPrice.price_category_set_default,
+              new_price_category_set_default:
+                customerCategoryPrice.price_category_set_default,
+              old_pre_tax_price: Number(customerCategoryPrice.pre_tax_price),
+              new_pre_tax_price: Number(customerCategoryPrice.pre_tax_price),
+              old_tax_inclusive_price: Number(
+                customerCategoryPrice.tax_inclusive_price
+              ),
+              new_tax_inclusive_price: Number(
+                customerCategoryPrice.tax_inclusive_price
+              ),
+              tax_id: customerCategoryPrice.tax_id,
+              old_tax_percentage: Number(customerCategoryPrice.tax_percentage),
+              new_tax_percentage: Number(customerCategoryPrice.tax_percentage),
+              old_is_custom_tax_inclusive_price:
+                customerCategoryPrice.is_custom_tax_inclusive_price,
+              new_is_custom_tax_inclusive_price:
+                customerCategoryPrice.is_custom_tax_inclusive_price,
+              old_price_category_custom_percentage: Number(
+                customerCategoryPrice.price_category_custom_percentage
+              ),
+              new_price_category_custom_percentage: Number(
+                customerCategoryPrice.price_category_custom_percentage
+              ),
+            }
+          );
 
-      //     await queryRunner.manager.save(HistoryCustomerPriceCategory);
-      //   }
-      // }
+          await queryRunner.manager.save(HistoryCustomerPriceCategory);
+        }
+      }
 
-      // // create history marketplace price category
-      // if (
-      //   existVariantDiscountQty.volume_discount_variant.pricing_information
-      //     .marketplace_category_prices
-      // ) {
-      //   for (const marketplaceCategoryPrice of existVariantDiscountQty
-      //     .volume_discount_variant.pricing_information
-      //     .marketplace_category_prices) {
-      //     const historyProductMarketplaceCategory = queryRunner.manager.create(
-      //       InventoryProductMarketplaceCategoryPriceHistory,
-      //       {
-      //         inventory_product_pricing_information_history_id:
-      //           pricingInformationHistory.id,
-      //         price_category_id: marketplaceCategoryPrice.price_category_id,
-      //         old_price_category_name:
-      //           marketplaceCategoryPrice.price_category_name,
-      //         new_price_category_name:
-      //           marketplaceCategoryPrice.price_category_name,
-      //         old_price_category_percentage: Number(
-      //           marketplaceCategoryPrice.price_category_percentage
-      //         ),
-      //         new_price_category_percentage: Number(
-      //           marketplaceCategoryPrice.price_category_percentage
-      //         ),
-      //         old_price_category_set_default:
-      //           marketplaceCategoryPrice.price_category_set_default,
-      //         new_price_category_set_default:
-      //           marketplaceCategoryPrice.price_category_set_default,
-      //         old_price: Number(marketplaceCategoryPrice.price),
-      //         new_price: Number(marketplaceCategoryPrice.price),
-      //         old_price_category_custom_percentage: Number(
-      //           marketplaceCategoryPrice.price_category_custom_percentage
-      //         ),
-      //         new_price_category_custom_percentage: Number(
-      //           marketplaceCategoryPrice.price_category_custom_percentage
-      //         ),
-      //         old_is_custom_price_category:
-      //           marketplaceCategoryPrice.is_custom_price_category,
-      //         new_is_custom_price_category:
-      //           marketplaceCategoryPrice.is_custom_price_category,
-      //       }
-      //     );
+      // create history marketplace price category
+      if (
+        existVariantDiscountQty.volume_discount_variant.pricing_information
+          .marketplace_category_prices
+      ) {
+        for (const marketplaceCategoryPrice of existVariantDiscountQty
+          .volume_discount_variant.pricing_information
+          .marketplace_category_prices) {
+          const historyProductMarketplaceCategory = queryRunner.manager.create(
+            InventoryProductMarketplaceCategoryPriceHistory,
+            {
+              inventory_product_pricing_information_history_id:
+                pricingInformationHistory.id,
+              price_category_id: marketplaceCategoryPrice.price_category_id,
+              old_price_category_name:
+                marketplaceCategoryPrice.price_category_name,
+              new_price_category_name:
+                marketplaceCategoryPrice.price_category_name,
+              old_price_category_percentage: Number(
+                marketplaceCategoryPrice.price_category_percentage
+              ),
+              new_price_category_percentage: Number(
+                marketplaceCategoryPrice.price_category_percentage
+              ),
+              old_price_category_set_default:
+                marketplaceCategoryPrice.price_category_set_default,
+              new_price_category_set_default:
+                marketplaceCategoryPrice.price_category_set_default,
+              old_price: Number(marketplaceCategoryPrice.price),
+              new_price: Number(marketplaceCategoryPrice.price),
+              old_price_category_custom_percentage: Number(
+                marketplaceCategoryPrice.price_category_custom_percentage
+              ),
+              new_price_category_custom_percentage: Number(
+                marketplaceCategoryPrice.price_category_custom_percentage
+              ),
+              old_is_custom_price_category:
+                marketplaceCategoryPrice.is_custom_price_category,
+              new_is_custom_price_category:
+                marketplaceCategoryPrice.is_custom_price_category,
+            }
+          );
 
-      //     await queryRunner.manager.save(historyProductMarketplaceCategory);
-      //   }
-      // }
+          await queryRunner.manager.save(historyProductMarketplaceCategory);
+        }
+      }
 
-      // // create history product variant price
-      // if (
-      //   existVariantDiscountQty.volume_discount_variant.pricing_information
-      //     .inventory_product.product_by_variant
-      // ) {
-      //   for (const productVariantVal of existVariantDiscountQty
-      //     .volume_discount_variant.pricing_information.inventory_product
-      //     .product_by_variant) {
-      //     const getVariantProductPrice =
-      //       await this.inventoryPriceRepository.findProductVariantPriceById(
-      //         productVariantVal.id
-      //       );
-      //     if (getVariantProductPrice) {
-      //       for (const variantPriceHistory of getVariantProductPrice) {
-      //         const getPriceCategory = await queryRunner.manager.findOne(
-      //           PriceCategory,
-      //           { where: { id: variantPriceHistory.price_category_id } }
-      //         );
-      //         if (getPriceCategory) {
-      //           const historyProductVariantHistory = queryRunner.manager.create(
-      //             InventoryProductByVariantPriceHistory,
-      //             {
-      //               inventory_product_pricing_information_history_id:
-      //                 pricingInformationHistory.id,
-      //               inventory_product_by_variant_id: productVariantVal.id,
-      //               price_category_id: variantPriceHistory.price_category_id,
-      //               old_price_category_type: getPriceCategory.type,
-      //               new_price_category_type: getPriceCategory.type,
-      //               old_price_category_name: getPriceCategory.name,
-      //               new_price_category_name: getPriceCategory.name,
-      //               old_price_category_percentage: Number(
-      //                 getPriceCategory.percentage
-      //               ),
-      //               new_price_category_percentage: Number(
-      //                 getPriceCategory.percentage
-      //               ),
-      //               old_price_category_set_default:
-      //                 getPriceCategory.set_default,
-      //               new_price_category_set_default:
-      //                 getPriceCategory.set_default,
-      //               old_price: Number(variantPriceHistory.price),
-      //               new_price: Number(variantPriceHistory.price),
-      //               old_status: variantPriceHistory.status,
-      //               new_status: variantPriceHistory.status,
-      //               old_usd_price: Number(variantPriceHistory.usd_price),
-      //               new_usd_price: Number(variantPriceHistory.usd_price),
-      //               old_exchange_rate: Number(
-      //                 variantPriceHistory.exchange_rate
-      //               ),
-      //               new_exchange_rate: Number(
-      //                 variantPriceHistory.exchange_rate
-      //               ),
-      //               old_adjustment_percentage: Number(
-      //                 variantPriceHistory.adjustment_percentage
-      //               ),
-      //               new_adjustment_percentage: Number(
-      //                 variantPriceHistory.adjustment_percentage
-      //               ),
-      //             }
-      //           );
-      //           await queryRunner.manager.save(historyProductVariantHistory);
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
+      // create history product variant price
+      if (
+        existVariantDiscountQty.volume_discount_variant.pricing_information
+          .inventory_product.product_by_variant
+      ) {
+        for (const productVariantVal of existVariantDiscountQty
+          .volume_discount_variant.pricing_information.inventory_product
+          .product_by_variant) {
+          const getVariantProductPrice =
+            await this.inventoryPriceRepository.findProductVariantPriceById(
+              productVariantVal.id
+            );
+          if (getVariantProductPrice) {
+            for (const variantPriceHistory of getVariantProductPrice) {
+              const getPriceCategory = await queryRunner.manager.findOne(
+                PriceCategory,
+                { where: { id: variantPriceHistory.price_category_id } }
+              );
+              if (getPriceCategory) {
+                const historyProductVariantHistory = queryRunner.manager.create(
+                  InventoryProductByVariantPriceHistory,
+                  {
+                    inventory_product_pricing_information_history_id:
+                      pricingInformationHistory.id,
+                    inventory_product_by_variant_id: productVariantVal.id,
+                    price_category_id: variantPriceHistory.price_category_id,
+                    old_price_category_type: getPriceCategory.type,
+                    new_price_category_type: getPriceCategory.type,
+                    old_price_category_name: getPriceCategory.name,
+                    new_price_category_name: getPriceCategory.name,
+                    old_price_category_percentage: Number(
+                      getPriceCategory.percentage
+                    ),
+                    new_price_category_percentage: Number(
+                      getPriceCategory.percentage
+                    ),
+                    old_price_category_set_default:
+                      getPriceCategory.set_default,
+                    new_price_category_set_default:
+                      getPriceCategory.set_default,
+                    old_price: Number(variantPriceHistory.price),
+                    new_price: Number(variantPriceHistory.price),
+                    old_status: variantPriceHistory.status,
+                    new_status: variantPriceHistory.status,
+                    old_usd_price: Number(variantPriceHistory.usd_price),
+                    new_usd_price: Number(variantPriceHistory.usd_price),
+                    old_exchange_rate: Number(
+                      variantPriceHistory.exchange_rate
+                    ),
+                    new_exchange_rate: Number(
+                      variantPriceHistory.exchange_rate
+                    ),
+                    old_adjustment_percentage: Number(
+                      variantPriceHistory.adjustment_percentage
+                    ),
+                    new_adjustment_percentage: Number(
+                      variantPriceHistory.adjustment_percentage
+                    ),
+                  }
+                );
+                await queryRunner.manager.save(historyProductVariantHistory);
+              }
+            }
+          }
+        }
+      }
 
-      // // create global discount history
-      // if (
-      //   existVariantDiscountQty.volume_discount_variant.pricing_information
-      //     .global_discounts
-      // ) {
-      //   for (const global_disc_val of existVariantDiscountQty
-      //     .volume_discount_variant.pricing_information.global_discounts) {
-      //     const historyGlobalDiscount = queryRunner.manager.create(
-      //       InventoryProductGlobalDiscountHistory,
-      //       {
-      //         inventory_product_pricing_information_history_id:
-      //           pricingInformationHistory.id,
-      //         old_quantity: global_disc_val.quantity,
-      //         new_quantity: global_disc_val.quantity,
-      //         old_discount_percentage: global_disc_val.discount_percentage,
-      //         new_discount_percentage: global_disc_val.discount_percentage,
-      //         is_deleted: false,
-      //       }
-      //     );
+      // create global discount history
+      if (
+        existVariantDiscountQty.volume_discount_variant.pricing_information
+          .global_discounts
+      ) {
+        for (const global_disc_val of existVariantDiscountQty
+          .volume_discount_variant.pricing_information.global_discounts) {
+          const historyGlobalDiscount = queryRunner.manager.create(
+            InventoryProductGlobalDiscountHistory,
+            {
+              inventory_product_pricing_information_history_id:
+                pricingInformationHistory.id,
+              old_quantity: global_disc_val.quantity,
+              new_quantity: global_disc_val.quantity,
+              old_discount_percentage: global_disc_val.discount_percentage,
+              new_discount_percentage: global_disc_val.discount_percentage,
+              is_deleted: false,
+            }
+          );
 
-      //     await queryRunner.manager.save(historyGlobalDiscount);
+          await queryRunner.manager.save(historyGlobalDiscount);
 
-      //     if (global_disc_val.price_categories) {
-      //       for (const valGlobalDiscPriceCat of global_disc_val.price_categories) {
-      //         const historyGlobalDiscountPriceCategory =
-      //           queryRunner.manager.create(
-      //             InventoryProductGlobalDiscountPriceCategoryHistory,
-      //             {
-      //               inventory_product_pricing_information_history_id:
-      //                 pricingInformationHistory.id,
-      //               inventory_product_global_discount_history_id:
-      //                 historyGlobalDiscount.id,
-      //               price_category_id: valGlobalDiscPriceCat.price_category_id,
-      //               old_price_category_type:
-      //                 valGlobalDiscPriceCat.price_category_type,
-      //               new_price_category_type:
-      //                 valGlobalDiscPriceCat.price_category_type,
-      //               old_price_category_name:
-      //                 valGlobalDiscPriceCat.price_category_name,
-      //               new_price_category_name:
-      //                 valGlobalDiscPriceCat.price_category_name,
-      //               old_price_category_percentage:
-      //                 valGlobalDiscPriceCat.price_category_percentage,
-      //               new_price_category_percentage:
-      //                 valGlobalDiscPriceCat.price_category_percentage,
-      //               old_price_category_set_default:
-      //                 valGlobalDiscPriceCat.price_category_set_default,
-      //               new_price_category_set_default:
-      //                 valGlobalDiscPriceCat.price_category_set_default,
-      //               old_price: valGlobalDiscPriceCat.price,
-      //               new_price: valGlobalDiscPriceCat.price,
-      //               is_deleted: false,
-      //             }
-      //           );
-      //         await queryRunner.manager.save(
-      //           historyGlobalDiscountPriceCategory
-      //         );
-      //       }
-      //     }
-      //   }
-      // }
+          if (global_disc_val.price_categories) {
+            for (const valGlobalDiscPriceCat of global_disc_val.price_categories) {
+              const historyGlobalDiscountPriceCategory =
+                queryRunner.manager.create(
+                  InventoryProductGlobalDiscountPriceCategoryHistory,
+                  {
+                    inventory_product_pricing_information_history_id:
+                      pricingInformationHistory.id,
+                    inventory_product_global_discount_history_id:
+                      historyGlobalDiscount.id,
+                    price_category_id: valGlobalDiscPriceCat.price_category_id,
+                    old_price_category_type:
+                      valGlobalDiscPriceCat.price_category_type,
+                    new_price_category_type:
+                      valGlobalDiscPriceCat.price_category_type,
+                    old_price_category_name:
+                      valGlobalDiscPriceCat.price_category_name,
+                    new_price_category_name:
+                      valGlobalDiscPriceCat.price_category_name,
+                    old_price_category_percentage:
+                      valGlobalDiscPriceCat.price_category_percentage,
+                    new_price_category_percentage:
+                      valGlobalDiscPriceCat.price_category_percentage,
+                    old_price_category_set_default:
+                      valGlobalDiscPriceCat.price_category_set_default,
+                    new_price_category_set_default:
+                      valGlobalDiscPriceCat.price_category_set_default,
+                    old_price: valGlobalDiscPriceCat.price,
+                    new_price: valGlobalDiscPriceCat.price,
+                    is_deleted: false,
+                  }
+                );
+              await queryRunner.manager.save(
+                historyGlobalDiscountPriceCategory
+              );
+            }
+          }
+        }
+      }
+
+      // create product variant discount history spesific delete by qty
+      const productVolumeDiscountVariantByQtyIdForHistory =
+        queryRunner.manager.create(
+          InventoryProductVolumeDiscountVariantHistory,
+          {
+            inventory_product_pricing_information_history_id:
+              pricingInformationHistory.id,
+            inventory_product_by_variant_id:
+              existVariantDiscountQty.volume_discount_variant
+                .inventory_product_by_variant_id,
+            old_inventory_product_by_variant_full_product_name:
+              existVariantDiscountQty.volume_discount_variant
+                .inventory_product_by_variant_full_product_name,
+            new_inventory_product_by_variant_full_product_name:
+              existVariantDiscountQty.volume_discount_variant
+                .inventory_product_by_variant_full_product_name,
+            old_inventory_product_by_variant_sku:
+              existVariantDiscountQty.volume_discount_variant
+                .inventory_product_by_variant_sku,
+            new_inventory_product_by_variant_sku:
+              existVariantDiscountQty.volume_discount_variant
+                .inventory_product_by_variant_sku,
+            old_status: existVariantDiscountQty.volume_discount_variant.status,
+            new_status: existVariantDiscountQty.volume_discount_variant.status,
+          }
+        );
+
+      await queryRunner.manager.save(
+        productVolumeDiscountVariantByQtyIdForHistory
+      );
+
+      const createQuantityByIdHistory = queryRunner.manager.create(
+        InventoryProductVolumeDiscountVariantQtyHis,
+        {
+          inventory_product_vol_disc_variant_his_id: (
+            productVolumeDiscountVariantByQtyIdForHistory as { id: string }
+          ).id,
+          old_quantity: Number(existVariantDiscountQty.quantity),
+          new_quantity: Number(existVariantDiscountQty.quantity),
+          old_discount_percentage: Number(
+            existVariantDiscountQty.discount_percentage
+          ),
+          new_discount_percentage: Number(
+            existVariantDiscountQty.discount_percentage
+          ),
+          old_status: existVariantDiscountQty.status,
+          new_status: existVariantDiscountQty.status,
+          is_deleted: true,
+        }
+      );
+
+      await queryRunner.manager.save(createQuantityByIdHistory);
+
+      for (const qtyPriceCategory of existVariantDiscountQty.price_categories) {
+        const createHistoryRecordPriceCategory = queryRunner.manager.create(
+          InventoryProductVolumeDiscountVariantPriceCatHis,
+          {
+            inventory_product_vol_disc_variant_qty_his_id: (
+              createQuantityByIdHistory as { id: string }
+            ).id,
+            price_category_id: qtyPriceCategory.price_category_id,
+            old_price_category_type: qtyPriceCategory.price_category_type,
+            new_price_category_type: qtyPriceCategory.price_category_type,
+            old_price_category_name: qtyPriceCategory.price_category_name,
+            new_price_category_name: qtyPriceCategory.price_category_name,
+            old_price_category_percentage: Number(
+              qtyPriceCategory.price_category_percentage
+            ),
+            new_price_category_percentage: Number(
+              qtyPriceCategory.price_category_percentage
+            ),
+            old_price_category_set_default:
+              qtyPriceCategory.price_category_set_default,
+            new_price_category_set_default:
+              qtyPriceCategory.price_category_set_default,
+            old_price: Number(qtyPriceCategory.price),
+            new_price: Number(qtyPriceCategory.price),
+            is_deleted: true,
+          }
+        );
+        await queryRunner.manager.save(createHistoryRecordPriceCategory);
+      }
+
+      // create product variant discount history cant by id qty discount
+      if (notFindByIdVariantDiscQty) {
+        for (const listDiscVariantNotById of notFindByIdVariantDiscQty) {
+          const checkVariantHistory =
+            await this.inventoryPriceRepository.findVariantHistory(
+              pricingInformationHistory.id,
+              listDiscVariantNotById.inventory_product_by_variant_id
+            );
+
+          let idVariantHistory: string;
+
+          if (!checkVariantHistory) {
+            const productVolumeDiscountVariantByQtyNotIdForHistory =
+              queryRunner.manager.create(
+                InventoryProductVolumeDiscountVariantHistory,
+                {
+                  inventory_product_pricing_information_history_id:
+                    pricingInformationHistory.id,
+                  inventory_product_by_variant_id:
+                    listDiscVariantNotById.inventory_product_by_variant_id,
+                  old_inventory_product_by_variant_full_product_name:
+                    listDiscVariantNotById.inventory_product_by_variant_full_product_name,
+                  new_inventory_product_by_variant_full_product_name:
+                    listDiscVariantNotById.inventory_product_by_variant_full_product_name,
+                  old_inventory_product_by_variant_sku:
+                    listDiscVariantNotById.inventory_product_by_variant_sku,
+                  new_inventory_product_by_variant_sku:
+                    listDiscVariantNotById.inventory_product_by_variant_sku,
+                  old_status: listDiscVariantNotById.status,
+                  new_status: listDiscVariantNotById.status,
+                }
+              );
+            await queryRunner.manager.save(
+              productVolumeDiscountVariantByQtyNotIdForHistory
+            );
+            idVariantHistory =
+              productVolumeDiscountVariantByQtyNotIdForHistory.id;
+          } else {
+            idVariantHistory = checkVariantHistory.id;
+          }
+
+          if (listDiscVariantNotById.quantities) {
+            for (const qtyDiscVariantNotById of listDiscVariantNotById.quantities) {
+              const createQuantityByIdHistory = queryRunner.manager.create(
+                InventoryProductVolumeDiscountVariantQtyHis,
+                {
+                  inventory_product_vol_disc_variant_his_id: idVariantHistory,
+                  old_quantity: Number(qtyDiscVariantNotById.quantity),
+                  new_quantity: Number(qtyDiscVariantNotById.quantity),
+                  old_discount_percentage: Number(
+                    qtyDiscVariantNotById.discount_percentage
+                  ),
+                  new_discount_percentage: Number(
+                    qtyDiscVariantNotById.discount_percentage
+                  ),
+                  old_status: qtyDiscVariantNotById.status,
+                  new_status: qtyDiscVariantNotById.status,
+                  is_deleted: false,
+                }
+              );
+              await queryRunner.manager.save(createQuantityByIdHistory);
+
+              if (qtyDiscVariantNotById.price_categories) {
+                for (const priceCatQtyDiscVariantNotById of qtyDiscVariantNotById.price_categories) {
+                  const createHistoryRecordPriceCategory =
+                    queryRunner.manager.create(
+                      InventoryProductVolumeDiscountVariantPriceCatHis,
+                      {
+                        inventory_product_vol_disc_variant_qty_his_id: (
+                          createQuantityByIdHistory as { id: string }
+                        ).id,
+                        price_category_id:
+                          priceCatQtyDiscVariantNotById.price_category_id,
+                        old_price_category_type:
+                          priceCatQtyDiscVariantNotById.price_category_type,
+                        new_price_category_type:
+                          priceCatQtyDiscVariantNotById.price_category_type,
+                        old_price_category_name:
+                          priceCatQtyDiscVariantNotById.price_category_name,
+                        new_price_category_name:
+                          priceCatQtyDiscVariantNotById.price_category_name,
+                        old_price_category_percentage: Number(
+                          priceCatQtyDiscVariantNotById.price_category_percentage
+                        ),
+                        new_price_category_percentage: Number(
+                          priceCatQtyDiscVariantNotById.price_category_percentage
+                        ),
+                        old_price_category_set_default:
+                          priceCatQtyDiscVariantNotById.price_category_set_default,
+                        new_price_category_set_default:
+                          priceCatQtyDiscVariantNotById.price_category_set_default,
+                        old_price: Number(priceCatQtyDiscVariantNotById.price),
+                        new_price: Number(priceCatQtyDiscVariantNotById.price),
+                        is_deleted: false,
+                      }
+                    );
+                  await queryRunner.manager.save(
+                    createHistoryRecordPriceCategory
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Delete variant qty discount first before creating history
+      await this.inventoryPriceRepository.deleteDiscountVariantQtyById(id);
 
       await queryRunner.commitTransaction();
 
