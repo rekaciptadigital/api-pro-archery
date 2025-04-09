@@ -184,7 +184,7 @@ export class InventoryPriceRepository extends BaseRepository<InventoryProductPri
     const query = this.inventoryProductVolumeDiscountVariantHistoryRepository
       .createQueryBuilder("inventory_product_volume_discount_variant_histories")
       .where(
-        "inventory_product_volume_discount_variant_histories.inventory_product_pricing_information_id = :idPricingInformation",
+        "inventory_product_volume_discount_variant_histories.inventory_product_pricing_information_history_id = :idPricingInformation",
         { idPricingInformation }
       )
       .andWhere(
