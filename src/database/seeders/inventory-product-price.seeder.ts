@@ -55,6 +55,8 @@ export class InventoryProductPriceSeeder implements Seeder {
         return;
       }
 
+      // console.log("productsWithoutPricing:", productsWithoutPricing);
+      // return;
       // Get active customer price categories
       const customerPriceCategories = await this.priceCategoryRepository
         .createQueryBuilder("category")

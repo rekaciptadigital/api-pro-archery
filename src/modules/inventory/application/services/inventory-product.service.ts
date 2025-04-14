@@ -293,6 +293,7 @@ export class InventoryProductService {
                 inventory_product_by_variant_id: variantIdMap.get(variant.sku),
                 inventory_product_by_variant_full_product_name:
                   variant.full_product_name,
+                inventory_product_by_variant_sku: variant.sku,
                 status: true,
               }
             );
